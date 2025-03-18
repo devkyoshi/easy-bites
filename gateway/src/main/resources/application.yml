@@ -1,0 +1,55 @@
+server:
+  port: 8080  # API Gateway runs on port 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: http://localhost:8081/
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
+
+        - id: restaurant-service
+          uri: http://localhost:8082/
+          predicates:
+            - Path=/api/restaurants/**
+          filters:
+            - StripPrefix=1
+
+        - id: order-service
+          uri: http://localhost:8083/
+          predicates:
+            - Path=/api/orders/**
+          filters:
+            - StripPrefix=1
+
+        - id: delivery-service
+          uri: http://localhost:8084/
+          predicates:
+            - Path=/api/delivery/**
+          filters:
+            - StripPrefix=1
+
+        - id: payment-service
+          uri: http://localhost:8085/
+          predicates:
+            - Path=/api/payments/**
+          filters:
+            - StripPrefix=1
+
+# Enable Actuator for health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+
+
+security:
+  jwt:
+    secret-key: "my_secret_key"
