@@ -2,6 +2,8 @@ server:
   port: 8080  # API Gateway runs on port 8080
 
 spring:
+  main:
+    allow-bean-definition-overriding: true
   application:
     name: api-gateway
   cloud:
@@ -52,4 +54,4 @@ management:
 
 security:
   jwt:
-    secret-key: "my_secret_key"
+    secret-key: "Y2hhbGxlbmdlZG9lMDAwMTIzNDU2Nzg5YWJjZGVmZ2hpamtsbW5vcHFycw=="
