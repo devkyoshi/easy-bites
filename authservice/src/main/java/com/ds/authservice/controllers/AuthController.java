@@ -1,9 +1,9 @@
 package com.ds.authservice.controllers;
 
 import com.ds.authservice.dto.request.LoginRequest;
-import com.ds.authservice.dto.request.RegisterCustomerRequest;
-import com.ds.authservice.dto.request.RegisterDeliveryPersonnelRequest;
-import com.ds.authservice.dto.request.RegisterRestaurantManagerRequest;
+import com.ds.authservice.dto.request.UpdateRegisterCustomerRequest;
+import com.ds.authservice.dto.request.UpdateRegisterDeliveryPersonnelRequest;
+import com.ds.authservice.dto.request.UpdateRegisterRestaurantManagerRequest;
 import com.ds.authservice.dto.response.LoginResponse;
 import com.ds.authservice.dto.response.UserResponse;
 import com.ds.authservice.services.AuthService;
@@ -24,19 +24,19 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register/customer")
-    public ResponseEntity<ApiResponse<UserResponse>> registerCustomer(@RequestBody RegisterCustomerRequest request) {
+    public ResponseEntity<ApiResponse<UserResponse>> registerCustomer(@RequestBody UpdateRegisterCustomerRequest request) {
         log.info("Attempting to register customer with username: {}", request.getUsername());
         return ResponseEntity.ok(authService.registerUser(request));
     }
 
     @PostMapping("/register/restaurant-manager")
-    public ResponseEntity<ApiResponse<UserResponse>> registerRestaurantManager(@RequestBody RegisterRestaurantManagerRequest request) {
+    public ResponseEntity<ApiResponse<UserResponse>> registerRestaurantManager(@RequestBody UpdateRegisterRestaurantManagerRequest request) {
         log.info("Attempting to register restaurant manager: {} ", request.getUsername());
         return ResponseEntity.ok(authService.registerUser(request));
     }
 
     @PostMapping("/register/delivery-personnel")
-    public ResponseEntity<ApiResponse<UserResponse>> registerDeliveryPersonnel(@RequestBody RegisterDeliveryPersonnelRequest request) {
+    public ResponseEntity<ApiResponse<UserResponse>> registerDeliveryPersonnel(@RequestBody UpdateRegisterDeliveryPersonnelRequest request) {
         log.info("Attempting to register delivery-personnel: {} ", request.getUsername());
         return ResponseEntity.ok(authService.registerUser(request));
     }

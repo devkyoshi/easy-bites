@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterRestaurantManagerRequest extends RegisterUserRequest{
-    private String restaurantName;
-    private String businessLicense;
+public class UpdateRegisterDeliveryPersonnelRequest extends UpdateRegisterUserRequest {
+    private String vehicleType;
+    private String licenseNumber;
 }

@@ -30,6 +30,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(MessageConstants.GENERIC_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(InvalidUserRoleException.class)
+    public ResponseEntity<ApiResponse<Object>> handleInvalidUserRole(InvalidUserRoleException ex) {
+        return buildErrorResponse(MessageConstants.INVALID_USER_ROLE, HttpStatus.BAD_REQUEST);
+    }
+
     private ResponseEntity<ApiResponse<Object>> buildErrorResponse(String message, HttpStatus status) {
         ApiResponse<Object> errorResponse = ApiResponse.errorResponse(message);
         return new ResponseEntity<>(errorResponse, status);

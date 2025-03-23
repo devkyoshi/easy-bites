@@ -1,5 +1,6 @@
 package com.ds.authservice.dto.response;
 
+import com.ds.authservice.models.User;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,5 +22,13 @@ public class UserResponse {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+    }
+
+    public UserResponse(User user) {
+        this.userId = user.getId();
+        this.username = user.getUsername();
+        this.email = user.getEmail();
+        this.firstName = user.getFirstName();
+        this.lastName = user.getLastName();
     }
 }

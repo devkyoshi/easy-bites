@@ -7,7 +7,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "t_delivery_personnel")
-@DiscriminatorValue("DELIVERY_PERSONNEL") // Optional
+@DiscriminatorValue("DELIVERY_PERSONNEL")
 @Getter
 @Setter
 @NoArgsConstructor

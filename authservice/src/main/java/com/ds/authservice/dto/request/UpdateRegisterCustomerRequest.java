@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterCustomerRequest extends RegisterUserRequest{
+public class UpdateRegisterCustomerRequest extends UpdateRegisterUserRequest {
     private String address;
     private String phoneNumber;
 }

@@ -12,7 +12,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterUserRequest {
+public class UpdateRegisterUserRequest {
     private String firstName;
     private String lastName;
     private String username;

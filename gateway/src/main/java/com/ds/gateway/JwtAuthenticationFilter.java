@@ -1,5 +1,7 @@
 package com.ds.gateway;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,11 +14,16 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.util.Base64;
+import java.util.Map;
+
 @Slf4j
 public class JwtAuthenticationFilter implements GlobalFilter {
 
     @Value("${security.jwt.secret-key}")
     private String secretKey;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -43,19 +50,61 @@ public class JwtAuthenticationFilter implements GlobalFilter {
             return exchange.getResponse().setComplete();
         }
 
-        return chain.filter(exchange);
-    }
+        Claims claims = extractClaims(token);
+        if(claims == null){
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
 
+        try{
+            Map<String, Object> userPayload = Map.of(
+                    "userId", claims.get("userId"),
+                    "username", claims.get("username"),
+                    "firstName", claims.get("firstName"),
+                    "lastName", claims.get("lastName"),
+                    "email", claims.get("email"),
+                    "roles", claims.get("roles")
+            );
+
+            // Serialize the user data to JSON
+            String userJson = objectMapper.writeValueAsString(userPayload);
+
+            // Forward the claims as "user" key in the headers
+            ServerHttpRequest modifiedRequest = request.mutate()
+                    .header("X-User", userJson)
+                    .build();
+
+            return chain.filter(exchange.mutate().request(modifiedRequest).build());
+        } catch (Exception e) {
+            log.error("Error serializing user data: {}", e.getMessage());
+            exchange.getResponse().setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
+            return exchange.getResponse().setComplete();
+        }
+    }
     private boolean validateToken(String token) {
         try {
-            Jwts.parser()
-                    .setSigningKey(secretKey)
-                    .parseClaimsJws(token);
+            byte[] decodedKey = Base64.getDecoder().decode(secretKey);
+
+            Jwts.parser().setSigningKey(decodedKey).parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             log.error("Token validation failed: {}", e.getMessage());
             return false;
         }
     }
+
+    private Claims extractClaims(String token) {
+        try {
+            byte[] decodedKey = Base64.getDecoder().decode(secretKey);
+            return Jwts.parser()
+                    .setSigningKey(decodedKey)
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            log.error("Token validation failed: {}", e.getMessage());
+            return null;
+        }
+    }
+
 
 }
