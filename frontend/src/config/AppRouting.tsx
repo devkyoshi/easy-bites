@@ -4,6 +4,7 @@ import { DashboardPage } from "@/pages/dashboard/DashboardPage.tsx";
 import { HomePage } from "@/pages/HomePage.tsx";
 import LoginPage from "@/pages/auth/login/LoginPage.tsx";
 import { AuthProvider } from "@/contexts/AuthContext.tsx";
+import { Footer } from "@/components/Footer.tsx";
 
 const AppRoutingContent = () => {
   return (
@@ -25,6 +26,7 @@ export const AppRouting = () => {
       <AuthProvider>
         <AppRoutingContent />
       </AuthProvider>
+      <Footer />
     </BrowserRouter>
   );
 };
