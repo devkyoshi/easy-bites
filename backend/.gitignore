@@ -1,1 +1,10 @@
 **/target/
+
+# maven
+**/mvnw
+**/mvnw.cmd
+**/.mvn
+
+# env
+**/application.properties
+**/application.yml
