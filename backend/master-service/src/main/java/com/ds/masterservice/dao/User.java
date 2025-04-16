@@ -9,6 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -22,13 +23,27 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column
+    private String firstName;
+
+    @Column
+    private String lastName;
+
     @Column(unique = true)
     private String username;
+
     private String password;
+
     @Column(unique = true)
     private String email;
+
     @ManyToMany(fetch = FetchType.EAGER)
     private List<Role> roles;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
@@ -41,4 +56,16 @@ public class User implements UserDetails {
 
         return authorities;
     }
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
 }

@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 30% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 0 78% 40%; /* Seth Sri red */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 35% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 210 51% 47%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 222 47% 11%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 215 19% 35%; /* Seth Sri dark gray */
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 0 78% 40%; /* Seth Sri red */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 24% 25%; /* Darker version of sidebar bg */
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 215 24% 25%;
+    --sidebar-ring: 0 78% 40%; /* Seth Sri red */
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 0 78% 40%; /* Seth Sri red */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 213 27% 84%;
+    
+    --sidebar-background: 215 19% 35%; /* Seth Sri dark gray */
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 0 78% 40%; /* Seth Sri red */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 214 32% 15%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 214 32% 15%;
+    --sidebar-ring: 0 78% 40%; /* Seth Sri red */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .dashboard-card {
+    @apply bg-white rounded-lg shadow-sm p-3 sm:p-4 md:p-5 border border-gray-100;
+  }
+  
+  .dashboard-title {
+    @apply text-base sm:text-lg font-semibold text-[#475569] mb-3 sm:mb-4;
+  }
+  
+  .dashboard-subtitle {
+    @apply text-xs sm:text-sm font-medium text-gray-500 mb-2;
+  }
+  
+  .tag {
+    @apply px-2 py-1 rounded text-xs font-medium;
+  }
+  
+  .tag-success {
+    @apply bg-success-50 text-success-700;
+  }
+  
+  .tag-warning {
+    @apply bg-warning-50 text-warning-700;
+  }
+  
+  .tag-danger {
+    @apply bg-danger-50 text-danger-700;
+  }
+  
+  .status-indicator {
+    @apply h-2.5 w-2.5 rounded-full;
+  }
+  
+  .status-active {
+    @apply bg-success-500;
+  }
+  
+  .status-warning {
+    @apply bg-warning-500;
+  }
+  
+  .status-danger {
+    @apply bg-danger-500;
+  }
+  
+  .status-inactive {
+    @apply bg-gray-300;
+  }
+}
+
+/* Responsive utilties */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  @screen sm {
+    .sm-p-reduced {
+      @apply p-2;
+    }
+  }
+}

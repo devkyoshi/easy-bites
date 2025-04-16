@@ -1,13 +1,11 @@
 package com.ds.authservice.controller;
 
-import com.ds.authservice.dto.LoginRequest;
-import com.ds.authservice.dto.LoginResponse;
-import com.ds.authservice.dto.RegisterRequest;
-import com.ds.authservice.dto.RegisterResponse;
+import com.ds.authservice.dto.*;
 import com.ds.authservice.service.JwtService;
 import com.ds.commons.template.ApiResponse;
 import com.ds.masterservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,8 +32,9 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ApiResponse<RegisterResponse> register(@RequestBody RegisterRequest user) {
-        // Register User
+    public ApiResponse<RegisterResponse> register(@RequestBody RegisterUserRequest registerRequest) {
+
+        ApiResponse<UserResponseDTO> registeredUser = userService.registerUser(registerRequest);
         return null;
     }
 
