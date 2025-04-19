@@ -1,4 +1,4 @@
-package com.ds.authservice.dto;
+package com.ds.commons.dto.request;
 
 import lombok.Data;
 

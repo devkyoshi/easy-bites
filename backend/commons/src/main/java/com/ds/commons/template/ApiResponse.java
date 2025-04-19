@@ -8,12 +8,13 @@ import org.springframework.http.ResponseEntity;
 
 @Getter
 @Setter
-public class ApiResponse<T> extends ResponseEntity<T> {
+public class ApiResponse<T>  {
     private String message;
     private boolean success;
+    private T result;
 
     public ApiResponse(String message, boolean success, T result, HttpStatus status) {
-        super(result, status);
+        this.result = result;
         this.message = message;
         this.success = success;
     }

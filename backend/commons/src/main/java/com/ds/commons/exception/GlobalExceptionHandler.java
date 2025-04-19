@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<String> handleAuthenticationException(AuthenticationException ex) {
+    public ApiResponse<String> handleAuthenticationException(AuthenticationException ex) {
         log.error("AuthenticationException: {}", ex.getMessage());
         return ApiResponse.errorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
@@ -35,13 +35,13 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AuthorizationDeniedException.class)
-    public ResponseEntity<String> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
+    public ApiResponse<String> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
         log.error("AuthorizationDeniedException: {}", ex.getMessage());
         return ApiResponse.errorResponse(ex.getMessage(), HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenericException(Exception ex) {
+    public ApiResponse<String> handleGenericException(Exception ex) {
         log.error("Exception: {}", ex.getMessage());
         return ApiResponse.errorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
