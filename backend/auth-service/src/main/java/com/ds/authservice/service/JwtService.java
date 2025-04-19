@@ -1,5 +1,6 @@
 package com.ds.authservice.service;
 
+import com.ds.commons.dto.response.LoginResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -24,8 +25,8 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private Long EXPIRATION;
 
-    public String generateToken(String username) {
-        return createToken(new HashMap<>(), username);
+    public String generateToken(LoginResponse loginResponse) {
+        return createToken(new HashMap<>(), loginResponse);
     }
 
     public String extractUsername(String token) {
@@ -58,14 +59,18 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
-    private String createToken(Map<String, Object> claims, String userName) {
+    private String createToken(Map<String, Object> claims, LoginResponse loginResponse) {
         if (EXPIRATION == null || SECRET == null) {
             throw new IllegalStateException("JWT configuration missing");
         }
 
+        claims.put("userId", loginResponse.getUserId());
+        claims.put("email", loginResponse.getEmail());
+        claims.put("username", loginResponse.getUsername());
+
         return Jwts.builder()
                 .claims(claims)
-                .subject(userName)
+                .subject(loginResponse.getUsername())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(getSigningKey())

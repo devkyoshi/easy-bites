@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.ds.apigateway", "com.ds.masterservice"})
+@ComponentScan(basePackages = {"com.ds.apigateway", "com.ds.masterservice" , "com.ds.commons"})
 @EnableJpaRepositories(basePackages = "com.ds.masterservice.repository")
 @EntityScan(basePackages = "com.ds.masterservice.dao")
 @RestController

@@ -9,13 +9,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class GlobalConfig {
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
+   /* @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
-    }
+    }*/
+
 }

@@ -11,27 +11,36 @@ import com.ds.commons.exception.CustomException;
 import com.ds.commons.exception.ExceptionCode;
 import com.ds.commons.template.ApiResponse;
 
-import com.ds.masterservice.dao.User;
+import com.ds.masterservice.dao.*;
+import com.ds.masterservice.repository.RoleRepository;
 import com.ds.masterservice.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import com.ds.commons.enums.UserType;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -49,6 +58,7 @@ public class UserServiceImpl implements UserService {
                     registerRequest.getPassword() == null ||
                     registerRequest.getEmail() == null ||
                     registerRequest.getFirstName() == null ||
+                    registerRequest.getUserType() == null ||
                     registerRequest.getLastName() == null) {
                 log.error("Request for registration received with missing required fields");
                 throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
@@ -60,14 +70,26 @@ public class UserServiceImpl implements UserService {
                  throw new CustomException(ExceptionCode.USER_ALREADY_EXISTS);
             }
 
+            UserType userType = registerRequest.getUserType();
+            Role role = roleRepository.findByName("ROLE_" + userType.name())
+                    .orElseThrow(() -> new CustomException(ExceptionCode.ROLE_NOT_FOUND));
+
             // Create a new user
-            User user = new User();
+            User user = switch (userType) {
+                case CUSTOMER -> new Customer();
+                case RESTAURANT_MANAGER -> new RestaurantManager();
+                case DELIVERY_PERSON -> new DeliveryPerson();
+                case SYSTEM_ADMIN -> new SystemAdmin();
+                default -> throw new CustomException(ExceptionCode.INVALID_USER_TYPE);
+            };
+
+
             user.setFirstName(registerRequest.getFirstName());
             user.setLastName(registerRequest.getLastName());
             user.setUsername(registerRequest.getUsername());
             user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
             user.setEmail(registerRequest.getEmail());
-            //TODO: Should add roles and permissions here.
+            user.setRoles(List.of(role));
 
             // Save the user to the database
             userRepository.save(user);
@@ -76,7 +98,6 @@ public class UserServiceImpl implements UserService {
             // Return the response
             return ApiResponse.successResponse(getRegisterResponse(user));
         } catch (Exception e) {
-            // Handle any exceptions that occur during registration
             if (e instanceof CustomException) {
                 throw (CustomException) e;
             } else {
@@ -135,7 +156,7 @@ public class UserServiceImpl implements UserService {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .username(user.getUsername())
-                .roles(null) //TODO: Add roles and permissions here
+                .roles(user.getRoles().stream().map(Role::getName).toList())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();

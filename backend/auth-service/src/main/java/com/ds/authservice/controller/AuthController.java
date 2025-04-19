@@ -48,7 +48,7 @@ public class AuthController {
         ApiResponse<LoginResponse> response = masterService.getUserService().loginUser(authRequest);
 
         if(response.isSuccess()) {
-            String token = jwtService.generateToken(response.getResult().getUsername());
+            String token = jwtService.generateToken(response.getResult());
             response.getResult().setAccessToken(token);
 
             log.info("User {} logged in successfully.", authRequest.getUsername());
