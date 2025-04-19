@@ -55,7 +55,20 @@
         </dependency>
 
         <dependency>
-            <groupId>com.ds.</groupId>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ds</groupId>
             <artifactId>master-service</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>

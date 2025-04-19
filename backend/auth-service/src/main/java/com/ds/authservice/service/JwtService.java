@@ -24,9 +24,8 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private Long EXPIRATION;
 
-    public String generateToken(String userName) {
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, userName);
+    public String generateToken(String username) {
+        return createToken(new HashMap<>(), username);
     }
 
     public String extractUsername(String token) {
@@ -60,26 +59,25 @@ public class JwtService {
     }
 
     private String createToken(Map<String, Object> claims, String userName) {
-        if (EXPIRATION != null) {
-            return Jwts.builder()
-                    .claims(claims)
-                    .subject(userName)
-                    .issuedAt(new Date())
-                    .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                    .signWith(getSigningKey())
-                    .compact();
-        } else {
-            log.error("JWT expiration is null");
-            throw new IllegalArgumentException("JWT expiration is null");
+        if (EXPIRATION == null || SECRET == null) {
+            throw new IllegalStateException("JWT configuration missing");
         }
+
+        return Jwts.builder()
+                .claims(claims)
+                .subject(userName)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
+                .signWith(getSigningKey())
+                .compact();
     }
 
     private SecretKey getSigningKey() {
-        if (SECRET == null) {
-            log.error("JWT secret is null");
-            throw new IllegalArgumentException("JWT secret is null");
+        try {
+            return Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET));
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid JWT Secret: must be base64-encoded");
+            throw new IllegalStateException("Invalid JWT secret format", e);
         }
-        byte[] secretBytes = Decoders.BASE64.decode(SECRET);
-        return Keys.hmacShaKeyFor(secretBytes);
     }
 }

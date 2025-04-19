@@ -2,10 +2,13 @@ package com.ds.authservice.controller;
 
 import com.ds.authservice.dto.*;
 import com.ds.authservice.service.JwtService;
+import com.ds.commons.dto.request.RegisterUserRequest;
+import com.ds.commons.dto.response.RegisterResponse;
+import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
-import com.ds.masterservice.service.UserService;
+import com.ds.masterservice.MasterService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,13 +18,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    private final UserService userService;
+
+    private final MasterService masterService;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
     @Autowired
-    public AuthController(UserService userService, JwtService jwtService, AuthenticationManager authenticationManager) {
-        this.userService = userService;
+    public AuthController(MasterService masterService, JwtService jwtService, AuthenticationManager authenticationManager) {
+        this.masterService = masterService;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
     }
@@ -32,10 +36,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ApiResponse<RegisterResponse> register(@RequestBody RegisterUserRequest registerRequest) {
-
-        ApiResponse<UserResponseDTO> registeredUser = userService.registerUser(registerRequest);
-        return null;
+    public ApiResponse<RegisterResponse> register(@RequestBody RegisterUserRequest registerRequest) throws CustomException {
+        return masterService.getUserService().registerUser(registerRequest);
     }
 
     @PostMapping("/login")
@@ -44,7 +46,10 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
         );
         if (authentication.isAuthenticated()) {
-            return ApiResponse.successResponse(new LoginResponse(jwtService.generateToken(authRequest.getUsername())));
+
+            String token = jwtService.generateToken(authRequest.getUsername());
+            LoginResponse response = new LoginResponse( token);
+            return ApiResponse.successResponse(response);
         } else {
             throw new UsernameNotFoundException("Invalid user request!");
         }

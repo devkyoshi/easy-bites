@@ -14,9 +14,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @Slf4j
 public class GlobalExceptionHandler {
     @ExceptionHandler(CustomException.class)
-    public ApiResponse<?> handleServiceException(CustomException ex) {
+    public ResponseEntity<ApiResponse<?>> handleServiceException(CustomException ex) {
         log.error("ServiceException: {}", ex.getMessage());
-        return ApiResponse.errorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(
+                ApiResponse.errorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST),
+                HttpStatus.BAD_REQUEST
+        );
     }
 
     @ExceptionHandler(AuthenticationException.class)
