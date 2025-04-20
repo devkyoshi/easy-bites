@@ -1,4 +1,4 @@
-package com.ds.restaurantservice.model;
+package com.ds.masterservice.dao;
 
 import jakarta.persistence.*;
 
@@ -7,6 +7,7 @@ public class MenuCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "menu_category_id")
     private Long id;
 
     private String name;

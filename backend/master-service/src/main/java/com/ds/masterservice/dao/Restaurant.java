@@ -1,6 +1,5 @@
-package com.ds.restaurantservice.model;
+package com.ds.masterservice.dao;
 
-import com.ds.masterservice.dao.RestaurantManager;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
