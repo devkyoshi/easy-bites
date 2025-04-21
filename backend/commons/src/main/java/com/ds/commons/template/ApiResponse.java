@@ -23,6 +23,10 @@ public class ApiResponse<T>  {
         return new ApiResponse<>(message, true, result, HttpStatus.OK);
     }
 
+    public static <T> ApiResponse<T> createdSuccessResponse(String message, T result) {
+        return new ApiResponse<>(message, true, result,  HttpStatus.CREATED);
+    }
+
     public static <T> ApiResponse<T> successResponse(T result) {
         return new ApiResponse<>("", true, result, HttpStatus.OK);
     }
