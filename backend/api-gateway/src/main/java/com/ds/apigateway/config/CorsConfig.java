@@ -16,10 +16,10 @@ public class CorsConfig {
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(List.of("*")); // Allow all origins
+        corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173")); // Allow all origins
         corsConfiguration.setAllowedMethods(List.of("*")); // Allow all methods
         corsConfiguration.setAllowedHeaders(List.of("*")); // Allow all headers
-        corsConfiguration.setAllowCredentials(false); // Disable credentials
+        corsConfiguration.setAllowCredentials(true); // Disable credentials
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
