@@ -1,4 +1,5 @@
-package com.ds.restaurantservice.dto;
+package com.ds.masterservice.dto.response;
+
 
 import lombok.Data;
 
@@ -17,5 +18,9 @@ public class RestaurantResponse {
     private String openingHour;
     private String closingHour;
     private List<String> daysOpen;
-//    private List<MenuCategoryResponse> menuCategories;
+    private List<FoodItemInitResponse> foodItems;
+    private List<MenuCategoryInitResponse> menuCategories;
+
+
+
 }

@@ -10,8 +10,11 @@ import com.ds.masterservice.dto.request.RestaurantCreateUpdateRequest;
 import com.ds.masterservice.dto.response.FoodItemResponse;
 import com.ds.masterservice.dto.response.MenuCategoryResponse;
 import com.ds.masterservice.dto.response.RestaurantInitResponse;
+import com.ds.masterservice.dto.response.RestaurantResponse;
 import com.ds.masterservice.service.RoleService;
 import com.ds.masterservice.service.UserService;
+
+import java.util.List;
 
 public interface MasterService {
     UserService getUserService();
@@ -22,11 +25,15 @@ public interface MasterService {
 
     //Restaurant Service Methods
 
-    Restaurant getRestaurant();
+    ApiResponse<RestaurantResponse> getRestaurant(Long restaurantId) throws CustomException;
 
     ApiResponse<RestaurantInitResponse> createRestaurant(RestaurantCreateUpdateRequest request) throws CustomException;
 
     ApiResponse<MenuCategoryResponse> addMenuCategory(Long restaurantId, MenuCategoryCreateRequest request) throws CustomException ;
 
     ApiResponse<FoodItemResponse> addFoodItems(Long restaurantId, FoodItemRequest request) throws CustomException;
+
+    ApiResponse<List<MenuCategoryResponse>> getMenuCategories(Long restaurantId) throws CustomException;
+
+    ApiResponse<List<FoodItemResponse>> getFoodItems(Long restaurantId) throws CustomException;
 }

@@ -11,13 +11,10 @@ import com.ds.masterservice.dao.RestaurantManager;
 import com.ds.masterservice.dto.request.FoodItemRequest;
 import com.ds.masterservice.dto.request.MenuCategoryCreateRequest;
 import com.ds.masterservice.dto.request.RestaurantCreateUpdateRequest;
-import com.ds.masterservice.dto.response.FoodItemResponse;
-import com.ds.masterservice.dto.response.MenuCategoryResponse;
-import com.ds.masterservice.dto.response.RestaurantInitResponse;
+import com.ds.masterservice.dto.response.*;
 import com.ds.masterservice.repository.FoodItemRepository;
 import com.ds.masterservice.repository.MenuCategoryRepository;
 import com.ds.masterservice.repository.RestaurantRepository;
-import jdk.jfr.Category;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,9 +37,52 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Autowired
     private FoodItemRepository foodItemRepository;
 
+
     @Override
-    public Restaurant getRestaurant() {
-        return null;
+    public ApiResponse<RestaurantResponse> getRestaurant(Long restaurantId) throws CustomException {
+
+        try {
+            Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND));
+
+            RestaurantResponse response = new RestaurantResponse();
+
+            response.setRestaurantId(restaurant.getId());
+            response.setName(restaurant.getName());
+            response.setDescription(restaurant.getDescription());
+            response.setAddress(restaurant.getAddress());
+            response.setPhone(restaurant.getPhone());
+            response.setEmail(restaurant.getEmail());
+            response.setLogoUrl(restaurant.getLogoUrl());
+            response.setOpeningHour(restaurant.getOpeningHour());
+            response.setClosingHour(restaurant.getClosingHour());
+            response.setDaysOpen(restaurant.getDaysOpen().stream()
+                    .map(DayOfWeek::name)
+                    .toList());
+            response.setIsOpen(restaurant.getIsOpen());
+
+
+            List<FoodItemInitResponse> foodItemResponses =  restaurant.getMenuCategories().stream()
+                    .flatMap(category -> category.getFoodItems().stream())
+                    .map(FoodItemInitResponse::new)
+                    .toList();
+
+            response.setFoodItems(foodItemResponses);
+
+            List<MenuCategoryInitResponse> menuCategories = restaurant.getMenuCategories().stream()
+                    .map(MenuCategoryInitResponse::new)
+                    .toList();
+
+            response.setMenuCategories(menuCategories);
+            return ApiResponse.successResponse("Restaurant fetched successfully", response);
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("An error occurred while fetching the restaurant: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
+        }
     }
 
     @Override
@@ -189,6 +229,55 @@ public class RestaurantServiceImpl implements RestaurantService {
             }
         }
 
+    }
+
+    @Override
+    public ApiResponse<List<MenuCategoryResponse>> getMenuCategories(Long restaurantId) throws CustomException {
+
+        try {
+            Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND));
+
+          List<MenuCategoryResponse> menuCategories = restaurant.getMenuCategories().stream()
+              .map(MenuCategoryResponse::new)
+              .toList();
+
+            return ApiResponse.successResponse("Menu categories fetched successfully", menuCategories);
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("An error occurred while fetching the menu categories: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
+    @Override
+    public ApiResponse<List<FoodItemResponse>> getFoodItems(Long restaurantId) throws CustomException {
+
+        try {
+            Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND));
+
+
+            List<FoodItem> foodItems = restaurant.getMenuCategories().stream()
+                    .flatMap(category -> category.getFoodItems().stream())
+                    .toList();
+
+            List<FoodItemResponse> foodItemResponses = foodItems.stream()
+                    .map(FoodItemResponse::new)
+                    .toList();
+
+            return ApiResponse.successResponse("Food items fetched successfully", foodItemResponses);
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("An error occurred while fetching the food items: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
+        }
     }
 
     public boolean isRestaurantExists(String name) {

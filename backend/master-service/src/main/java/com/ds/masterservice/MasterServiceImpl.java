@@ -10,11 +10,14 @@ import com.ds.masterservice.dto.request.RestaurantCreateUpdateRequest;
 import com.ds.masterservice.dto.response.FoodItemResponse;
 import com.ds.masterservice.dto.response.MenuCategoryResponse;
 import com.ds.masterservice.dto.response.RestaurantInitResponse;
+import com.ds.masterservice.dto.response.RestaurantResponse;
 import com.ds.masterservice.service.RestaurantService;
 import com.ds.masterservice.service.RoleService;
 import com.ds.masterservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class MasterServiceImpl implements MasterService {
@@ -40,14 +43,15 @@ public class MasterServiceImpl implements MasterService {
         return roleService;
     }
 
-    @Override
-    public Restaurant getRestaurant() {
-        return restaurantService.getRestaurant();
-    }
 
     @Override
     public RestaurantManager getRestaurantManagerByUserId(Integer userId) throws CustomException {
         return userService.getRestaurantManagerByUserId(userId);
+    }
+
+    @Override
+    public ApiResponse<RestaurantResponse> getRestaurant(Long restaurantId) throws CustomException {
+        return restaurantService.getRestaurant(restaurantId);
     }
 
     @Override
@@ -63,5 +67,15 @@ public class MasterServiceImpl implements MasterService {
     @Override
     public ApiResponse<FoodItemResponse> addFoodItems(Long restaurantId, FoodItemRequest request) throws CustomException {
         return restaurantService.addFoodItems(restaurantId, request);
+    }
+
+    @Override
+    public ApiResponse<List<MenuCategoryResponse>> getMenuCategories(Long restaurantId) throws CustomException {
+        return restaurantService.getMenuCategories(restaurantId);
+    }
+
+    @Override
+    public ApiResponse<List<FoodItemResponse>> getFoodItems(Long restaurantId) throws CustomException {
+        return restaurantService.getFoodItems(restaurantId);
     }
 }
