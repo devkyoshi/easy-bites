@@ -18,6 +18,4 @@ public class RegisterResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-
-
 }

@@ -16,6 +16,7 @@ export interface LoginResponse {
         firstName: string
         lastName: string
         accessToken: string
+        role: string
     }
 }
 

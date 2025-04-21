@@ -22,7 +22,7 @@ import { PasswordInput } from "@/components/password-input.tsx"
 
 
 import { LoginRequest } from "@/services/auth-service.ts"
-import {useAuth} from "@/stores/authStore.tsx";
+import {useAuth} from "@/stores/auth-context.tsx";
 
 type UserAuthFormProps = HTMLAttributes<HTMLFormElement>
 

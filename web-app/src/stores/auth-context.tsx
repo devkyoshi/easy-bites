@@ -13,6 +13,7 @@ interface AuthUser {
   email: string
   firstName: string
   lastName: string
+  role: string
 }
 
 interface AuthContextType {
@@ -46,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await loginUser({ username, password })
 
     // loginUser returns { userId, username, email, firstName, lastName, accessToken }
-    const { userId, email, firstName, lastName, accessToken, username: uname } =
+    const { userId, email, firstName, lastName, accessToken, username: uname , role} =
         data
 
     const user: AuthUser = {
@@ -55,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       firstName,
       lastName,
+      role
     }
 
     // set in state

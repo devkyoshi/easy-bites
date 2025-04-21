@@ -17,13 +17,18 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command.tsx'
-import { sidebarData } from './layout/data/sidebar-data.ts'
+
 import { ScrollArea } from './ui/scroll-area.tsx'
+import {useAuth} from "@/stores/auth-context.tsx";
+import {getSidebarData} from "@/components/layout/data/sidebar-data.ts";
 
 export function CommandMenu() {
   const navigate = useNavigate()
   const { setTheme } = useTheme()
   const { open, setOpen } = useSearch()
+
+  const {currentUser} = useAuth();
+
 
   const runCommand = React.useCallback(
     (command: () => unknown) => {
@@ -39,7 +44,7 @@ export function CommandMenu() {
       <CommandList>
         <ScrollArea type='hover' className='h-72 pr-1'>
           <CommandEmpty>No results found.</CommandEmpty>
-          {sidebarData.navGroups.map((group) => (
+          {getSidebarData(currentUser?.role).navGroups.map((group) => (
             <CommandGroup key={group.title} heading={group.title}>
               {group.items.map((navItem, i) => {
                 if (navItem.url)

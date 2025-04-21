@@ -41,6 +41,7 @@ public class AuthController {
         log.info("Attempting to register user with username: {}", registerRequest.getUsername());
         return masterService.getUserService().registerUser(registerRequest);
     }
+
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@RequestBody LoginRequest authRequest) throws CustomException {
 
@@ -56,4 +57,11 @@ public class AuthController {
 
         return response;
     }
+
+
+/*    @PostMapping("/update-customer")
+    public ApiResponse<RegisterResponse> updateCustomer(@RequestBody CustomerUserRequest registerRequest) throws CustomException {
+        log.info("Attempting to update user with username: {}", registerRequest.getUsername());
+        return masterService.getUserService().updateCustomer(registerRequest);
+    }*/
 }

@@ -11,7 +11,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx'
-import {useAuth} from "@/stores/authStore.tsx";
+import {useAuth} from "@/stores/auth-context.tsx";
 
 export function ProfileDropdown() {
 

@@ -8,24 +8,33 @@ import {
 import { NavGroup } from '@/components/layout/nav-group.tsx'
 import { NavUser } from '@/components/layout/nav-user.tsx'
 import { TeamSwitcher } from '@/components/layout/team-switcher.tsx'
-import { sidebarData } from './data/sidebar-data.ts'
+
 import React from "react";
+import {useAuth} from "@/stores/auth-context.tsx";
+import {getSidebarData} from "@/components/layout/data/sidebar-data.ts";
+
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+
+    const { currentUser } = useAuth()
+    const sidebarData = getSidebarData(currentUser?.role)
+
   return (
-    <Sidebar collapsible='icon' variant='floating' {...props}>
-      <SidebarHeader>
-        <TeamSwitcher teams={sidebarData.teams} />
-      </SidebarHeader>
-      <SidebarContent>
-        {sidebarData.navGroups.map((props) => (
-          <NavGroup key={props.title} {...props} />
-        ))}
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser />
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
+
+        <Sidebar collapsible='icon' variant='floating' {...props}>
+          <SidebarHeader>
+            <TeamSwitcher teams={sidebarData.teams} />
+          </SidebarHeader>
+          <SidebarContent>
+            {sidebarData.navGroups.map((props) => (
+              <NavGroup key={props.title} {...props} />
+            ))}
+          </SidebarContent>
+          <SidebarFooter>
+            <NavUser />
+          </SidebarFooter>
+          <SidebarRail />
+        </Sidebar>
+
   )
 }

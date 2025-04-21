@@ -14,4 +14,13 @@ public class RegisterUserRequest {
     private String email;
     private UserType userType;
     private List<String> roles;
+
+    //delivery person specific fields
+    private String vehicleType;
+    private String licenseNumber;
+
+    //restaurant specific fields
+
+
+
 }

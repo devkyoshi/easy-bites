@@ -2,7 +2,7 @@ import axios from "axios"
 
 import { toast } from "sonner"
 import { AxiosError } from "axios"
-import {authRef} from "@/stores/authStore.tsx";
+import {authRef} from "@/stores/auth-context.tsx";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080"
 

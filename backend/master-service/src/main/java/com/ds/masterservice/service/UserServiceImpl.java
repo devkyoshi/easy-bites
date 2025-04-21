@@ -84,6 +84,17 @@ public class UserServiceImpl implements UserService {
             };
 
 
+            switch (user) {
+                case DeliveryPerson deliveryPerson -> {
+                    deliveryPerson.setVehicleType(registerRequest.getVehicleType());
+                    deliveryPerson.setLicenseNumber(registerRequest.getLicenseNumber());
+                }
+                default -> {
+                    // No additional fields to set for other user types
+                }
+            }
+
+
             user.setFirstName(registerRequest.getFirstName());
             user.setLastName(registerRequest.getLastName());
             user.setUsername(registerRequest.getUsername());
@@ -129,6 +140,7 @@ public class UserServiceImpl implements UserService {
                    .firstName( user.getFirstName())
                    .lastName(user.getLastName())
                    .email(user.getEmail())
+                   .role(user.getRoles().stream().map(Role::getName).findFirst().orElse(null))
                    .build();
 
            return ApiResponse.successResponse("Login successful", loginResponse);
