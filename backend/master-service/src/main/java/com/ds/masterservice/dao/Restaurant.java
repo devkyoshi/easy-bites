@@ -1,10 +1,8 @@
 package com.ds.masterservice.dao;
 
+import com.ds.commons.enums.DayOfWeek;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -13,6 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
+@Table(name = "t_restaurant")
 public class Restaurant {
 
     @Id
@@ -41,14 +41,22 @@ public class Restaurant {
     @Column(name = "is_open")
     private Boolean isOpen;
 
-    @Column(name = "opening_hours")
-    private String openingHours;
+    @Column(name = "opening_hour")
+    private String openingHour;
 
-    @Column(name = "menu_categories")
+    @Column(name = "closing_hour")
+    private String closingHour;
+
+    @ElementCollection(targetClass = DayOfWeek.class)
+    @CollectionTable(name = "restaurant_days_open", joinColumns = @JoinColumn(name = "restaurant_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "days_open")
+    private List<DayOfWeek> daysOpen;
+
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<MenuCategory> menuCategories;
 
     @OneToOne
-    @JoinColumn(name = "manager_id", referencedColumnName = "id")
+    @JoinColumn(name = "manager_id")
     private RestaurantManager manager;
 }

@@ -1,8 +1,15 @@
 package com.ds.masterservice.dao;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
 
 @Entity
+@Table(name = "t_menu_category")
+@Getter
+@Setter
 public class MenuCategory {
 
     @Id
@@ -15,4 +22,7 @@ public class MenuCategory {
     @ManyToOne
     @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<FoodItem> foodItems;
 }

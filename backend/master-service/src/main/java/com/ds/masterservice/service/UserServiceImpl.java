@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
             log.info("User {} registered successfully", registerRequest.getUsername());
 
             // Return the response
-            return ApiResponse.successResponse(getRegisterResponse(user));
+            return ApiResponse.createdSuccessResponse("User Registered Successfully", getRegisterResponse(user));
         } catch (Exception e) {
             if (e instanceof CustomException) {
                 throw (CustomException) e;
@@ -140,6 +140,28 @@ public class UserServiceImpl implements UserService {
                 throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
               }
        }
+    }
+
+    @Override
+    public RestaurantManager getRestaurantManagerByUserId(Integer userId) throws CustomException {
+
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
+            if (!(user instanceof RestaurantManager)) {
+                throw new CustomException(ExceptionCode.USER_NOT_FOUND);
+            }
+
+            return (RestaurantManager) user;
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("An error occurred while fetching the restaurant manager: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
+        }
     }
 
     private User getUserByUsername(String username) throws CustomException {
