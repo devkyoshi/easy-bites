@@ -16,6 +16,8 @@ public class GatewayConfig {
                         .uri("http://localhost:8082/"))*/
                 .route("restaurant-service", r -> r.path("/api/restaurant/**")
                         .uri("http://localhost:8082/"))
+                .route("delivery-service", r -> r.path("/api/delivery/**")
+                        .uri("http://localhost:8084/"))
                 .build();
     }
 }
