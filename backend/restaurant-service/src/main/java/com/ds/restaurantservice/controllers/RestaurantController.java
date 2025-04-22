@@ -64,5 +64,11 @@ public class RestaurantController {
         return masterService.getRestaurant(restaurantId);
     }
 
+    @GetMapping("/all")
+    public ApiResponse<List<RestaurantInitResponse>> getAllRestaurants() throws CustomException {
+        log.info("Attempting to get all restaurants");
+        return masterService.getAllRestaurants();
+    }
+
 
 }

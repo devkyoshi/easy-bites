@@ -11,7 +11,7 @@ import { Header } from '@/components/layout/header.tsx'
 import { Main } from '@/components/layout/main.tsx'
 import { TopNav } from '@/components/layout/top-nav.tsx'
 import { ProfileDropdown } from '@/components/profile-dropdown.tsx'
-import { Search } from '@/components/search.tsx'
+
 import { ThemeSwitch } from '@/components/theme-switch.tsx'
 import { Overview } from './components/overview.tsx'
 import { RecentSales } from './components/recent-sales.tsx'
@@ -23,7 +23,6 @@ export default function Dashboard() {
       <Header>
         <TopNav links={topNav} />
         <div className='ml-auto flex items-center space-x-4'>
-          <Search />
           <ThemeSwitch />
           <ProfileDropdown />
         </div>

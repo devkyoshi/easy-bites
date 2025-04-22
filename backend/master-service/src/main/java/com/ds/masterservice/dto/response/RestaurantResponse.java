@@ -21,6 +21,8 @@ public class RestaurantResponse {
     private List<FoodItemInitResponse> foodItems;
     private List<MenuCategoryInitResponse> menuCategories;
 
-
-
 }
+
+
+
+

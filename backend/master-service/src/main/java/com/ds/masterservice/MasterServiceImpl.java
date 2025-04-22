@@ -78,4 +78,9 @@ public class MasterServiceImpl implements MasterService {
     public ApiResponse<List<FoodItemResponse>> getFoodItems(Long restaurantId) throws CustomException {
         return restaurantService.getFoodItems(restaurantId);
     }
+
+    @Override
+    public ApiResponse<List<RestaurantInitResponse>> getAllRestaurants() throws CustomException {
+        return restaurantService.getAllRestaurants();
+    }
 }

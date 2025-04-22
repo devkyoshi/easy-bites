@@ -280,6 +280,22 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
+    @Override
+    public ApiResponse<List<RestaurantInitResponse>> getAllRestaurants() throws CustomException {
+        try {
+            List<Restaurant> restaurants = restaurantRepository.findAll();
+
+            List<RestaurantInitResponse> restaurantResponses = restaurants.stream()
+                    .map(RestaurantInitResponse::new)
+                    .toList();
+
+            return ApiResponse.successResponse("Restaurants fetched successfully", restaurantResponses);
+        } catch (Exception e) {
+            log.error("An error occurred while fetching all restaurants: {}", e.getMessage());
+            throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     public boolean isRestaurantExists(String name) {
         return restaurantRepository.existsByName(name);
     }

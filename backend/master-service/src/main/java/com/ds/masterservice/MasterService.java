@@ -36,4 +36,6 @@ public interface MasterService {
     ApiResponse<List<MenuCategoryResponse>> getMenuCategories(Long restaurantId) throws CustomException;
 
     ApiResponse<List<FoodItemResponse>> getFoodItems(Long restaurantId) throws CustomException;
+
+    ApiResponse<List<RestaurantInitResponse>> getAllRestaurants() throws CustomException;
 }
