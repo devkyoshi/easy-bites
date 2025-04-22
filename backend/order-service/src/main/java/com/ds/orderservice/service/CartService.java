@@ -37,6 +37,7 @@ public class CartService {
             Cart cart = new Cart();
             cart.setUserId(request.getUserId());
             cart.setRestaurantId(request.getRestaurantId());
+            cart.setRestaurantName(request.getRestaurantName());
             cart.setStatus(CartStatus.ACTIVE);
 
             List<CartItem> items = createCartItems(request.getItems());
@@ -65,6 +66,7 @@ public class CartService {
                 // Add new item
                 CartItem newItem = new CartItem();
                 newItem.setItemId(itemRequest.getItemId());
+                newItem.setItemName(itemRequest.getItemName());
                 newItem.setQuantity(itemRequest.getQuantity());
                 newItem.setUnitPrice(itemRequest.getUnitPrice());
                 newItem.setTotalPrice(itemRequest.getQuantity() * itemRequest.getUnitPrice());
@@ -78,6 +80,7 @@ public class CartService {
                 .map(item -> {
                     CartItem cartItem = new CartItem();
                     cartItem.setItemId(item.getItemId());
+                    cartItem.setItemName(item.getItemName());
                     cartItem.setQuantity(item.getQuantity());
                     cartItem.setUnitPrice(item.getUnitPrice());
                     cartItem.setTotalPrice(item.getUnitPrice() * item.getQuantity());
@@ -85,6 +88,7 @@ public class CartService {
                 })
                 .collect(Collectors.toList());
     }
+
     @Transactional
     public CartResponse createCart(CreateCartRequest request) {
         // Check if user already has an active cart for this restaurant
@@ -308,6 +312,7 @@ public class CartService {
         response.setId(cart.getId());
         response.setUserId(cart.getUserId());
         response.setRestaurantId(cart.getRestaurantId());
+        response.setRestaurantName(cart.getRestaurantName());
         response.setTotalAmount(cart.getTotalAmount());
         response.setStatus(cart.getStatus().toString());
 
@@ -315,6 +320,7 @@ public class CartService {
                 .map(item -> {
                     CartItemResponse itemResponse = new CartItemResponse();
                     itemResponse.setItemId(item.getItemId());
+                    itemResponse.setItemName(item.getItemName());
                     itemResponse.setQuantity(item.getQuantity());
                     itemResponse.setUnitPrice(item.getUnitPrice());
                     itemResponse.setTotalPrice(item.getTotalPrice());

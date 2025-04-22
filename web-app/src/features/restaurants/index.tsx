@@ -7,6 +7,7 @@ import {RestaurantProvider} from "@/features/restaurants/context/restaurant-cont
 import {RestaurantPageContent} from "@/features/restaurants/components/restaurant-page-content.tsx";
 
 
+
 export default function RestaurantTab() {
     return(
         <>     {/* ===== Top Heading ===== */}
@@ -27,7 +28,9 @@ export default function RestaurantTab() {
 
             {/* ===== Content ===== */}
             <RestaurantProvider>
-                <RestaurantPageContent/>
+                    <RestaurantPageContent/>
+
+
             </RestaurantProvider>
 
         </>

@@ -9,6 +9,7 @@ import lombok.Setter;
 @Setter
 public class CartItemResponse {
     private Long itemId;
+    private String itemName;
     private Integer quantity;
     private Double unitPrice;
     private Double totalPrice;
