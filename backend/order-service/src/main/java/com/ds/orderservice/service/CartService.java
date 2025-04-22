@@ -67,6 +67,7 @@ public class CartService {
                 CartItem newItem = new CartItem();
                 newItem.setItemId(itemRequest.getItemId());
                 newItem.setItemName(itemRequest.getItemName());
+                newItem.setItemImage(itemRequest.getItemImage());
                 newItem.setQuantity(itemRequest.getQuantity());
                 newItem.setUnitPrice(itemRequest.getUnitPrice());
                 newItem.setTotalPrice(itemRequest.getQuantity() * itemRequest.getUnitPrice());
@@ -81,6 +82,7 @@ public class CartService {
                     CartItem cartItem = new CartItem();
                     cartItem.setItemId(item.getItemId());
                     cartItem.setItemName(item.getItemName());
+                    cartItem.setItemImage(item.getItemImage());
                     cartItem.setQuantity(item.getQuantity());
                     cartItem.setUnitPrice(item.getUnitPrice());
                     cartItem.setTotalPrice(item.getUnitPrice() * item.getQuantity());
@@ -227,6 +229,8 @@ public class CartService {
             CartItem newItem = new CartItem();
             newItem.setItemId(request.getItemId());
             newItem.setQuantity(request.getQuantity());
+            newItem.setItemName(request.getItemName());
+            newItem.setItemImage(request.getItemImage());
             newItem.setUnitPrice(request.getUnitPrice());
             newItem.setTotalPrice(request.getQuantity() * request.getUnitPrice());
             cart.getItems().add(newItem);
@@ -321,6 +325,7 @@ public class CartService {
                     CartItemResponse itemResponse = new CartItemResponse();
                     itemResponse.setItemId(item.getItemId());
                     itemResponse.setItemName(item.getItemName());
+                    itemResponse.setItemImage(item.getItemImage());
                     itemResponse.setQuantity(item.getQuantity());
                     itemResponse.setUnitPrice(item.getUnitPrice());
                     itemResponse.setTotalPrice(item.getTotalPrice());

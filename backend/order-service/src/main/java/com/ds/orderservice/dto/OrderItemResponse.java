@@ -10,6 +10,7 @@ import lombok.Setter;
 public class OrderItemResponse {
     private Long itemId;
     private String itemName;
+    private String itemImage;
     private int quantity;
     private double unitPrice;
     private double totalPrice;

@@ -10,6 +10,7 @@ import lombok.Setter;
 public class CartItemRequest {
     private Long itemId;
     private String itemName;
+    private String itemImage;
     private Integer quantity;
     private Double unitPrice;
 }
