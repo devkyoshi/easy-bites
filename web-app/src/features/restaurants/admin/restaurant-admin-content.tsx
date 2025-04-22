@@ -3,6 +3,7 @@ import {Main} from "@/components/layout/main.tsx";
 import {restaurantColumns} from "@/features/restaurants/admin/components/columns.tsx";
 import { useRestaurant } from "@/features/restaurants/context/restaurant-context.tsx";
 import {RestaurantDataTable} from "@/features/restaurants/admin/components/data-table/data-table.tsx";
+import {RestaurantPrimaryButtons} from "@/features/restaurants/admin/components/data-table/restaurant-primary-buttons.tsx";
 
 export const RestaurantAdminContent =  () => {
 
@@ -18,7 +19,7 @@ export const RestaurantAdminContent =  () => {
                             Here&apos;s a list of your restaurants!
                         </p>
                     </div>
-                    {/*  <TasksPrimaryButtons />*/}
+                      <RestaurantPrimaryButtons />
                 </div>
                 <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
                     <RestaurantDataTable data={restaurants} columns={restaurantColumns} />

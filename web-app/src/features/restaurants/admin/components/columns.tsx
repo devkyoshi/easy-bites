@@ -1,9 +1,24 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { Checkbox } from '@/components/ui/checkbox.tsx'
 import {DataTableColumnHeader} from "@/features/tasks/components/data-table-column-header.tsx";
-import {statuses} from "@/features/tasks/data/data.tsx";
-import {IRestaurant} from "@/features/restaurants/context/restaurant-context.tsx";
 
+import {IRestaurant} from "@/features/restaurants/context/restaurant-context.tsx";
+import {IconCircle, IconExclamationCircle} from "@tabler/icons-react";
+import { RestaurantTableRowActions} from "@/features/restaurants/admin/components/data-table/data-table-row-actions.tsx";
+
+
+const statuses = [
+    {
+        value: true,
+        label: 'Open',
+        icon: IconCircle,
+    },
+    {
+        value: false,
+        label: 'Closed',
+        icon: IconExclamationCircle ,
+    }
+]
 
 export const restaurantColumns: ColumnDef<IRestaurant>[] = [
   {
@@ -30,7 +45,7 @@ export const restaurantColumns: ColumnDef<IRestaurant>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-  {
+/*  {
     accessorKey: 'restaurantId',
     header: ({ column }) => (
         <DataTableColumnHeader column={column} title='Restaurant ID' />
@@ -38,7 +53,7 @@ export const restaurantColumns: ColumnDef<IRestaurant>[] = [
     cell: ({ row }) => <div className='w-[80px]'>{row.getValue('restaurantId')}</div>,
     enableSorting: false,
     enableHiding: false,
-  },
+  },*/
   {
     accessorKey: 'name',
     header: ({ column }) => (
@@ -53,7 +68,7 @@ export const restaurantColumns: ColumnDef<IRestaurant>[] = [
   {
     accessorKey: 'isOpen',
     header: ({ column }) => (
-        <DataTableColumnHeader column={column} title='Status' />
+        <DataTableColumnHeader column={column} title='Open/Close' />
     ),
     cell: ({ row }) => {
       const status = statuses.find(
@@ -86,8 +101,8 @@ export const restaurantColumns: ColumnDef<IRestaurant>[] = [
         </div>
     ),
   },
-  /* {
+   {
     id: 'actions',
-    cell: ({ row }) => <DataTableRowActions row={row} />,
-  },*/
+    cell: ({ row }) => <RestaurantTableRowActions row={row} />,
+  },
 ]

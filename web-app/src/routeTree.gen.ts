@@ -36,7 +36,9 @@ import { Route as AuthenticatedSettingsDisplayImport } from './routes/_authentic
 import { Route as AuthenticatedSettingsAppearanceImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedRestaurantsRestaurantManagementImport } from './routes/_authenticated/restaurants/restaurant-management'
+import { Route as AuthenticatedRestaurantsRestaurantFoodManagementImport } from './routes/_authenticated/restaurants/restaurant-food-management'
 import { Route as AuthenticatedRestaurantsRestaurantDetailsImport } from './routes/_authenticated/restaurants/restaurant-details'
+import { Route as AuthenticatedRestaurantsRestaurantCategoryManagementImport } from './routes/_authenticated/restaurants/restaurant-category-management'
 
 // Create/Update Routes
 
@@ -200,10 +202,24 @@ const AuthenticatedRestaurantsRestaurantManagementRoute =
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
+const AuthenticatedRestaurantsRestaurantFoodManagementRoute =
+  AuthenticatedRestaurantsRestaurantFoodManagementImport.update({
+    id: '/restaurants/restaurant-food-management',
+    path: '/restaurants/restaurant-food-management',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+
 const AuthenticatedRestaurantsRestaurantDetailsRoute =
   AuthenticatedRestaurantsRestaurantDetailsImport.update({
     id: '/restaurants/restaurant-details',
     path: '/restaurants/restaurant-details',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+
+const AuthenticatedRestaurantsRestaurantCategoryManagementRoute =
+  AuthenticatedRestaurantsRestaurantCategoryManagementImport.update({
+    id: '/restaurants/restaurant-category-management',
+    path: '/restaurants/restaurant-category-management',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -302,11 +318,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexImport
       parentRoute: typeof AuthenticatedRouteImport
     }
+    '/_authenticated/restaurants/restaurant-category-management': {
+      id: '/_authenticated/restaurants/restaurant-category-management'
+      path: '/restaurants/restaurant-category-management'
+      fullPath: '/restaurants/restaurant-category-management'
+      preLoaderRoute: typeof AuthenticatedRestaurantsRestaurantCategoryManagementImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
     '/_authenticated/restaurants/restaurant-details': {
       id: '/_authenticated/restaurants/restaurant-details'
       path: '/restaurants/restaurant-details'
       fullPath: '/restaurants/restaurant-details'
       preLoaderRoute: typeof AuthenticatedRestaurantsRestaurantDetailsImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/restaurants/restaurant-food-management': {
+      id: '/_authenticated/restaurants/restaurant-food-management'
+      path: '/restaurants/restaurant-food-management'
+      fullPath: '/restaurants/restaurant-food-management'
+      preLoaderRoute: typeof AuthenticatedRestaurantsRestaurantFoodManagementImport
       parentRoute: typeof AuthenticatedRouteImport
     }
     '/_authenticated/restaurants/restaurant-management': {
@@ -424,7 +454,9 @@ const AuthenticatedSettingsRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedRestaurantsRestaurantCategoryManagementRoute: typeof AuthenticatedRestaurantsRestaurantCategoryManagementRoute
   AuthenticatedRestaurantsRestaurantDetailsRoute: typeof AuthenticatedRestaurantsRestaurantDetailsRoute
+  AuthenticatedRestaurantsRestaurantFoodManagementRoute: typeof AuthenticatedRestaurantsRestaurantFoodManagementRoute
   AuthenticatedRestaurantsRestaurantManagementRoute: typeof AuthenticatedRestaurantsRestaurantManagementRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
@@ -437,8 +469,12 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedRestaurantsRestaurantCategoryManagementRoute:
+    AuthenticatedRestaurantsRestaurantCategoryManagementRoute,
   AuthenticatedRestaurantsRestaurantDetailsRoute:
     AuthenticatedRestaurantsRestaurantDetailsRoute,
+  AuthenticatedRestaurantsRestaurantFoodManagementRoute:
+    AuthenticatedRestaurantsRestaurantFoodManagementRoute,
   AuthenticatedRestaurantsRestaurantManagementRoute:
     AuthenticatedRestaurantsRestaurantManagementRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
@@ -466,7 +502,9 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/restaurants/restaurant-category-management': typeof AuthenticatedRestaurantsRestaurantCategoryManagementRoute
   '/restaurants/restaurant-details': typeof AuthenticatedRestaurantsRestaurantDetailsRoute
+  '/restaurants/restaurant-food-management': typeof AuthenticatedRestaurantsRestaurantFoodManagementRoute
   '/restaurants/restaurant-management': typeof AuthenticatedRestaurantsRestaurantManagementRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -493,7 +531,9 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/restaurants/restaurant-category-management': typeof AuthenticatedRestaurantsRestaurantCategoryManagementRoute
   '/restaurants/restaurant-details': typeof AuthenticatedRestaurantsRestaurantDetailsRoute
+  '/restaurants/restaurant-food-management': typeof AuthenticatedRestaurantsRestaurantFoodManagementRoute
   '/restaurants/restaurant-management': typeof AuthenticatedRestaurantsRestaurantManagementRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -523,7 +563,9 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/restaurants/restaurant-category-management': typeof AuthenticatedRestaurantsRestaurantCategoryManagementRoute
   '/_authenticated/restaurants/restaurant-details': typeof AuthenticatedRestaurantsRestaurantDetailsRoute
+  '/_authenticated/restaurants/restaurant-food-management': typeof AuthenticatedRestaurantsRestaurantFoodManagementRoute
   '/_authenticated/restaurants/restaurant-management': typeof AuthenticatedRestaurantsRestaurantManagementRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -554,7 +596,9 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/restaurants/restaurant-category-management'
     | '/restaurants/restaurant-details'
+    | '/restaurants/restaurant-food-management'
     | '/restaurants/restaurant-management'
     | '/settings/account'
     | '/settings/appearance'
@@ -580,7 +624,9 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/restaurants/restaurant-category-management'
     | '/restaurants/restaurant-details'
+    | '/restaurants/restaurant-food-management'
     | '/restaurants/restaurant-management'
     | '/settings/account'
     | '/settings/appearance'
@@ -608,7 +654,9 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/'
+    | '/_authenticated/restaurants/restaurant-category-management'
     | '/_authenticated/restaurants/restaurant-details'
+    | '/_authenticated/restaurants/restaurant-food-management'
     | '/_authenticated/restaurants/restaurant-management'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
@@ -680,7 +728,9 @@ export const routeTree = rootRoute
       "children": [
         "/_authenticated/settings",
         "/_authenticated/",
+        "/_authenticated/restaurants/restaurant-category-management",
         "/_authenticated/restaurants/restaurant-details",
+        "/_authenticated/restaurants/restaurant-food-management",
         "/_authenticated/restaurants/restaurant-management",
         "/_authenticated/apps/",
         "/_authenticated/chats/",
@@ -735,8 +785,16 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/index.tsx",
       "parent": "/_authenticated"
     },
+    "/_authenticated/restaurants/restaurant-category-management": {
+      "filePath": "_authenticated/restaurants/restaurant-category-management.tsx",
+      "parent": "/_authenticated"
+    },
     "/_authenticated/restaurants/restaurant-details": {
       "filePath": "_authenticated/restaurants/restaurant-details.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/restaurants/restaurant-food-management": {
+      "filePath": "_authenticated/restaurants/restaurant-food-management.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/restaurants/restaurant-management": {

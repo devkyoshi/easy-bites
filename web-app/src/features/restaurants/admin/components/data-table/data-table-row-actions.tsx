@@ -1,34 +1,42 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { Row } from '@tanstack/react-table'
-import { IconTrash } from '@tabler/icons-react'
+import {IconBurger, IconCategory, IconTrash} from '@tabler/icons-react'
 import { Button } from '@/components/ui/button.tsx'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
+
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx'
-import { useTasks } from '../context/tasks-context.tsx'
-import { labels } from '../data/data.tsx'
-import { taskSchema } from '../data/schema.ts'
+
+import {IRestaurant, useRestaurant} from "@/features/restaurants/context/restaurant-context.tsx";
+import {useFoodItems} from "@/features/restaurants/context/fooditem-context.tsx";
+import {router} from "@/lib/router.ts";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
 }
 
-export function DataTableRowActions<TData>({
+export function RestaurantTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const task = taskSchema.parse(row.original)
+  const selectedRestaurant = (row.original) as IRestaurant
 
-  const { setOpen, setCurrentRow } = useTasks()
+  const { setOpen, setCurrentRow } = useRestaurant()
+  const {setSelectedRestaurantId} = useFoodItems()
+
+  const handleNavigateToCategoriesTab = () => {
+    setSelectedRestaurantId(selectedRestaurant.restaurantId as unknown as number)
+    router.navigate( { to: `/restaurants/restaurant-category-management` })
+  }
+
+    const handleNavigateToFoodItemsTab = () => {
+      setSelectedRestaurantId(selectedRestaurant.restaurantId as unknown as number)
+        router.navigate( { to: `/restaurants/restaurant-food-management` })
+    }
 
   return (
     <DropdownMenu modal={false}>
@@ -44,31 +52,28 @@ export function DataTableRowActions<TData>({
       <DropdownMenuContent align='end' className='w-[160px]'>
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(task)
+            setCurrentRow(selectedRestaurant)
             setOpen('update')
           }}
         >
           Edit
         </DropdownMenuItem>
-        <DropdownMenuItem disabled>Make a copy</DropdownMenuItem>
-        <DropdownMenuItem disabled>Favorite</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>Labels</DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            <DropdownMenuRadioGroup value={task.label}>
-              {labels.map((label) => (
-                <DropdownMenuRadioItem key={label.value} value={label.value}>
-                  {label.label}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
+        <DropdownMenuItem onClick={handleNavigateToCategoriesTab}>Categories
+
+          <DropdownMenuShortcut>
+            <IconCategory size={16} />
+          </DropdownMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleNavigateToFoodItemsTab}>Food Items
+
+          <DropdownMenuShortcut>
+            <IconBurger size={16} />
+          </DropdownMenuShortcut>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(task)
+            setCurrentRow(selectedRestaurant)
             setOpen('delete')
           }}
         >

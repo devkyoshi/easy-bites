@@ -1,33 +1,28 @@
-import {RestaurantProvider} from "@/features/restaurants/context/restaurant-context.tsx";
 import {Header} from "@/components/layout/header.tsx";
 import {TopNav} from "@/components/layout/top-nav.tsx";
 import {ThemeSwitch} from "@/components/theme-switch.tsx";
 import {ProfileDropdown} from "@/components/profile-dropdown.tsx";
-import {RestaurantAdminContent} from "@/features/restaurants/admin/restaurant-admin-content.tsx";
+
 import {FoodItemProvider} from "@/features/restaurants/context/fooditem-context.tsx";
+import {MenuCategoryContent} from "@/features/restaurants/admin/restaurant-category-content.tsx";
 
+export const CategoryTab = () => {
+   return (
+       <>
+           <Header>
+               <TopNav links={topNav} />
+               <div className='ml-auto flex items-center space-x-4'>
+                   <ThemeSwitch />
+                   <ProfileDropdown />
+               </div>
+           </Header>
 
-export default function RestaurantAdminTab () {
-    return (
-    <>
-        <Header>
-            <TopNav links={topNav} />
-            <div className='ml-auto flex items-center space-x-4'>
-                <ThemeSwitch />
-                <ProfileDropdown />
-            </div>
-        </Header>
-
-        <RestaurantProvider>
-            <FoodItemProvider>
-                <RestaurantAdminContent/>
-            </FoodItemProvider>
-        </RestaurantProvider>
-    </>
-    );
+           <FoodItemProvider>
+               <MenuCategoryContent/>
+           </FoodItemProvider>
+       </>
+   )
 }
-
-
 
 const topNav = [
     {
