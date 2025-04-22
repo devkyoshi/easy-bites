@@ -27,8 +27,6 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setLoading(true);
         try {
             const response = await api.get('/api/restaurants/all');
-
-
             setRestaurants(response.data.result);
         } catch (err: any) {
             setError('Failed to fetch restaurants');

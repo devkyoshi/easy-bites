@@ -55,6 +55,18 @@ export const getSidebarData = (userRole?: string): SidebarData => ({
             icon: IconBuildingStore,
           } as NavItem] : []),
 
+        //Restaurant Admin specific items
+        ...(userRole === USER_TYPES.ROLE_RESTAURANT_MANAGER ? [{
+          title: 'Dashboard',
+          url: '/',
+          icon: IconLayoutDashboard,
+        },
+          {
+            title: 'Restaurant Management',
+            url: '/restaurants/restaurant-management',
+            icon: IconBuildingStore,
+          } as NavItem] : []),
+
         // System Admin specific items
         ...(userRole === USER_TYPES.ROLE_SYSTEM_ADMIN ? [
           {
@@ -121,6 +133,14 @@ export const getSidebarData = (userRole?: string): SidebarData => ({
           url: '/help-center',
           icon: IconHelp,
         },
+        {
+          title: 'Feedback',
+          url: '/tasks',
+          icon: IconHelp,
+        },
+
+
+
       ],
     },
   ],

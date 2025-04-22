@@ -16,12 +16,12 @@ export const RestaurantPageContent = () => {
 
     const navigate = useNavigate();
 
-    const handleNavigateToDetailPage = (restaurant : IRestaurant) => {
-        navigate({
-            to: '/restaurants/restaurant-details',
-            state: { restaurantId: restaurant.restaurantId }, //Ignore this error
-        }).then()
-    }
+      const handleNavigateToDetailPage = (restaurant: IRestaurant) => {
+          navigate({
+              to: '/restaurants/restaurant-details',
+              state: { restaurantId: restaurant.restaurantId } as never,
+          }).then();
+      };
 
     if (loading) {
         return (
