@@ -53,6 +53,11 @@ export const getSidebarData = (userRole?: string): SidebarData => ({
             title: 'Restaurants',
             url: '/restaurants',
             icon: IconBuildingStore,
+          }
+          ,{
+            title: 'My Orders',
+            url: '/orders',
+            icon: IconPackages,
           } as NavItem] : []),
 
         // System Admin specific items

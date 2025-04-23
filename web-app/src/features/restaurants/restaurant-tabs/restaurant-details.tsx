@@ -177,6 +177,7 @@ const FoodItemCard = ({ item }: { item: IFoodItem }) => {
             await addItem({
                 itemId: item.foodItemId,
                 itemName: item.name,
+                itemImage: item.imageUrl,
                 quantity: 1,
                 unitPrice: item.price,
                 restaurantId: restaurantDetails.restaurantId.toString(),

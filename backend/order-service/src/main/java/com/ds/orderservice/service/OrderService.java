@@ -47,6 +47,7 @@ public class OrderService {
         Order order = new Order();
         order.setUserId(cart.getUserId());
         order.setRestaurantId(cart.getRestaurantId());
+        order.setRestaurantName(cart.getRestaurantName());
         order.setDeliveryAddress(request.getDeliveryAddress());
         order.setTotalAmount(cart.getTotalAmount());
 
@@ -58,9 +59,12 @@ public class OrderService {
                 .map(cartItem -> {
                     OrderItem orderItem = new OrderItem();
                     orderItem.setItemId(cartItem.getItemId());
+                    orderItem.setItemName(cartItem.getItemName());
+                    orderItem.setItemImage(cartItem.getItemImage());
                     orderItem.setQuantity(cartItem.getQuantity());
                     orderItem.setUnitPrice(cartItem.getUnitPrice());
                     orderItem.setTotalPrice(cartItem.getTotalPrice());
+
 
                     logger.debug("Adding order item: itemId={}, quantity={}, unitPrice={}, totalPrice={}",
                             cartItem.getItemId(), cartItem.getQuantity(), cartItem.getUnitPrice(), cartItem.getTotalPrice());
@@ -142,6 +146,7 @@ public class OrderService {
         response.setOrderId(order.getId());
         response.setUserId(order.getUserId());
         response.setRestaurantId(order.getRestaurantId());
+        response.setRestaurantName(order.getRestaurantName());
         response.setTotalAmount(order.getTotalAmount());
         response.setPaymentStatus(order.getPaymentStatus().toString());
         response.setCreatedAt(order.getCreatedAt());
@@ -154,6 +159,8 @@ public class OrderService {
                 .map(item -> {
                     OrderItemResponse itemResponse = new OrderItemResponse();
                     itemResponse.setItemId(item.getItemId());
+                    itemResponse.setItemName(item.getItemName());
+                    itemResponse.setItemImage(item.getItemImage());
                     itemResponse.setQuantity(item.getQuantity());
                     itemResponse.setUnitPrice(item.getUnitPrice());
                     itemResponse.setTotalPrice(item.getTotalPrice());
@@ -169,6 +176,7 @@ public class OrderService {
         response.setId(order.getId());
         response.setUserId(order.getUserId());
         response.setRestaurantId(order.getRestaurantId());
+        response.setRestaurantName(order.getRestaurantName());
         response.setTotalAmount(order.getTotalAmount());
         response.setStatus(order.getStatus().toString());
         response.setPaymentStatus(order.getPaymentStatus().toString());
@@ -180,6 +188,8 @@ public class OrderService {
                 .map(item -> {
                     OrderItemResponse itemResponse = new OrderItemResponse();
                     itemResponse.setItemId(item.getItemId());
+                    itemResponse.setItemName(item.getItemName());
+                    itemResponse.setItemImage(item.getItemImage());
                     itemResponse.setQuantity(item.getQuantity());
                     itemResponse.setUnitPrice(item.getUnitPrice());
                     itemResponse.setTotalPrice(item.getTotalPrice());

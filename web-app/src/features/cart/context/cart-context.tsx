@@ -4,6 +4,8 @@ import { api } from "@/config/axios";
 import { useAuth } from "@/stores/auth-context.tsx";
 
 interface ICartItem {
+    itemImage?: string;
+    name: string | undefined;
     itemId: number;
     itemName: string;
     quantity: number;
@@ -26,7 +28,15 @@ interface ICart {
 interface CartContextType {
     cart: ICart | null;
     loading: boolean;
-    addItem: (item: AddItemRequest) => Promise<void>;
+    addItem: (item: {
+        itemId: number;
+        itemName: string;
+        itemImage: string | undefined;
+        quantity: number;
+        unitPrice: number;
+        restaurantId: string;
+        restaurantName: string
+    }) => Promise<void>;
     updateItem: (item: UpdateItemRequest) => Promise<void>;
     removeItem: (itemId: number) => Promise<void>;
     decrementItem: (itemId: number) => Promise<void>;
@@ -40,6 +50,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 interface AddItemRequest {
     itemId: number;
     itemName: string;
+    itemImage?: string;
     quantity: number;
     unitPrice: number;
     restaurantId: string;
@@ -83,6 +94,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     items: [{
                         itemId: item.itemId,
                         itemName: item.itemName,
+                        itemImage: item.itemImage,
                         quantity: item.quantity,
                         unitPrice: item.unitPrice
                     }]
@@ -99,7 +111,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!cart) return;
 
         try {
-            const res = await api.put(`/api/order/${cart.cartId}/items`, {
+            const res = await api.put(`/api/order/${cart.id}/items`, {
                 itemId: item.itemId,
                 quantity: item.quantity
             });
@@ -114,7 +126,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!cart) return;
 
         try {
-            const res = await api.delete(`/api/order/${cart.cartId}/items`, {
+            const res = await api.delete(`/api/order/${cart.id}/items`, {
                 data: { itemId }
             });
             setCart(res.data);
@@ -128,7 +140,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!cart) return;
 
         try {
-            const res = await api.delete(`/api/order/${cart.cartId}/items/decrement`, {
+            const res = await api.delete(`/api/order/${cart.id}/items/decrement`, {
                 data: { itemId }
             });
             setCart(res.data);
@@ -154,7 +166,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!cart) return;
 
         try {
-            const res = await api.post(`/api/order/${cart.cartId}/checkout`);
+            const res = await api.post(`/api/order/${cart.id}/checkout`);
             setCart(res.data);
         } catch (error) {
             console.error("Failed to checkout:", error);

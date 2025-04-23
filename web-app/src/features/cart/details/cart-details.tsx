@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Minus, Plus, Trash2, ShoppingCart } from "lucide-react";
 import {toast} from "sonner";
+import {useNavigate} from "@tanstack/react-router";
+import {api} from "@/config/axios.ts";
+import {useState} from "react";
 
 export default function CartDetails() {
     const {
@@ -18,6 +21,8 @@ export default function CartDetails() {
         clearCart,
         checkout
     } = useCart();
+    const navigate = useNavigate();
+    const [deliveryAddress, setDeliveryAddress] = useState("");
 
     if (loading) {
         return (
@@ -41,7 +46,17 @@ export default function CartDetails() {
     const handleCheckout = async () => {
         try {
             await checkout();
+            const response = await api.post("/api/order/order", {
+                cartId: cart.id,
+                deliveryAddress
+            });
+            console.log(response);
+
             toast("Order placed successfully!");
+            navigate({
+                to: "/orders",
+
+            });
         } catch (error) {
             toast(
                  "Checkout failed",
@@ -49,6 +64,7 @@ export default function CartDetails() {
             );
         }
     };
+
 
     return (
         <div className="container mx-auto py-8 space-y-6 max-w-3xl">
@@ -69,7 +85,12 @@ export default function CartDetails() {
                     <Card key={item.itemId} className="p-4">
                         <div className="flex justify-between items-start">
                             <div className="space-y-2">
-                                <h3 className="font-medium">{item.itemName}</h3>
+                                <img
+                                    src={item.itemImage}
+                                    alt={item.name}
+                                    className="w-24 h-24 rounded-md object-cover"
+                                />
+
                                 <p className="text-sm text-muted-foreground">
                                     ${item.unitPrice.toFixed(2)} each
                                 </p>
@@ -105,6 +126,7 @@ export default function CartDetails() {
                                         onClick={() => addItem({
                                             itemId: item.itemId,
                                             itemName: item.itemName,
+                                            itemImage: item.imageUrl,
                                             quantity: 1,
                                             unitPrice: item.unitPrice,
                                             restaurantId: cart.restaurantId,
@@ -149,11 +171,17 @@ export default function CartDetails() {
                     <span>${(cart.totalAmount + 2.99).toFixed(2)}</span>
                 </div>
             </Card>
-
+            <Input
+                placeholder="Enter delivery address"
+                value={deliveryAddress}
+                onChange={(e) => setDeliveryAddress(e.target.value)}
+                className="w-full"
+            />
             <Button
                 className="w-full"
                 size="lg"
                 onClick={handleCheckout}
+                disabled={!deliveryAddress.trim()}
             >
                 Proceed to Checkout
             </Button>
