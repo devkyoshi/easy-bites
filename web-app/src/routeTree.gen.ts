@@ -38,6 +38,7 @@ import { Route as AuthenticatedSettingsDisplayImport } from './routes/_authentic
 import { Route as AuthenticatedSettingsAppearanceImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedRestaurantsRestaurantDetailsImport } from './routes/_authenticated/restaurants/restaurant-details'
+import { Route as AuthenticatedOrdersOrderDetailsImport } from './routes/_authenticated/orders/order-details'
 
 // Create/Update Routes
 
@@ -213,6 +214,13 @@ const AuthenticatedRestaurantsRestaurantDetailsRoute =
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
+const AuthenticatedOrdersOrderDetailsRoute =
+  AuthenticatedOrdersOrderDetailsImport.update({
+    id: '/orders/order-details',
+    path: '/orders/order-details',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -306,6 +314,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/orders/order-details': {
+      id: '/_authenticated/orders/order-details'
+      path: '/orders/order-details'
+      fullPath: '/orders/order-details'
+      preLoaderRoute: typeof AuthenticatedOrdersOrderDetailsImport
       parentRoute: typeof AuthenticatedRouteImport
     }
     '/_authenticated/restaurants/restaurant-details': {
@@ -437,6 +452,7 @@ const AuthenticatedSettingsRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedOrdersOrderDetailsRoute: typeof AuthenticatedOrdersOrderDetailsRoute
   AuthenticatedRestaurantsRestaurantDetailsRoute: typeof AuthenticatedRestaurantsRestaurantDetailsRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedCartIndexRoute: typeof AuthenticatedCartIndexRoute
@@ -451,6 +467,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedOrdersOrderDetailsRoute: AuthenticatedOrdersOrderDetailsRoute,
   AuthenticatedRestaurantsRestaurantDetailsRoute:
     AuthenticatedRestaurantsRestaurantDetailsRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
@@ -480,6 +497,7 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/orders/order-details': typeof AuthenticatedOrdersOrderDetailsRoute
   '/restaurants/restaurant-details': typeof AuthenticatedRestaurantsRestaurantDetailsRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -508,6 +526,7 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/orders/order-details': typeof AuthenticatedOrdersOrderDetailsRoute
   '/restaurants/restaurant-details': typeof AuthenticatedRestaurantsRestaurantDetailsRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -539,6 +558,7 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/orders/order-details': typeof AuthenticatedOrdersOrderDetailsRoute
   '/_authenticated/restaurants/restaurant-details': typeof AuthenticatedRestaurantsRestaurantDetailsRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
@@ -571,6 +591,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/orders/order-details'
     | '/restaurants/restaurant-details'
     | '/settings/account'
     | '/settings/appearance'
@@ -598,6 +619,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/orders/order-details'
     | '/restaurants/restaurant-details'
     | '/settings/account'
     | '/settings/appearance'
@@ -627,6 +649,7 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/'
+    | '/_authenticated/orders/order-details'
     | '/_authenticated/restaurants/restaurant-details'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
@@ -700,6 +723,7 @@ export const routeTree = rootRoute
       "children": [
         "/_authenticated/settings",
         "/_authenticated/",
+        "/_authenticated/orders/order-details",
         "/_authenticated/restaurants/restaurant-details",
         "/_authenticated/apps/",
         "/_authenticated/cart/",
@@ -754,6 +778,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/": {
       "filePath": "_authenticated/index.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/orders/order-details": {
+      "filePath": "_authenticated/orders/order-details.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/restaurants/restaurant-details": {

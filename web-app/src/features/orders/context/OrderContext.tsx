@@ -11,7 +11,7 @@ interface IOrderItem {
     itemImage?: string;
 }
 
-interface IOrder {
+export interface IOrder {
     id: number;
     userId: string;
     restaurantId: string;
@@ -72,6 +72,10 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     };
 
+    useEffect(() => {
+        fetchOrders();
+    }, [currentUser?.userId]);
+
     const getOrderById = async (orderId: number): Promise<IOrder | null> => {
         try {
             const res = await api.get(`/api/order/order/${orderId}`);
@@ -83,9 +87,6 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     };
 
-    useEffect(() => {
-        fetchOrders();
-    }, [currentUser?.userId]);
 
     return (
         <OrderContext.Provider value={{
