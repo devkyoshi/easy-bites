@@ -61,8 +61,8 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const cancelOrder = async (orderId: number) => {
         try {
             setLoading(true);
-            await api.patch(`/api/order/${orderId}/cancel`);
-            await fetchOrders(); // Refresh the list
+            await api.put(`/api/order/${orderId}/cancel`);
+            await fetchOrders();
         } catch (err) {
             console.error("Failed to cancel order:", err);
             setError("Failed to cancel order");

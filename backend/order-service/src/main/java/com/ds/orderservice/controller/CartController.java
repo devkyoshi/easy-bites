@@ -151,4 +151,10 @@ public class CartController {
             @Valid @RequestBody UpdatePaymentStatusRequest request) {
         return orderService.updatePaymentStatus(orderId, request.getPaymentStatus());
     }
+
+    @PutMapping("/{orderId}/cancel")
+    public OrderResponse cancelPendingOrder(@PathVariable("orderId") Long orderId) {
+        return orderService.cancelOrderIfPending(orderId);
+    }
+
 }

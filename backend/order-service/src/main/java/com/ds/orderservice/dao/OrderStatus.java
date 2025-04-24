@@ -5,5 +5,6 @@ public enum OrderStatus {
     RESTAURANT_ACCEPTED,
     DRIVER_ASSIGNED,
     DELIVERED,
+    CANCELLED,
     DELIVERY_FAILED
 }

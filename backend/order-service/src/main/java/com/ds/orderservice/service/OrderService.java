@@ -6,6 +6,7 @@ import com.ds.orderservice.repository.CartRepository;
 import com.ds.orderservice.repository.OrderRepository;
 import com.ds.orderservice.utils.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -139,6 +140,40 @@ public class OrderService {
         order.setPaymentStatus(paymentStatus);
         order.setUpdatedAt(LocalDateTime.now());
         return mapToOrderResponse(orderRepository.save(order));
+    }
+
+    @Transactional
+    public OrderResponse cancelOrderIfPending(Long orderId) {
+        Logger logger = LoggerFactory.getLogger(getClass());
+        logger.info("Attempting to cancel order with ID: {}", orderId);
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> {
+                    logger.error("Order not found with ID: {}", orderId);
+                    return new ResourceNotFoundException("Order not found with id: " + orderId);
+                });
+
+        if (order.getStatus() != OrderStatus.PENDING) {
+            logger.error("Order ID {} is not in PENDING status. Current status: {}", orderId, order.getStatus());
+            throw new IllegalStateException("Only orders with status PENDING can be cancelled.");
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+        order.setUpdatedAt(LocalDateTime.now());
+
+        logger.info("Order ID {} successfully cancelled.", orderId);
+        return mapToOrderResponse(orderRepository.save(order));
+    }
+
+    @Scheduled(fixedRate = 60 * 60 * 1000) // Every hour
+    @Transactional
+    public void removeOldCancelledOrders() {
+        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+        List<Order> oldCancelledOrders = orderRepository.findByStatusAndUpdatedAtBefore(OrderStatus.CANCELLED, oneHourAgo);
+
+        oldCancelledOrders.forEach(order -> {
+            orderRepository.delete(order);
+        });
     }
 
     private BillResponse mapToBillResponse(Order order) {
