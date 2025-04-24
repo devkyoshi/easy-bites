@@ -7,11 +7,15 @@ import com.ds.commons.dto.request.RegisterUserRequest;
 
 import com.ds.commons.dto.response.LoginResponse;
 import com.ds.commons.dto.response.RegisterResponse;
+import com.ds.commons.enums.VehicleType;
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.exception.ExceptionCode;
 import com.ds.commons.template.ApiResponse;
 
 import com.ds.masterservice.dao.*;
+import com.ds.masterservice.dto.request.DriverRegistrationRequest;
+import com.ds.masterservice.dto.response.DriverResponse;
+import com.ds.masterservice.repository.DeliveryDriverRepository;
 import com.ds.masterservice.repository.RoleRepository;
 import com.ds.masterservice.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -36,12 +40,14 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DeliveryDriverRepository deliveryDriverRepository;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, DeliveryDriverRepository deliveryDriverRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.deliveryDriverRepository = deliveryDriverRepository;
     }
 
     @Override
@@ -74,7 +80,6 @@ public class UserServiceImpl implements UserService {
             Role role = roleRepository.findByName("ROLE_" + userType.name())
                     .orElseThrow(() -> new CustomException(ExceptionCode.ROLE_NOT_FOUND));
 
-            // Create a new user
             User user = switch (userType) {
                 case CUSTOMER -> new Customer();
                 case RESTAURANT_MANAGER -> new RestaurantManager();
@@ -91,12 +96,41 @@ public class UserServiceImpl implements UserService {
             user.setEmail(registerRequest.getEmail());
             user.setRoles(List.of(role));
 
+            // Specific logic for DeliveryPerson
+            if (user instanceof DeliveryPerson dp) {
+                if (!(registerRequest instanceof DriverRegistrationRequest driverRequest)) {
+                    throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
+                }
+
+                // Validate and set vehicle type
+                try {
+                    VehicleType vehicleType = driverRequest.getVehicleType();
+                    dp.setVehicleType(vehicleType);
+                } catch (IllegalArgumentException e) {
+                    throw new CustomException(ExceptionCode.INVALID_VEHICLE_TYPE);
+                }
+
+                // Unique license/vehicle validation
+                if (deliveryDriverRepository.existsByLicenseNumber(driverRequest.getLicenseNumber())) {
+                    throw new CustomException(ExceptionCode.LICENSE_ALREADY_EXISTS);
+                }
+
+                if (deliveryDriverRepository.existsByVehicleNumber(driverRequest.getVehicleNumber())) {
+                    throw new CustomException(ExceptionCode.VEHICLE_NUMBER_ALREADY_EXISTS);
+                }
+
+                dp.setLicenseNumber(driverRequest.getLicenseNumber());
+                dp.setVehicleNumber(driverRequest.getVehicleNumber());
+            }
+
+
             // Save the user to the database
             userRepository.save(user);
             log.info("User {} registered successfully", registerRequest.getUsername());
 
             // Return the response
-            return ApiResponse.createdSuccessResponse("User Registered Successfully", getRegisterResponse(user));
+            RegisterResponse response = getRegisterResponse(user);
+            return ApiResponse.createdSuccessResponse("User Registered Successfully", response);
         } catch (Exception e) {
             if (e instanceof CustomException) {
                 throw (CustomException) e;
@@ -173,14 +207,31 @@ public class UserServiceImpl implements UserService {
 
     //Helper methods
     private RegisterResponse getRegisterResponse(User user) {
-        return RegisterResponse.builder()
+        RegisterResponse.RegisterResponseBuilder<?, ?> baseBuilder = RegisterResponse.builder()
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .username(user.getUsername())
                 .roles(user.getRoles().stream().map(Role::getName).toList())
                 .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .build();
+                .updatedAt(user.getUpdatedAt());
+
+        if (user instanceof DeliveryPerson dp) {
+            return DriverResponse.builder()
+                    .firstName(dp.getFirstName())
+                    .lastName(dp.getLastName())
+                    .email(dp.getEmail())
+                    .username(dp.getUsername())
+                    .roles(dp.getRoles().stream().map(Role::getName).toList())
+                    .createdAt(dp.getCreatedAt())
+                    .updatedAt(dp.getUpdatedAt())
+                    .vehicleType(dp.getVehicleType().name())
+                    .vehicleNumber(dp.getVehicleNumber())
+                    .isAvailable(dp.getIsAvailable()) // assuming you have this field
+                    .build();
+        }
+
+        return baseBuilder.build();
     }
+
 }

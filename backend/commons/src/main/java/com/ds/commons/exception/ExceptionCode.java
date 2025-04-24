@@ -22,7 +22,18 @@ public enum ExceptionCode {
     FOOD_ITEM_ALREADY_EXISTS("FOOD_ITEM_ALREADY_EXISTS"),
     RESTAURANT_NOT_FOUND("RESTAURANT_NOT_FOUND"),
     RESTAURANT_ALREADY_EXISTS("RESTAURANT_ALREADY_EXISTS"),
-    MISSING_REQUIRED_FIELDS("MISSING_REQUIRED_FIELDS");
+    MISSING_REQUIRED_FIELDS("MISSING_REQUIRED_FIELDS"),
+    INVALID_VEHICLE_TYPE("INVALID_VEHICLE_TYPE"),
+    LICENSE_ALREADY_EXISTS("LICENSE_ALREADY_EXISTS"),
+    VEHICLE_NUMBER_ALREADY_EXISTS("VEHICLE_NUMBER_ALREADY_EXISTS"),
+    DRIVER_NOT_FOUND("Driver not found"),
+    ORDER_NOT_FOUND("Invalid order. Not available"),
+    DRIVER_NOT_AVAILABLE("Complete the current order first"),
+    DRIVER_ACCEPTED_ORDER("Order is already in progress."),
+    CUSTOMER_NOT_FOUND("Customer not found"),
+    DELIVERY_NOT_FOUND("Delivery not found"),
+    NO_DELIVERY_HISTORY("No completed delivery found"),
+    NO_ACTIVE_HISTORY("No active delivery found");
 
     private final String exceptionCode;
 }
