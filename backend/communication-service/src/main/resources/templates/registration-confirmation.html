@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Easy Bites!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #f8a100;
+        }
+        .logo {
+            max-width: 150px;
+            height: auto;
+        }
+        .content {
+            padding: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            padding: 20px 0;
+            border-top: 1px solid #eee;
+        }
+        .button {
+            display: inline-block;
+            background-color: #f8a100;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        h1 {
+            color: #f8a100;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Easy Bites</h1>
+    </div>
+    <div class="content">
+        <h2>Welcome to Easy Bites, {{firstName}}!</h2>
+        <p>Thank you for registering with Easy Bites. We're excited to have you join our community of food lovers!</p>
+        <p>Your account has been successfully created with the email address: <strong>{{email}}</strong></p>
+        <p>With Easy Bites, you can:</p>
+        <ul>
+            <li>Order food from your favorite restaurants</li>
+            <li>Track your orders in real-time</li>
+            <li>Save your favorite meals for quick reordering</li>
+            <li>Enjoy exclusive deals and promotions</li>
+        </ul>
+        <p>To start ordering delicious meals, click the button below:</p>
+        <a href="{{appUrl}}" class="button">Start Ordering</a>
+        <p>If you have any questions or need assistance, please don't hesitate to contact our customer support team at <a href="mailto:support@easybites.com">support@easybites.com</a>.</p>
+        <p>Happy eating!</p>
+        <p>The Easy Bites Team</p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2025 Easy Bites. All rights reserved.</p>
+        <p>This email was sent to {{email}}. If you didn't create an account with Easy Bites, please ignore this email.</p>
+    </div>
+</body>
+</html>
