@@ -7,11 +7,9 @@ interface FoodItemContextType {
     categories: IMenuCategory[]
     loading: boolean;
     error: string | null;
-    fetchFoodItems: () => Promise<void>;
-    fetchCategories: () => Promise<void>;
+    fetchFoodItems: (restaurantId: number) => Promise<IFoodItem[]>;
+    fetchCategories: (restaurantId: number) => Promise<IMenuCategory[]>;
     currentRow: IFoodItem | null
-    selectedRestaurantId: number | null
-    setSelectedRestaurantId: React.Dispatch<React.SetStateAction<number | null>>
     setCurrentRow: React.Dispatch<React.SetStateAction<IFoodItem | null>>
 }
 
@@ -24,46 +22,45 @@ export const FoodItemProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [currentRow, setCurrentRow] = useState<IFoodItem | null>(null);
-    const [selectedRestaurantId, setSelectedRestaurantId] = useState<number | null>(null);
 
-    const fetchFoodItems = async () => {
+
+
+    const fetchFoodItems = async (restaurantId : number) => {
         setLoading(true);
         try {
-            if(!selectedRestaurantId) return
-            const response = await api.get(`/api/restaurants/${selectedRestaurantId}/food-items`);
+            if(!restaurantId) return
+            const response = await api.get(`/api/restaurants/${restaurantId}/food-items`);
             setFoodItems(response.data.result);
-        } catch (err: any) {
+            console.log(response.data.result)
+
+            return response.data.result
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err) {
             setError('Failed to fetch restaurants');
+            return []
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchCategories = async () => {
+    const fetchCategories = async (restaurantId : number) => {
         setLoading(true);
         try {
-            if(!selectedRestaurantId) return
-            const response = await api.get(`/api/restaurants/${selectedRestaurantId}/categories`);
+            if(!restaurantId) return
+            const response = await api.get(`/api/restaurants/${restaurantId}/categories`);
             setCategories(response.data.result);
-        } catch (err: any) {
+            return response.data.result
+        } catch (err) {
             setError('Failed to fetch restaurants');
+            return []
         } finally {
             setLoading(false);
         }
     };
 
-    // Fetch fetchCategories when the component mounts
-    React.useEffect(() => {
-        fetchCategories().then();
-    }, [selectedRestaurantId]);
-
-    // Fetch fetchFoodItems when the component mounts
-    React.useEffect(() => {
-        fetchFoodItems().then();
-    }, [selectedRestaurantId]);
 
     return (
-        <FoodItemContext.Provider value={{ foodItems, loading, error, fetchFoodItems, fetchCategories, currentRow, setCurrentRow  , selectedRestaurantId, setSelectedRestaurantId, categories }}>
+        <FoodItemContext.Provider value={{ foodItems, loading, error, currentRow, setCurrentRow , categories , fetchFoodItems, fetchCategories}}>
             {children}
         </FoodItemContext.Provider>
     );

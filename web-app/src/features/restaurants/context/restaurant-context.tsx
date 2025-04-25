@@ -81,7 +81,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     );
 };
 
-export function useRestaurant() {
+export const useRestaurant = () => {
     const context = useContext(RestaurantContext);
     if (!context) {
         throw new Error('useRestaurant must be used within a RestaurantProvider');

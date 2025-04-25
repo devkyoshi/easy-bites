@@ -12,10 +12,7 @@ import {SimpleDataTable} from "@/components/custom/data-table.tsx";
 export const MenuCategoryContent = () => {
     const {
         categories,
-        selectedRestaurantId
     } = useFoodItems()
-
-    // if(!selectedRestaurantId) router.navigate({ to: '/restaurants/restaurant-management' })
 
     const columns: ColumnDef<IMenuCategory>[] = [
         { accessorKey: "name", header: "Name" },
@@ -32,15 +29,6 @@ export const MenuCategoryContent = () => {
                     <Button
                         variant="destructive"
                         size="sm"
-                        /*onClick={async () => {
-                            if (!selectedRestaurantId) return
-                            try {
-                                await api.delete(`/api/${selectedRestaurantId}/categories/${row.original.id}`)
-                                await fetchCategories()
-                            } catch (error) {
-                                console.error("Failed to delete category:", error)
-                            }
-                        }}*/
                     >
                         <Trash className="h-4 w-4" />
                     </Button>

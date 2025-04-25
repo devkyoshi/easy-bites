@@ -4,7 +4,7 @@ import {ThemeSwitch} from "@/components/theme-switch.tsx";
 import {ProfileDropdown} from "@/components/profile-dropdown.tsx";
 
 import {FoodItemProvider} from "@/features/restaurants/context/fooditem-context.tsx";
-import {FoodItemContent} from "@/features/restaurants/admin/components/food-item-content.tsx";
+import {FoodItemContent} from "@/features/restaurants/admin/food-item-content.tsx";
 
 export const FoodItemsTab = () => {
    return (

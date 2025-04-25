@@ -1,4 +1,3 @@
-import {RestaurantProvider} from "@/features/restaurants/context/restaurant-context.tsx";
 import {Header} from "@/components/layout/header.tsx";
 import {TopNav} from "@/components/layout/top-nav.tsx";
 import {ThemeSwitch} from "@/components/theme-switch.tsx";
@@ -18,11 +17,10 @@ export default function RestaurantAdminTab () {
             </div>
         </Header>
 
-        <RestaurantProvider>
             <FoodItemProvider>
                 <RestaurantAdminContent/>
             </FoodItemProvider>
-        </RestaurantProvider>
+
     </>
     );
 }

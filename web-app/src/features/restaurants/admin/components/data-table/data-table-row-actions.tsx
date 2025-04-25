@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu.tsx'
 
 import {IRestaurant, useRestaurant} from "@/features/restaurants/context/restaurant-context.tsx";
-import {useFoodItems} from "@/features/restaurants/context/fooditem-context.tsx";
+
 import {router} from "@/lib/router.ts";
 
 interface DataTableRowActionsProps<TData> {
@@ -26,16 +26,15 @@ export function RestaurantTableRowActions<TData>({
   const selectedRestaurant = (row.original) as IRestaurant
 
   const { setOpen, setCurrentRow } = useRestaurant()
-  const {setSelectedRestaurantId} = useFoodItems()
+
 
   const handleNavigateToCategoriesTab = () => {
-    setSelectedRestaurantId(selectedRestaurant.restaurantId as unknown as number)
-    router.navigate( { to: `/restaurants/restaurant-category-management` })
+
+    router.navigate( { to: `/restaurants/restaurant-category-management` , state : { restaurantId: selectedRestaurant.restaurantId  }  as never })
   }
 
     const handleNavigateToFoodItemsTab = () => {
-      setSelectedRestaurantId(selectedRestaurant.restaurantId as unknown as number)
-        router.navigate( { to: `/restaurants/restaurant-food-management` })
+        router.navigate( { to: `/restaurants/restaurant-food-management` , state : { restaurantId: selectedRestaurant.restaurantId  }  as never })
     }
 
   return (

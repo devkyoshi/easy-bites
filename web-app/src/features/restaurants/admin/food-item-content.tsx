@@ -7,26 +7,40 @@ import { Button } from "@/components/ui/button.tsx"
 import { Pencil, Trash } from "lucide-react"
 import {api} from "@/config/axios.ts";
 import {SimpleDataTable} from "@/components/custom/data-table.tsx";
+import {useEffect, useState} from "react";
+
+import { useLocation } from "@tanstack/react-router"
+
+type LocationState = { restaurantId: number }
 
 
 export const FoodItemContent = () => {
     const {
-        foodItems,
         setCurrentRow,
-        selectedRestaurantId,
         fetchFoodItems
     } = useFoodItems()
 
 
-    // if(!selectedRestaurantId) router.navigate({ to: '/restaurants/restaurant-management' })
+    const location = useLocation()
+    const { restaurantId } = location.state as unknown as LocationState
+    const [foodItems, setFoodItems] = useState<IFoodItem[]>([])
 
+    useEffect(() => {
+        if (restaurantId) {
+            fetchFoodItems( restaurantId).then((r)=> {
+                setFoodItems(r)
+            })
+        }
+    } , [restaurantId])
+
+    console.log(restaurantId)
     const handleDeleteFoodItem = (foodItem: IFoodItem) => {
-        if (!selectedRestaurantId) return
+        if (!restaurantId) return
 
-        api.delete(`/api/${selectedRestaurantId}/food-items/${foodItem.foodItemId}`).then(
+        api.delete(`/api/${restaurantId}/food-items/${foodItem.foodItemId}`).then(
             async (response) => {
                 if (response.status === 200) {
-                    await fetchFoodItems()
+                    await fetchFoodItems(restaurantId)
                 } else {
                     console.error("Failed to delete food item")
                 }
@@ -36,14 +50,18 @@ export const FoodItemContent = () => {
 
     const columns: ColumnDef<IFoodItem>[] = [
         { accessorKey: "name", header: "Name" },
-        { accessorKey: "description", header: "Description" },
+        {
+            accessorKey: "description",
+            header: "Description",
+            cell: ({ row }) => row.original.description || "No description"
+        },
         {
             accessorKey: "price",
             header: "Price",
-            cell: ({ row }) => `$${row.original.price.toFixed(2)}`
+            cell: ({ row }) => `LKR ${row.original.price.toFixed(2)}`
         },
         {
-            accessorKey: "category.name",
+            accessorKey: "categoryName",
             header: "Category"
         },
         {
@@ -60,7 +78,7 @@ export const FoodItemContent = () => {
                     <Button
                         variant="destructive"
                         size="sm"
-                        onClick={()=>handleDeleteFoodItem(row.original)}
+                        onClick={() => handleDeleteFoodItem(row.original)}
                     >
                         <Trash className="h-4 w-4" />
                     </Button>
