@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - Easy Bites</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #f8a100;
+        }
+        .logo {
+            max-width: 150px;
+            height: auto;
+        }
+        .content {
+            padding: 20px 0;
+            text-align: center;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            padding: 20px 0;
+            border-top: 1px solid #eee;
+        }
+        .verification-code {
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 5px;
+            color: #f8a100;
+            padding: 20px;
+            margin: 20px 0;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .button {
+            display: inline-block;
+            background-color: #f8a100;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        h1 {
+            color: #f8a100;
+        }
+        .expiry {
+            font-style: italic;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Easy Bites</h1>
+    </div>
+    <div class="content">
+        <h2>Verify Your Email Address</h2>
+        <p>Hi {{firstName}},</p>
+        <p>Thank you for creating an account with Easy Bites. To complete your registration, please verify your email address by entering the verification code below:</p>
+        
+        <div class="verification-code">{{verificationCode}}</div>
+        
+        <p class="expiry">This code will expire in 30 minutes.</p>
+        
+        <p>If you didn't request this verification code, please ignore this email or contact our support team if you have any concerns.</p>
+        
+        <p>Alternatively, you can click the button below to verify your email directly:</p>
+        <a href="{{verificationUrl}}" class="button">Verify Email</a>
+        
+        <p>We're excited to have you join our community!</p>
+        <p>The Easy Bites Team</p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2025 Easy Bites. All rights reserved.</p>
+        <p>This email was sent to {{email}}. If you didn't create an account with Easy Bites, please ignore this email.</p>
+    </div>
+</body>
+</html>
