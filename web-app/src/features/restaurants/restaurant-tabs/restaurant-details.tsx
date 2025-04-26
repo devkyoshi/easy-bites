@@ -19,6 +19,7 @@ import {Cart} from "@/features/restaurants/components/cart.tsx";
 import {ThemeSwitch} from "@/components/theme-switch.tsx";
 import {ProfileDropdown} from "@/components/profile-dropdown.tsx";
 import {toast} from "sonner";
+import {CartProvider, useCart} from "@/features/cart/context/cart-context.tsx";
 
 type LocationState = { restaurantId: number }
 
@@ -43,7 +44,7 @@ export function RestaurantDetails() {
         }
 
         fetchRestaurantDetails().then((r) => {
-            if (r) setRestaurantDetails(r) 
+            if (r) setRestaurantDetails(r)
         })
     }, [restaurantId])
 
@@ -62,7 +63,7 @@ export function RestaurantDetails() {
     }
 
     return (
-       <>
+       <CartProvider>
            {/* ===== Top Heading ===== */}
            <Header>
 
@@ -146,32 +147,78 @@ export function RestaurantDetails() {
                        ))}
                    </div>
                </div>
-           </div></>
+           </div></CartProvider>
     )
 }
 
-const FoodItemCard = ({ item }: { item: IFoodItem }) => (
-    <Card className="hover:shadow-lg transition-shadow">
-        <CardContent className="p-4 flex gap-4">
-            <img
-                src={item.imageUrl}
-                alt={item.name}
-                className="w-24 h-24 rounded-md object-cover"
-            />
-            <div className="flex-1 space-y-2">
-                <div className="flex justify-between items-start">
-                    <h3 className="font-medium text-lg">{item.name}</h3>
-                    <span className="font-medium">${item.price.toFixed(2)}</span>
+const FoodItemCard = ({ item }: { item: IFoodItem }) => {
+    const { addItem } = useCart()
+    const location = useLocation()
+    const { restaurantId } = location.state as unknown as { restaurantId: number }
+
+    const [restaurantDetails, setRestaurantDetails] = useState<IRestaurantDetails | null>(null)
+
+    useEffect(() => {
+        const fetchRestaurant = async () => {
+            const data = await getRestaurantDetailsByRestaurant(restaurantId)
+            setRestaurantDetails(data)
+        }
+
+        fetchRestaurant()
+    }, [restaurantId])
+
+    const handleAddToCart = async () => {
+        if (!restaurantDetails) {
+            toast.error("Restaurant details not loaded")
+            return
+        }
+
+        try {
+            await addItem({
+                itemId: item.foodItemId,
+                itemName: item.name,
+                itemImage: item.imageUrl,
+                quantity: 1,
+                unitPrice: item.price,
+                restaurantId: restaurantDetails.restaurantId.toString(),
+                restaurantName: restaurantDetails.name
+            })
+
+            toast.success(`${item.name} added to cart`)
+        } catch (error) {
+            toast.error("Failed to add item to cart")
+        }
+    }
+
+    return (
+        <CartProvider>
+        <Card className="hover:shadow-lg transition-shadow">
+            <CardContent className="p-4 flex gap-4">
+                <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    className="w-24 h-24 rounded-md object-cover"
+                />
+                <div className="flex-1 space-y-2">
+                    <div className="flex justify-between items-start">
+                        <h3 className="font-medium text-lg">{item.name}</h3>
+                        <span className="font-medium">${item.price.toFixed(2)}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
+                    <Button
+                        size="sm"
+                        className="mt-2 gap-2"
+                        onClick={handleAddToCart}
+                    >
+                        <IconShoppingCartPlus className="h-4 w-4" />
+                        Add to Cart
+                    </Button>
                 </div>
-                <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
-                <Button size="sm" className="mt-2 gap-2">
-                    <IconShoppingCartPlus className="h-4 w-4" />
-                    Add to Cart
-                </Button>
-            </div>
-        </CardContent>
-    </Card>
-)
+            </CardContent>
+        </Card>
+        </CartProvider>
+    )
+}
 
 const LoadingSkeleton = () => (
     <div className="container mx-auto px-4 py-8 space-y-8">

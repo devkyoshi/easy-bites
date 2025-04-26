@@ -134,7 +134,7 @@ public class CartController {
         return orderService.updateOrderStatus(orderId, request);
     }
 
-    @DeleteMapping("/{orderId}")
+    @DeleteMapping("/order/{orderId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteOrder(@PathVariable("orderId") Long orderId) {
         orderService.deleteOrder(orderId);
@@ -151,4 +151,10 @@ public class CartController {
             @Valid @RequestBody UpdatePaymentStatusRequest request) {
         return orderService.updatePaymentStatus(orderId, request.getPaymentStatus());
     }
+
+    @PutMapping("/{orderId}/cancel")
+    public OrderResponse cancelPendingOrder(@PathVariable("orderId") Long orderId) {
+        return orderService.cancelOrderIfPending(orderId);
+    }
+
 }

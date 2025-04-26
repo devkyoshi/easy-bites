@@ -24,6 +24,7 @@ public class Cart {
 
     @Column(name = "restaurant_name", nullable = false)
     private String restaurantName;
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "cart_id")
     private List<CartItem> items;

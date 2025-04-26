@@ -28,8 +28,10 @@ import { Route as AuthenticatedUsersIndexImport } from './routes/_authenticated/
 import { Route as AuthenticatedTasksIndexImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSettingsIndexImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedRestaurantsIndexImport } from './routes/_authenticated/restaurants/index'
+import { Route as AuthenticatedOrdersIndexImport } from './routes/_authenticated/orders/index'
 import { Route as AuthenticatedHelpCenterIndexImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedChatsIndexImport } from './routes/_authenticated/chats/index'
+import { Route as AuthenticatedCartIndexImport } from './routes/_authenticated/cart/index'
 import { Route as AuthenticatedAppsIndexImport } from './routes/_authenticated/apps/index'
 import { Route as AuthenticatedSettingsNotificationsImport } from './routes/_authenticated/settings/notifications'
 import { Route as AuthenticatedSettingsDisplayImport } from './routes/_authenticated/settings/display'
@@ -39,6 +41,7 @@ import { Route as AuthenticatedRestaurantsRestaurantManagementImport } from './r
 import { Route as AuthenticatedRestaurantsRestaurantFoodManagementImport } from './routes/_authenticated/restaurants/restaurant-food-management'
 import { Route as AuthenticatedRestaurantsRestaurantDetailsImport } from './routes/_authenticated/restaurants/restaurant-details'
 import { Route as AuthenticatedRestaurantsRestaurantCategoryManagementImport } from './routes/_authenticated/restaurants/restaurant-category-management'
+import { Route as AuthenticatedOrdersOrderDetailsImport } from './routes/_authenticated/orders/order-details'
 
 // Create/Update Routes
 
@@ -148,6 +151,12 @@ const AuthenticatedRestaurantsIndexRoute =
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
+const AuthenticatedOrdersIndexRoute = AuthenticatedOrdersIndexImport.update({
+  id: '/orders/',
+  path: '/orders/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+
 const AuthenticatedHelpCenterIndexRoute =
   AuthenticatedHelpCenterIndexImport.update({
     id: '/help-center/',
@@ -158,6 +167,12 @@ const AuthenticatedHelpCenterIndexRoute =
 const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexImport.update({
   id: '/chats/',
   path: '/chats/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+
+const AuthenticatedCartIndexRoute = AuthenticatedCartIndexImport.update({
+  id: '/cart/',
+  path: '/cart/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
@@ -213,6 +228,13 @@ const AuthenticatedRestaurantsRestaurantDetailsRoute =
   AuthenticatedRestaurantsRestaurantDetailsImport.update({
     id: '/restaurants/restaurant-details',
     path: '/restaurants/restaurant-details',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+
+const AuthenticatedOrdersOrderDetailsRoute =
+  AuthenticatedOrdersOrderDetailsImport.update({
+    id: '/orders/order-details',
+    path: '/orders/order-details',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -318,6 +340,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexImport
       parentRoute: typeof AuthenticatedRouteImport
     }
+    '/_authenticated/orders/order-details': {
+      id: '/_authenticated/orders/order-details'
+      path: '/orders/order-details'
+      fullPath: '/orders/order-details'
+      preLoaderRoute: typeof AuthenticatedOrdersOrderDetailsImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
     '/_authenticated/restaurants/restaurant-category-management': {
       id: '/_authenticated/restaurants/restaurant-category-management'
       path: '/restaurants/restaurant-category-management'
@@ -381,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppsIndexImport
       parentRoute: typeof AuthenticatedRouteImport
     }
+    '/_authenticated/cart/': {
+      id: '/_authenticated/cart/'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof AuthenticatedCartIndexImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
     '/_authenticated/chats/': {
       id: '/_authenticated/chats/'
       path: '/chats'
@@ -393,6 +429,13 @@ declare module '@tanstack/react-router' {
       path: '/help-center'
       fullPath: '/help-center'
       preLoaderRoute: typeof AuthenticatedHelpCenterIndexImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/orders/': {
+      id: '/_authenticated/orders/'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof AuthenticatedOrdersIndexImport
       parentRoute: typeof AuthenticatedRouteImport
     }
     '/_authenticated/restaurants/': {
@@ -455,12 +498,15 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedRestaurantsRestaurantCategoryManagementRoute: typeof AuthenticatedRestaurantsRestaurantCategoryManagementRoute
+  AuthenticatedOrdersOrderDetailsRoute: typeof AuthenticatedOrdersOrderDetailsRoute
   AuthenticatedRestaurantsRestaurantDetailsRoute: typeof AuthenticatedRestaurantsRestaurantDetailsRoute
   AuthenticatedRestaurantsRestaurantFoodManagementRoute: typeof AuthenticatedRestaurantsRestaurantFoodManagementRoute
   AuthenticatedRestaurantsRestaurantManagementRoute: typeof AuthenticatedRestaurantsRestaurantManagementRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
+  AuthenticatedCartIndexRoute: typeof AuthenticatedCartIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
+  AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
   AuthenticatedRestaurantsIndexRoute: typeof AuthenticatedRestaurantsIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
@@ -469,6 +515,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedOrdersOrderDetailsRoute: AuthenticatedOrdersOrderDetailsRoute,
   AuthenticatedRestaurantsRestaurantCategoryManagementRoute:
     AuthenticatedRestaurantsRestaurantCategoryManagementRoute,
   AuthenticatedRestaurantsRestaurantDetailsRoute:
@@ -478,8 +525,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRestaurantsRestaurantManagementRoute:
     AuthenticatedRestaurantsRestaurantManagementRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
+  AuthenticatedCartIndexRoute: AuthenticatedCartIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
+  AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
   AuthenticatedRestaurantsIndexRoute: AuthenticatedRestaurantsIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
@@ -502,6 +551,7 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/orders/order-details': typeof AuthenticatedOrdersOrderDetailsRoute
   '/restaurants/restaurant-category-management': typeof AuthenticatedRestaurantsRestaurantCategoryManagementRoute
   '/restaurants/restaurant-details': typeof AuthenticatedRestaurantsRestaurantDetailsRoute
   '/restaurants/restaurant-food-management': typeof AuthenticatedRestaurantsRestaurantFoodManagementRoute
@@ -511,8 +561,10 @@ export interface FileRoutesByFullPath {
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
+  '/cart': typeof AuthenticatedCartIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
+  '/orders': typeof AuthenticatedOrdersIndexRoute
   '/restaurants': typeof AuthenticatedRestaurantsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
@@ -532,6 +584,7 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
   '/restaurants/restaurant-category-management': typeof AuthenticatedRestaurantsRestaurantCategoryManagementRoute
+  '/orders/order-details': typeof AuthenticatedOrdersOrderDetailsRoute
   '/restaurants/restaurant-details': typeof AuthenticatedRestaurantsRestaurantDetailsRoute
   '/restaurants/restaurant-food-management': typeof AuthenticatedRestaurantsRestaurantFoodManagementRoute
   '/restaurants/restaurant-management': typeof AuthenticatedRestaurantsRestaurantManagementRoute
@@ -540,8 +593,10 @@ export interface FileRoutesByTo {
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
+  '/cart': typeof AuthenticatedCartIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
+  '/orders': typeof AuthenticatedOrdersIndexRoute
   '/restaurants': typeof AuthenticatedRestaurantsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
@@ -564,6 +619,7 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/restaurants/restaurant-category-management': typeof AuthenticatedRestaurantsRestaurantCategoryManagementRoute
+  '/_authenticated/orders/order-details': typeof AuthenticatedOrdersOrderDetailsRoute
   '/_authenticated/restaurants/restaurant-details': typeof AuthenticatedRestaurantsRestaurantDetailsRoute
   '/_authenticated/restaurants/restaurant-food-management': typeof AuthenticatedRestaurantsRestaurantFoodManagementRoute
   '/_authenticated/restaurants/restaurant-management': typeof AuthenticatedRestaurantsRestaurantManagementRoute
@@ -572,8 +628,10 @@ export interface FileRoutesById {
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
+  '/_authenticated/cart/': typeof AuthenticatedCartIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
+  '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/_authenticated/restaurants/': typeof AuthenticatedRestaurantsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
@@ -596,6 +654,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/orders/order-details'
     | '/restaurants/restaurant-category-management'
     | '/restaurants/restaurant-details'
     | '/restaurants/restaurant-food-management'
@@ -605,8 +664,10 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/settings/notifications'
     | '/apps'
+    | '/cart'
     | '/chats'
     | '/help-center'
+    | '/orders'
     | '/restaurants'
     | '/settings/'
     | '/tasks'
@@ -625,6 +686,7 @@ export interface FileRouteTypes {
     | '/503'
     | '/'
     | '/restaurants/restaurant-category-management'
+    | '/orders/order-details'
     | '/restaurants/restaurant-details'
     | '/restaurants/restaurant-food-management'
     | '/restaurants/restaurant-management'
@@ -633,8 +695,10 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/settings/notifications'
     | '/apps'
+    | '/cart'
     | '/chats'
     | '/help-center'
+    | '/orders'
     | '/restaurants'
     | '/settings'
     | '/tasks'
@@ -654,6 +718,7 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/'
+    | '/_authenticated/orders/order-details'
     | '/_authenticated/restaurants/restaurant-category-management'
     | '/_authenticated/restaurants/restaurant-details'
     | '/_authenticated/restaurants/restaurant-food-management'
@@ -663,8 +728,10 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
     | '/_authenticated/apps/'
+    | '/_authenticated/cart/'
     | '/_authenticated/chats/'
     | '/_authenticated/help-center/'
+    | '/_authenticated/orders/'
     | '/_authenticated/restaurants/'
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
@@ -729,12 +796,15 @@ export const routeTree = rootRoute
         "/_authenticated/settings",
         "/_authenticated/",
         "/_authenticated/restaurants/restaurant-category-management",
+        "/_authenticated/orders/order-details",
         "/_authenticated/restaurants/restaurant-details",
         "/_authenticated/restaurants/restaurant-food-management",
         "/_authenticated/restaurants/restaurant-management",
         "/_authenticated/apps/",
+        "/_authenticated/cart/",
         "/_authenticated/chats/",
         "/_authenticated/help-center/",
+        "/_authenticated/orders/",
         "/_authenticated/restaurants/",
         "/_authenticated/tasks/",
         "/_authenticated/users/"
@@ -785,6 +855,10 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/index.tsx",
       "parent": "/_authenticated"
     },
+    "/_authenticated/orders/order-details": {
+      "filePath": "_authenticated/orders/order-details.tsx",
+      "parent": "/_authenticated"
+    },
     "/_authenticated/restaurants/restaurant-category-management": {
       "filePath": "_authenticated/restaurants/restaurant-category-management.tsx",
       "parent": "/_authenticated"
@@ -821,12 +895,20 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/apps/index.tsx",
       "parent": "/_authenticated"
     },
+    "/_authenticated/cart/": {
+      "filePath": "_authenticated/cart/index.tsx",
+      "parent": "/_authenticated"
+    },
     "/_authenticated/chats/": {
       "filePath": "_authenticated/chats/index.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/help-center/": {
       "filePath": "_authenticated/help-center/index.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/orders/": {
+      "filePath": "_authenticated/orders/index.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/restaurants/": {

@@ -8,6 +8,7 @@ import java.util.List;
 public class CreateCartRequest {
     private Long userId;
     private Long restaurantId;
+    private String restaurantName;
     private List<CartItemRequest> items;
 }
 

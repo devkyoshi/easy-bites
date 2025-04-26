@@ -21,6 +21,8 @@ public class CartItem {
     @Column(name = "item_name", nullable = false)
     private String itemName;
 
+    @Column(name = "item_image")
+    private String itemImage;
     private Integer quantity;
 
     @Column(name = "unit_price")

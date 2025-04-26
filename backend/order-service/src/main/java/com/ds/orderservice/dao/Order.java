@@ -24,6 +24,7 @@ public class Order {
     private double totalAmount;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 10)
     private OrderStatus status = OrderStatus.PENDING;
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus = PaymentStatus.NOT_PAID;
