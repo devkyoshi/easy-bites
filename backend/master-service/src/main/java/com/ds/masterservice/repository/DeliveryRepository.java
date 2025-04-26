@@ -13,7 +13,5 @@ import java.util.Optional;
 @Repository
 public interface DeliveryRepository extends JpaRepository<Deliveries, Long> {
     List<Deliveries> findByDriverAndStatus(DeliveryPerson driver, DeliveryStatus status);
-    List<Deliveries> findByDriver(DeliveryPerson driver);
-    Optional<Deliveries> findByOrder(Order order);
     boolean existsByOrderAndStatusIn(Order order, List<DeliveryStatus> statuses);
 }

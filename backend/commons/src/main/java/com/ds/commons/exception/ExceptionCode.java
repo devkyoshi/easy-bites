@@ -33,7 +33,10 @@ public enum ExceptionCode {
     CUSTOMER_NOT_FOUND("Customer not found"),
     DELIVERY_NOT_FOUND("Delivery not found"),
     NO_DELIVERY_HISTORY("No completed delivery found"),
-    NO_ACTIVE_HISTORY("No active delivery found");
+    NO_ACTIVE_HISTORY("No active delivery found"),
+    EMAIL_UNAVAILABLE("Email feature is currently unavailable."),
+    GEOCODING_UNAVAILABLE("Geocoding is currently unavailable"),
+    EMAIL_SEND_FAILURE("Failed to send email"),;
 
     private final String exceptionCode;
 }

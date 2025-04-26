@@ -5,6 +5,7 @@ import com.ds.commons.enums.OrderStatus;
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.exception.ExceptionCode;
 import com.ds.commons.template.ApiResponse;
+import com.ds.commons.utils.EmailUtil;
 import com.ds.commons.utils.GeoUtils;
 import com.ds.commons.utils.GeocodingUtil;
 import com.ds.masterservice.dao.*;
@@ -29,19 +30,20 @@ public class DeliveryServiceImpl implements DeliveryService {
     private final OrderRepository orderRepository;
     private final RestaurantRepository restaurantRepository;
     private final UserRepository userRepository;
-    private final GeocodingUtil geocodingUtil;
-    private final EmailUtil emailUtil;
+    @Autowired(required = false)
+    private Optional<GeocodingUtil> geocodingUtil;
+    @Autowired(required = false)
+    private Optional<EmailUtil> emailUtil;
     private final Set<Long> notifiedOrderIds = new HashSet<>();
     private static final double DELIVERY_RADIUS_KM = 5.0;
 
     @Autowired
-    public DeliveryServiceImpl(DeliveryRepository deliveryRepository, DeliveryDriverRepository deliveryDriverRepository, OrderRepository orderRepository, RestaurantRepository restaurantRepository, UserRepository userRepository, GeocodingUtil geocodingUtil ) {
+    public DeliveryServiceImpl(DeliveryRepository deliveryRepository, DeliveryDriverRepository deliveryDriverRepository, OrderRepository orderRepository, RestaurantRepository restaurantRepository, UserRepository userRepository ) {
         this.deliveryRepository = deliveryRepository;
         this.deliveryDriverRepository = deliveryDriverRepository;
         this.orderRepository = orderRepository;
         this.restaurantRepository = restaurantRepository;
         this.userRepository = userRepository;
-        this.geocodingUtil = geocodingUtil;
     }
 
     @Override
@@ -61,7 +63,9 @@ public class DeliveryServiceImpl implements DeliveryService {
 
             for (OrderResponse order : orders) {
                 try {
-                    BigDecimal[] coordinates = geocodingUtil.getCoordinates(order.getDeliveryAddress());
+                    BigDecimal[] coordinates = geocodingUtil
+                            .orElseThrow(() -> new CustomException(ExceptionCode.GEOCODING_UNAVAILABLE))
+                            .getCoordinates(order.getDeliveryAddress());
 
                     double distance = GeoUtils.calculateDistance(
                             lat,
@@ -98,8 +102,11 @@ public class DeliveryServiceImpl implements DeliveryService {
                 return ApiResponse.successResponse("Drivers already notified for this order");
             }
 
-            BigDecimal[] orderCoords = geocodingUtil.getCoordinates(order.getDeliveryAddress());
-            List<DeliveryPerson> drivers = deliveryDriverRepository.findByAvailable(true);
+            BigDecimal[] orderCoords = geocodingUtil
+                    .orElseThrow(() -> new CustomException(ExceptionCode.GEOCODING_UNAVAILABLE))
+                    .getCoordinates(order.getDeliveryAddress());
+
+            List<DeliveryPerson> drivers = deliveryDriverRepository.findByIsAvailable(true);
 
             int notifiedCount = 0;
 
@@ -117,7 +124,7 @@ public class DeliveryServiceImpl implements DeliveryService {
                     String message = String.format("Hi %s, a new order is available within %.1f KM from your location. Order ID: %d",
                             fullName, distance, order.getId());
 
-                    emailUtil.sendEmail(driver.getEmail(), subject, message);
+                    sendEmailWithFallback(driver.getEmail(), subject, message);
                     notifiedCount++;
                 }
             }
@@ -170,8 +177,12 @@ public class DeliveryServiceImpl implements DeliveryService {
             order.setStatus(OrderStatus.DRIVER_ASSIGNED);
             orderRepository.save(order);
 
-            BigDecimal[] orderCoordinates = geocodingUtil.getCoordinates(order.getDeliveryAddress());
-            BigDecimal[] restaurantCoordinates = geocodingUtil.getCoordinates(restaurant.getAddress());
+            BigDecimal[] orderCoordinates = geocodingUtil
+                    .orElseThrow(() -> new CustomException(ExceptionCode.GEOCODING_UNAVAILABLE))
+                    .getCoordinates(order.getDeliveryAddress());
+            BigDecimal[] restaurantCoordinates = geocodingUtil
+                    .orElseThrow(() -> new CustomException(ExceptionCode.GEOCODING_UNAVAILABLE))
+                    .getCoordinates(restaurant.getAddress());
 
             Deliveries delivery = new Deliveries();
             delivery.setOrder(order);
@@ -192,7 +203,7 @@ public class DeliveryServiceImpl implements DeliveryService {
             String subject = "Order Accepted";
             String message = String.format("Hi %s, your order #%d has been accepted by a driver and is on the way!",
                     customer.getFirstName(), order.getId());
-            emailUtil.sendEmail(customer.getEmail(), subject, message);
+            sendEmailWithFallback(customer.getEmail(), subject, message);
 
             log.info("Driver {} accepted order {}", driverId, order.getId());
 
@@ -248,7 +259,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         String subject = "Order Accepted";
         String message = String.format("Hi %s, your order #%d has been delivered. Enjoy the order!",
                 customer.getFirstName(), order.getId());
-        emailUtil.sendEmail(customer.getEmail(), subject, message);
+        sendEmailWithFallback(customer.getEmail(), subject, message);
 
         DeliveryResponse response = convertToResponse(delivery);
 
@@ -290,6 +301,21 @@ public class DeliveryServiceImpl implements DeliveryService {
         DeliveryResponse response = convertToResponse(delivery);
 
         return ApiResponse.successResponse("Active delivery fetched", response);
+    }
+
+    private void sendEmailWithFallback(String to, String subject, String message) throws CustomException {
+        try {
+            if (emailUtil.isEmpty()) {
+                log.warn("Email service unavailable - cannot send notification to {}", to);
+                throw new CustomException(ExceptionCode.EMAIL_UNAVAILABLE);
+            }
+            emailUtil.get().sendEmail(to, subject, message);
+        } catch (CustomException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error sending email to {}: {}", to, e.getMessage());
+            throw new CustomException(ExceptionCode.EMAIL_SEND_FAILURE);
+        }
     }
 
     private DeliveryResponse convertToResponse(Deliveries delivery) {

@@ -121,7 +121,7 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
     @Override
     public ApiResponse<List<DriverResponse>> getAvailableDrivers() throws CustomException {
         log.info("Fetching available drivers");
-        List<DriverResponse> availableDrivers = deliveryDriverRepository.findByAvailable(true)
+        List<DriverResponse> availableDrivers = deliveryDriverRepository.findByIsAvailable(true)
                 .stream()
                 .map(this::mapToDriverResponse)
                 .toList();

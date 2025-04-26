@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface DeliveryDriverRepository extends JpaRepository<DeliveryPerson, Long> {
-    List<DeliveryPerson> findByAvailable(boolean available);
+    List<DeliveryPerson> findByIsAvailable(Boolean isAvailable);
     boolean existsByLicenseNumber(String licenseNumber);
     boolean existsByVehicleNumber(String vehicleNumber);
 }
