@@ -4,6 +4,7 @@ import {
   AdminRestaurantResult,
   IRestaurantDetails,
 } from '@/services/types/restaurant.type.ts'
+import { toast } from 'sonner'
 
 export const getRestaurantDetailsByRestaurant = async (
   restaurantId: number
@@ -36,9 +37,15 @@ export const addFoodItem = async (
       `/api/restaurants/${restaurantId}/food-items`,
       foodItem
     )
-
     return response.data
   } catch (e) {
-    console.log(e)
+    toast.error(
+      (e as any).response.data.message ||
+        'Error adding food item. Please try again later.',
+      {
+        duration: 5000,
+        position: 'top-center',
+      }
+    )
   }
 }

@@ -47,6 +47,7 @@ public class RestaurantController {
         return masterService.addFoodItems(restaurantId, request);
     }
 
+
     @GetMapping("/{restaurantId}/categories")
     public ApiResponse<List<MenuCategoryResponse>> getMenuCategories(@PathVariable("restaurantId") Long restaurantId) throws CustomException {
         log.info("Attempting to get menu categories for restaurant with ID: {}", restaurantId);

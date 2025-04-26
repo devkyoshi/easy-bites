@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { AxiosError } from 'axios'
 import { useForm } from 'react-hook-form'
 import { addFoodItem } from '@/services/restaurant-service'
 import {
@@ -78,7 +77,12 @@ export const FoodItemForm = ({
       const response = await addFoodItem(restaurantId, data)
 
       if (!response.success) {
-        throw new Error(response.message || 'Operation failed')
+        toast.dismiss(toastId)
+        toast.error(response.message, {
+          duration: 5000,
+          position: 'top-center',
+        })
+        return
       }
 
       toast.success(
@@ -87,30 +91,6 @@ export const FoodItemForm = ({
       )
       onSuccess()
       onOpenChange(false)
-    } catch (error: unknown) {
-      // Dismiss the loading toast first
-      toast.dismiss(toastId)
-
-      let errorMessage = 'An error occurred while processing your request'
-
-      if (error instanceof AxiosError) {
-        // Handle Axios errors
-        errorMessage =
-          error.response?.data?.message ||
-          error.response?.data?.error ||
-          error.message ||
-          'Network error occurred'
-      } else if (error instanceof Error) {
-        // Handle generic errors
-        errorMessage = error.message
-      } else if (typeof error === 'string') {
-        errorMessage = error
-      }
-
-      toast.error(errorMessage, {
-        duration: 5000,
-        position: 'top-center',
-      })
     } finally {
       setIsSubmitting(false)
     }
