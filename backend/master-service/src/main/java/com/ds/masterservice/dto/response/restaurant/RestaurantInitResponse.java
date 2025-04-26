@@ -1,4 +1,4 @@
-package com.ds.masterservice.dto.response;
+package com.ds.masterservice.dto.response.restaurant;
 
 import com.ds.masterservice.dao.Restaurant;
 import lombok.Data;

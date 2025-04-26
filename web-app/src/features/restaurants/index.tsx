@@ -9,9 +9,8 @@ import {RestaurantPageContent} from "@/features/restaurants/components/restauran
 
 export default function RestaurantTab() {
     return(
-        <>     {/* ===== Top Heading ===== */}
+        <>
             <Header>
-
                 <div className='flex items-center gap-4'>
                     <h1 className='text-2xl font-bold'>Restaurants</h1>
                     <p className='text-muted-foreground text-sm'>

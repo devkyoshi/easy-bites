@@ -8,10 +8,16 @@ import com.ds.masterservice.dao.FoodItem;
 import com.ds.masterservice.dao.MenuCategory;
 import com.ds.masterservice.dao.Restaurant;
 import com.ds.masterservice.dao.RestaurantManager;
-import com.ds.masterservice.dto.request.FoodItemRequest;
-import com.ds.masterservice.dto.request.MenuCategoryCreateRequest;
-import com.ds.masterservice.dto.request.RestaurantCreateUpdateRequest;
-import com.ds.masterservice.dto.response.*;
+import com.ds.masterservice.dto.request.food.FoodItemRequest;
+import com.ds.masterservice.dto.request.menu.MenuCategoryCreateRequest;
+import com.ds.masterservice.dto.request.restaurant.RestaurantCreateUpdateRequest;
+import com.ds.masterservice.dto.response.food.FoodItemInitResponse;
+import com.ds.masterservice.dto.response.food.FoodItemResponse;
+import com.ds.masterservice.dto.response.menu.MenuCategoryInitResponse;
+import com.ds.masterservice.dto.response.menu.MenuCategoryResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantAdminResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantInitResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantResponse;
 import com.ds.masterservice.repository.FoodItemRepository;
 import com.ds.masterservice.repository.MenuCategoryRepository;
 import com.ds.masterservice.repository.RestaurantRepository;
@@ -291,9 +297,62 @@ public class RestaurantServiceImpl implements RestaurantService {
 
             return ApiResponse.successResponse("Restaurants fetched successfully", restaurantResponses);
         } catch (Exception e) {
-            log.error("An error occurred while fetching all restaurants: {}", e.getMessage());
-            throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+                log.error("An error occurred while fetching all restaurants: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Override
+    public ApiResponse<RestaurantAdminResponse> getAdminRestaurantData(Integer adminId) throws CustomException {
+       try{
+
+              RestaurantManager restaurantManager = userService.getRestaurantManagerByUserId(adminId);
+
+                if (restaurantManager == null) {
+                    log.error("Restaurant manager with ID {} not found", adminId);
+                    throw new CustomException(ExceptionCode.RESTAURANT_MANAGER_NOT_FOUND);
+                }
+
+                List<Restaurant> restaurants = restaurantRepository.findByManagerId(adminId);
+
+                //get the first restaurant
+                Restaurant restaurant = restaurants.isEmpty() ? null : restaurants.getFirst();
+
+                RestaurantAdminResponse restaurantAdminResponse = RestaurantAdminResponse.builder()
+                        .restaurantId(restaurant != null ? restaurant.getId() : null)
+                        .restaurantName(restaurant != null ? restaurant.getName() : null)
+                        .restaurantAddress(restaurant != null ? restaurant.getDescription() : null)
+                        .address(restaurant != null ? restaurant.getAddress() : null)
+                        .phone(restaurant != null ? restaurant.getPhone() : null)
+                        .email(restaurant != null ? restaurant.getEmail() : null)
+                        .logo(restaurant != null ? restaurant.getLogoUrl() : null)
+                        .openingHour(restaurant != null ? restaurant.getOpeningHour() : null)
+                        .closingHour(restaurant != null ? restaurant.getClosingHour() : null)
+                        .description(restaurant != null ? restaurant.getDescription() : null)
+                        .daysOpen(restaurant != null ? restaurant.getDaysOpen().stream()
+                                .map(DayOfWeek::name)
+                                .toList() : List.of())
+                        .isOpen(restaurant != null && restaurant.getIsOpen())
+                         .foodItems(restaurant != null ? restaurant.getMenuCategories().stream()
+                                 .flatMap(category -> category.getFoodItems().stream())
+                                 .map(FoodItemResponse::new)
+                                 .toList() : List.of())
+                        .menuCategories(restaurant != null ? restaurant.getMenuCategories().stream()
+                                .map(MenuCategoryInitResponse::new)
+                                .toList() : List.of())
+                         .build();
+
+
+           return ApiResponse.successResponse("Admin restaurant data fetched successfully", restaurantAdminResponse);
+       } catch (Exception e) {
+           if (e instanceof CustomException) {
+               log.error("An custom error occurred while fetching the admin restaurant: {}", e.getMessage());
+               throw (CustomException) e;
+           } else {
+               log.error("An error occurred while fetching the admin restaurant: {}", e.getMessage());
+               throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+           }
+       }
     }
 
     public boolean isRestaurantExists(String name) {

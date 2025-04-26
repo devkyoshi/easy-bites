@@ -1,15 +1,13 @@
-package com.ds.masterservice.dto.request;
+package com.ds.masterservice.dto.request.food;
 
 import lombok.Data;
 
 @Data
-public class FoodItemRequest {
+public class FoodItemCreateRequest {
     private String name;
     private String description;
     private Double price;
     private String imageUrl;
-    private Integer stockQuantityPerDay;
     private Boolean isAvailable;
     private Long categoryId;
-
 }

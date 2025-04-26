@@ -29,7 +29,6 @@ export function RestaurantTableRowActions<TData>({
 
 
   const handleNavigateToCategoriesTab = () => {
-
     router.navigate( { to: `/restaurants/restaurant-category-management` , state : { restaurantId: selectedRestaurant.restaurantId  }  as never })
   }
 

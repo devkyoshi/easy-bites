@@ -1,4 +1,4 @@
-package com.ds.masterservice.dto.response;
+package com.ds.masterservice.dto.response.menu;
 
 import com.ds.masterservice.dao.MenuCategory;
 import lombok.Data;

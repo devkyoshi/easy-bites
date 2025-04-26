@@ -3,13 +3,14 @@ package com.ds.restaurantservice.controllers;
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
 import com.ds.masterservice.MasterService;
-import com.ds.masterservice.dto.request.FoodItemRequest;
-import com.ds.masterservice.dto.request.MenuCategoryCreateRequest;
-import com.ds.masterservice.dto.request.RestaurantCreateUpdateRequest;
-import com.ds.masterservice.dto.response.FoodItemResponse;
-import com.ds.masterservice.dto.response.MenuCategoryResponse;
-import com.ds.masterservice.dto.response.RestaurantInitResponse;
-import com.ds.masterservice.dto.response.RestaurantResponse;
+import com.ds.masterservice.dto.request.food.FoodItemRequest;
+import com.ds.masterservice.dto.request.menu.MenuCategoryCreateRequest;
+import com.ds.masterservice.dto.request.restaurant.RestaurantCreateUpdateRequest;
+import com.ds.masterservice.dto.response.food.FoodItemResponse;
+import com.ds.masterservice.dto.response.menu.MenuCategoryResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantAdminResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantInitResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -68,6 +69,12 @@ public class RestaurantController {
     public ApiResponse<List<RestaurantInitResponse>> getAllRestaurants() throws CustomException {
         log.info("Attempting to get all restaurants");
         return masterService.getAllRestaurants();
+    }
+
+    @GetMapping("/admin-restaurants/{adminId}")
+    public ApiResponse<RestaurantAdminResponse> getAllRestaurantsForAdmin(@PathVariable("adminId") Integer adminId) throws CustomException {
+        log.info("Attempting to get restaurant for admin");
+        return masterService.getAdminRestaurantData(adminId);
     }
 
 

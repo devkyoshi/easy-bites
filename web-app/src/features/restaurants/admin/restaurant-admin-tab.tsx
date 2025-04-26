@@ -16,7 +16,6 @@ export default function RestaurantAdminTab () {
                 <ProfileDropdown />
             </div>
         </Header>
-
             <FoodItemProvider>
                 <RestaurantAdminContent/>
             </FoodItemProvider>

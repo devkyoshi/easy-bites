@@ -1,12 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
-import RestaurantAdminTab from "@/features/restaurants/admin/restaurant-admin-tab.tsx";
 import {RestaurantProvider} from "@/features/restaurants/context/restaurant-context.tsx";
+import {RestaurantManagementTab} from "@/features/restaurants/admin/pages/restaurant-management.tsx";
 
 export const Route = createFileRoute(
   '/_authenticated/restaurants/restaurant-management',
 )({
   component: () => (<RestaurantProvider>
-    <RestaurantAdminTab/>
+    <RestaurantManagementTab/>
   </RestaurantProvider>),
 })
 
