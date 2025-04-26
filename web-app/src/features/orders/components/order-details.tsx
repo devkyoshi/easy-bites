@@ -2,7 +2,7 @@
 import {useLocation} from '@tanstack/react-router'
 import { useEffect, useState } from "react"
 import { getOrderDetailsById } from "@/services/order-service.ts"
-import { IOrderDetails } from "@/services/types/order.type.ts"
+import {IOrderDetails, IOrderItem} from "@/services/types/order.type.ts"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,7 +16,8 @@ import {
     IconX,
     IconCreditCard,
     IconShoppingBag,
-    IconArrowLeft
+    IconArrowLeft,
+    IconBuildingStore, IconUser
 } from "@tabler/icons-react"
 import { Header } from "@/components/layout/header.tsx"
 import { toast } from "sonner"
@@ -28,16 +29,27 @@ const statusIcons = {
     PENDING: <IconClock className="h-5 w-5 text-yellow-500" />,
     DELIVERED: <IconCheck className="h-5 w-5 text-green-500" />,
     DELIVERY_FAILED: <IconX className="h-5 w-5 text-red-500" />,
-    CANCELLED: <IconX className="h-5 w-5 text-red-500" />
+    CANCELLED: <IconX className="h-5 w-5 text-red-500" />,
+    DRIVER_ASSIGNED: <IconUser className="h-5 w-5 text-blue-500" />
 };
 
 const statusColors = {
     PENDING: "bg-yellow-100 text-yellow-800",
     DELIVERED: "bg-green-100 text-green-800",
     DELIVERY_FAILED: "bg-red-100 text-red-800",
-    CANCELLED: "bg-red-100 text-red-800"
+    CANCELLED: "bg-red-100 text-red-800",
+    DRIVER_ASSIGNED: "bg-blue-100 text-blue-800"
 };
+
 type LocationState = { orderId: number }
+
+interface GroupedItems {
+    [restaurantName: string]: {
+        restaurantId: number | string;
+        items: IOrderItem[];
+        subtotal: number;
+    };
+}
 
 export function OrderDetails() {
     const [orderDetails, setOrderDetails] = useState<IOrderDetails | null>(null)
@@ -55,9 +67,8 @@ export function OrderDetails() {
 
                 const response = await api.get(`/api/order/order/${orderIdNum}`);
                 const data = response.data as IOrderDetails;
-                console.log(data);
                 setOrderDetails(data);
-            } catch (error) {
+            } catch (_error) {
                 toast.error("Error occurred while fetching order details");
             } finally {
                 setLoading(false);
@@ -67,21 +78,38 @@ export function OrderDetails() {
         fetchOrderDetails();
     }, [orderId]);
 
+    const groupItemsByRestaurant = () => {
+        if (!orderDetails) return {};
+
+        return orderDetails.items.reduce<GroupedItems>((acc, item) => {
+            if (!acc[item.restaurantName]) {
+                acc[item.restaurantName] = {
+                    restaurantId: item.restaurantId,
+                    items: [],
+                    subtotal: 0
+                };
+            }
+            acc[item.restaurantName].items.push(item);
+            acc[item.restaurantName].subtotal += item.totalPrice;
+            return acc;
+        }, {});
+    };
+
     const handleCancelOrder = async () => {
         if (!orderDetails) return
 
         try {
             setCancelling(true)
-
             toast.success("Order cancelled successfully")
             const updatedOrder = await getOrderDetailsById(orderDetails.id)
             setOrderDetails(updatedOrder)
-        } catch (error) {
+        } catch (_error) {
             toast.error("Failed to cancel order")
         } finally {
             setCancelling(false)
         }
     }
+
 
     if (loading) {
         return <LoadingSkeleton />
@@ -99,9 +127,9 @@ export function OrderDetails() {
         )
     }
 
-    return (
-        <>
+    const groupedItems = groupItemsByRestaurant();
 
+    return (
         <div className="container mx-auto px-4 py-8 space-y-8">
             <Header>
                 <Button
@@ -112,9 +140,6 @@ export function OrderDetails() {
                     <IconArrowLeft className="h-5 w-5" />
                     Back to Orders
                 </Button>
-                <div className="ml-auto flex items-center gap-4">
-                    {/* Add any header buttons here */}
-                </div>
             </Header>
 
             <div className="max-w-4xl mx-auto space-y-6">
@@ -139,46 +164,49 @@ export function OrderDetails() {
                     <CardHeader>
                         <CardTitle>Order Summary</CardTitle>
                         <CardDescription>
-                            {orderDetails.restaurantName}
+                            {Object.keys(groupedItems).length} restaurant(s)
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-3">
-                            {orderDetails.items.map((item) => (
-                                <div key={item.itemId} className="flex justify-between items-center">
-                                    <div className="flex items-center gap-4">
-                                        {item.itemImage && (
-                                            <img
-                                                src={item.itemImage}
-                                                alt={item.itemName}
-                                                className="w-16 h-16 rounded-md object-cover"
-                                            />
-                                        )}
-                                        <div>
-                                            <p className="font-medium">{item.itemName}</p>
-                                            <p className="text-sm text-muted-foreground">
-                                                ${item.unitPrice} × {item.quantity}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <p className="font-medium">${item.totalPrice}</p>
+                    <CardContent className="space-y-6">
+                        {Object.entries(groupedItems).map(([restaurantName, group]) => (
+                            <div key={restaurantName} className="space-y-4">
+                                <div className="flex items-center gap-2 text-lg font-medium">
+                                    <IconBuildingStore className="h-5 w-5 text-muted-foreground" />
+                                    <span>{restaurantName}</span>
                                 </div>
-                            ))}
-                        </div>
+
+                                <div className="space-y-3 pl-7">
+                                    {group.items.map((item) => (
+                                        <div key={item.itemId} className="flex justify-between items-center">
+                                            <div className="flex items-center gap-4">
+                                                {item.itemImage && (
+                                                    <img
+                                                        src={item.itemImage}
+                                                        alt={item.itemName}
+                                                        className="w-16 h-16 rounded-md object-cover"
+                                                    />
+                                                )}
+                                                <div>
+                                                    <p className="font-medium">{item.itemName}</p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        ${item.unitPrice} × {item.quantity}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <p className="font-medium">${item.totalPrice}</p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="flex justify-between border-t pt-2 pl-7">
+                                    <span className="text-muted-foreground">Subtotal ({group.items.length} items)</span>
+                                    <span>${group.subtotal.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        ))}
 
                         <div className="border-t pt-4 space-y-2">
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Subtotal</span>
-                                <span>${orderDetails.subtotal}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Delivery Fee</span>
-                                <span>${orderDetails.deliveryFee}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-muted-foreground">Tax</span>
-                                <span>${orderDetails.tax}</span>
-                            </div>
+
                             <div className="flex justify-between font-bold text-lg pt-2">
                                 <span>Total</span>
                                 <span>${orderDetails.totalAmount}</span>
@@ -209,9 +237,18 @@ export function OrderDetails() {
                         <div className="flex items-center gap-3">
                             <IconPhone className="h-5 w-5 text-muted-foreground" />
                             <div>
-                                <p className="font-medium">Contact Phone</p>
-                                <p className="text-muted-foreground">{orderDetails.contactPhone}</p>
+                                <p className="font-medium">Delivery Driver Contact Phone</p>
+                                <p className="text-muted-foreground">here{orderDetails.contactPhone}</p>
                             </div>
+
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <IconUser className="h-5 w-5 text-muted-foreground" />
+                            <div>
+                                <p className="font-medium">Delivery Driver Name</p>
+                                <p className="text-muted-foreground">here{orderDetails.contactPhone}</p>
+                            </div>
+
                         </div>
 
                         {orderDetails.estimatedDeliveryTime && (
@@ -229,7 +266,15 @@ export function OrderDetails() {
                 </Card>
 
                 {/* Payment Information */}
-                <Card>
+                <Card
+                    className={
+                        orderDetails.paymentStatus === 'PAID'
+                            ? "border-green-500 bg-green-50"
+                            : orderDetails.paymentStatus === 'NOT_PAID'
+                                ? "border-red-200 bg-red-50"
+                                : "border-red-500 bg-red-100"
+                    }
+                >
                     <CardHeader>
                         <CardTitle>Payment Information</CardTitle>
                     </CardHeader>
@@ -241,38 +286,76 @@ export function OrderDetails() {
                                 <p className="text-muted-foreground">{orderDetails.paymentMethod}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <IconShoppingBag className="h-5 w-5 text-muted-foreground" />
-                            <div>
-                                <p className="font-medium">Payment Status</p>
-                                <p className="text-muted-foreground">{orderDetails.paymentStatus}</p>
+
+                        <div className="flex flex-col gap-3">
+                            <div className="flex items-center gap-3">
+                                <IconShoppingBag className="h-5 w-5 text-muted-foreground" />
+                                <div>
+                                    <p className="font-medium">Payment Status</p>
+                                    <p className={
+                                        orderDetails.paymentStatus === 'FAIL'
+                                            ? "text-red-600 font-semibold"
+                                            : orderDetails.paymentStatus === 'PAID'
+                                                ? "text-green-600 font-semibold"
+                                                : "text-yellow-700 font-semibold"
+                                    }>
+                                        {orderDetails.paymentStatus === 'PAID' && "Paid"}
+                                        {orderDetails.paymentStatus === 'NOT_PAID' && "Not Paid"}
+                                        {orderDetails.paymentStatus === 'FAIL' && "Fail"}
+                                    </p>
+                                </div>
                             </div>
+
+                            {orderDetails.paymentStatus === 'FAIL' && (
+                                <div className="mt-2 p-4 border border-red-300 rounded-md bg-red-50">
+                                    <p className="text-red-600 font-medium mb-2">Please contact customer support</p>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-lg font-bold text-gray-600">
+                                            CS
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold">Withanage Wanigapachi</p>
+                                            <p className="text-sm text-gray-600">Email: support@example.com</p>
+                                            <p className="text-sm text-gray-600">Phone: +94 (555) 123-4567</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
 
+                {orderDetails.status === 'DRIVER_ASSIGNED' && (
+                    <Button
+                        variant="default"
+                        onClick={handleCancelOrder}
+                        disabled={cancelling}
+                    >
+                        Track driver
+                    </Button>
+                )}
+
                 {/* Actions */}
-                {orderDetails.status === 'PENDING' && (
-                    <div className="flex justify-end gap-3">
-                        <Button
-                            variant="destructive"
-                            onClick={handleCancelOrder}
-                            disabled={cancelling}
-                        >
-                            {cancelling ? "Cancelling..." : "Cancel Order"}
-                        </Button>
+                {(orderDetails.status === 'PENDING' || orderDetails.paymentStatus === 'NOT_PAID') && (
+                    <div className="flex justify-end gap-3 mt-4">
+
+                        {orderDetails.paymentStatus === 'NOT_PAID' && (
+                            <Button
+                                onClick={() => console.log('Trigger payment flow')}
+                                className="bg-blue-600 text-white hover:bg-blue-700 transition"
+                            >
+                                Pay
+                            </Button>
+                        )}
                     </div>
                 )}
+
             </div>
         </div>
-        </>
-
     )
 }
 
 const LoadingSkeleton = () => (
-    <>
-
     <div className="container mx-auto px-4 py-8 space-y-8">
         <div className="max-w-4xl mx-auto space-y-6">
             {/* Order Header Skeleton */}
@@ -352,6 +435,4 @@ const LoadingSkeleton = () => (
             </Card>
         </div>
     </div>
-    </>
-
 )

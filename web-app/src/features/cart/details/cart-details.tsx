@@ -1,15 +1,21 @@
 // features/cart/components/cart-details.tsx
-import { useCart } from "@/features/cart/context/cart-context";
+import {ICartItem, useCart} from "@/features/cart/context/cart-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Minus, Plus, Trash2, ShoppingCart } from "lucide-react";
-import {toast} from "sonner";
-import {useNavigate} from "@tanstack/react-router";
-import {api} from "@/config/axios.ts";
-import {useState} from "react";
+import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
+import { api } from "@/config/axios.ts";
+import {useEffect, useState} from "react";
 
+export type GroupedItems = {
+    [restaurantId: string]: {
+        restaurantName: string;
+        items: ICartItem[];
+    };
+};
 export default function CartDetails() {
     const {
         cart,
@@ -23,6 +29,16 @@ export default function CartDetails() {
     } = useCart();
     const navigate = useNavigate();
     const [deliveryAddress, setDeliveryAddress] = useState("");
+    const [province, setProvince] = useState("");
+    const [district, setDistrict] = useState("");
+    const [municipality, setMunicipality] = useState("");
+    const [ward, setWard] = useState("");
+    const [tole, setTole] = useState("");
+
+    useEffect(() => {
+        const combined = `${tole}, Ward ${ward}, ${municipality}, ${district}, ${province}`;
+        setDeliveryAddress(combined.trim());
+    }, [province, district, municipality, ward, tole]);
 
     if (loading) {
         return (
@@ -43,6 +59,17 @@ export default function CartDetails() {
         );
     }
 
+    const groupedItems = cart.items.reduce((acc: GroupedItems, item) => {
+        if (!acc[item.restaurantId]) {
+            acc[item.restaurantId] = {
+                restaurantName: item.restaurantName,
+                items: []
+            };
+        }
+        acc[item.restaurantId].items.push(item);
+        return acc;
+    }, {});
+
     const handleCheckout = async () => {
         try {
             await checkout();
@@ -51,25 +78,19 @@ export default function CartDetails() {
                 deliveryAddress
             });
             console.log(response);
-
             toast("Order placed successfully!");
             navigate({
                 to: "/orders",
-
             });
-        } catch (error) {
-            toast(
-                 "Checkout failed",
-
-            );
+        } catch (_error) {
+            toast("Checkout failed");
         }
     };
-
 
     return (
         <div className="container mx-auto py-8 space-y-6 max-w-3xl">
             <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Your Cart from {cart.restaurantName}</h2>
+                <h2 className="text-2xl font-bold">Your Cart</h2>
                 <Button
                     variant="ghost"
                     size="sm"
@@ -80,80 +101,88 @@ export default function CartDetails() {
                 </Button>
             </div>
 
-            <div className="space-y-4">
-                {cart.items.map((item) => (
-                    <Card key={item.itemId} className="p-4">
-                        <div className="flex justify-between items-start">
-                            <div className="space-y-2">
-                                <img
-                                    src={item.itemImage}
-                                    alt={item.name}
-                                    className="w-24 h-24 rounded-md object-cover"
-                                />
+            <div className="space-y-8">
+                {Object.entries(groupedItems).map(([restaurantId, group]) => (
+                    <div key={restaurantId} className="space-y-4">
+                        <h3 className="text-xl font-semibold">{group.restaurantName}</h3>
 
-                                <p className="text-sm text-muted-foreground">
-                                    ${item.unitPrice.toFixed(2)} each
-                                </p>
-                            </div>
+                        {group.items.map((item) => (
+                            <Card key={item.itemId} className="p-4">
+                                <div className="flex justify-between items-start gap-4">
+                                    <div className="flex gap-4">
+                                        <img
+                                            src={item.itemImage}
+                                            alt={item.name}
+                                            className="w-24 h-24 rounded-md object-cover"
+                                        />
+                                        <div className="space-y-1">
+                                            <h4 className="font-medium">{item.itemName}</h4>
+                                            <p className="text-sm text-muted-foreground">
+                                                ${item.unitPrice.toFixed(2)} each
+                                            </p>
+                                        </div>
+                                    </div>
 
-                            <div className="flex items-center space-x-4">
-                                <div className="flex items-center space-x-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8 w-8 p-0"
-                                        onClick={() => decrementItem(item.itemId)}
-                                        disabled={item.quantity <= 1}
-                                    >
-                                        <Minus className="h-4 w-4" />
-                                    </Button>
+                                    <div className="flex items-center space-x-4">
+                                        <div className="flex items-center space-x-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-8 w-8 p-0"
+                                                onClick={() => decrementItem(item.itemId)}
+                                                disabled={item.quantity <= 1}
+                                            >
+                                                <Minus className="h-4 w-4" />
+                                            </Button>
 
-                                    <Input
-                                        className="w-12 h-8 text-center"
-                                        value={item.quantity}
-                                        onChange={(e) => {
-                                            const newQty = parseInt(e.target.value);
-                                            if (!isNaN(newQty) && newQty > 0) {
-                                                updateItem({ itemId: item.itemId, quantity: newQty });
-                                            }
-                                        }}
-                                    />
+                                            <Input
+                                                className="w-12 h-8 text-center"
+                                                value={item.quantity}
+                                                onChange={(e) => {
+                                                    const newQty = parseInt(e.target.value);
+                                                    if (!isNaN(newQty) && newQty > 0) {
+                                                        updateItem({ itemId: item.itemId, quantity: newQty });
+                                                    }
+                                                }}
+                                            />
 
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8 w-8 p-0"
-                                        onClick={() => addItem({
-                                            itemId: item.itemId,
-                                            itemName: item.itemName,
-                                            itemImage: item.imageUrl,
-                                            quantity: 1,
-                                            unitPrice: item.unitPrice,
-                                            restaurantId: cart.restaurantId,
-                                            restaurantName: cart.restaurantName
-                                        })}
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-8 w-8 p-0"
+                                                onClick={() => addItem({
+                                                    itemId: item.itemId,
+                                                    itemName: item.itemName,
+                                                    itemImage: item.itemImage,
+                                                    quantity: 1,
+                                                    unitPrice: item.unitPrice,
+                                                    restaurantId: item.restaurantId,
+                                                    restaurantName: item.restaurantName
+                                                })}
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-destructive hover:text-destructive h-8 w-8 p-0"
+                                            onClick={() => removeItem(item.itemId)}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </div>
 
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-destructive hover:text-destructive h-8 w-8 p-0"
-                                    onClick={() => removeItem(item.itemId)}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between items-center mt-4">
-                            <Badge variant="outline" className="px-2 py-1">
-                                ${item.totalPrice.toFixed(2)}
-                            </Badge>
-                        </div>
-                    </Card>
+                                <div className="flex justify-between items-center mt-4">
+                                    <Badge variant="outline" className="px-2 py-1">
+                                        Total ${item.totalPrice.toFixed(2)}
+                                    </Badge>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
                 ))}
             </div>
 
@@ -162,21 +191,22 @@ export default function CartDetails() {
                     <span className="text-muted-foreground">Subtotal</span>
                     <span>${cart.totalAmount.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                    <span className="text-muted-foreground">Delivery Fee</span>
-                    <span>$2.99</span>
-                </div>
                 <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>${(cart.totalAmount + 2.99).toFixed(2)}</span>
+                    <span>${(cart.totalAmount ).toFixed(2)}</span>
                 </div>
             </Card>
-            <Input
-                placeholder="Enter delivery address"
-                value={deliveryAddress}
-                onChange={(e) => setDeliveryAddress(e.target.value)}
-                className="w-full"
-            />
+            <div className="text-sm text-muted-foreground text-center">
+                Please note that if u provide false information, your order will be rejected.
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input placeholder="Province" value={province} onChange={(e) => setProvince(e.target.value)} />
+                <Input placeholder="District" value={district} onChange={(e) => setDistrict(e.target.value)} />
+                <Input placeholder="Municipality" value={municipality} onChange={(e) => setMunicipality(e.target.value)} />
+                <Input placeholder="Ward" value={ward} onChange={(e) => setWard(e.target.value)} />
+                <Input placeholder="Tole / Street" value={tole} onChange={(e) => setTole(e.target.value)} />
+            </div>
+
             <Button
                 className="w-full"
                 size="lg"

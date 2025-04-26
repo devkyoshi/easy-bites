@@ -3,7 +3,9 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { api } from "@/config/axios";
 import { useAuth } from "@/stores/auth-context.tsx";
 
-interface ICartItem {
+export interface ICartItem {
+    restaurantName: string;
+    restaurantId: string;
     itemImage?: string;
     name: string | undefined;
     itemId: number;
@@ -85,16 +87,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const addItem = async (item: AddItemRequest) => {
         {
-           console.log(item);
             try {
                 const res = await api.post("/api/order/add-or-create", {
                     userId: currentUser?.userId,
-                    restaurantId: item.restaurantId,
-                    restaurantName: item.restaurantName,
                     items: [{
                         itemId: item.itemId,
                         itemName: item.itemName,
                         itemImage: item.itemImage,
+                        restaurantId: item.restaurantId,
+                        restaurantName: item.restaurantName,
                         quantity: item.quantity,
                         unitPrice: item.unitPrice
                     }]

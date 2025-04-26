@@ -1,5 +1,7 @@
 // src/services/types/order.type.ts
 export interface IOrderItem {
+    restaurantId: string;
+    restaurantName: string;
     itemId: number;
     itemName: string;
     itemImage: string;
@@ -13,7 +15,7 @@ export interface IOrderDetails {
     restaurantId: number;
     restaurantName: string;
     restaurantLogo: string;
-    status: 'PENDING' | 'DELIVERED' | 'DELIVERY_FAILED' | 'CANCELLED';
+    status: 'PENDING' | 'DELIVERED' | 'DELIVERY_FAILED' | 'CANCELLED'| 'DRIVER_ASSIGNED';
     createdAt: string;
     updatedAt: string;
     deliveryAddress: string;

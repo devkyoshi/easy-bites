@@ -5,6 +5,8 @@ import { useAuth } from "@/stores/auth-context.tsx";
 interface IOrderItem {
     itemId: number;
     itemName: string;
+    restaurantId: string;
+    restaurantName: string;
     quantity: number;
     unitPrice: number;
     totalPrice: number;

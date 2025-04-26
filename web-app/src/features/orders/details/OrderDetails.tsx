@@ -167,12 +167,11 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingBag, XCircle, CheckCircle, Clock, Check, Truck } from "lucide-react";
-import {IOrder, OrderProvider, useOrderContext} from "@/features/orders/context/OrderContext.tsx";
+import { OrderProvider, useOrderContext} from "@/features/orders/context/OrderContext.tsx";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {useNavigate} from "@tanstack/react-router";
 import { useState } from "react";
-import { useRef } from "react";
 import { jsPDF } from "jspdf";
 
 const statusIcons = {
@@ -200,10 +199,10 @@ export default function OrdersList() {
         }
     };
 
-    const handleViewDetails = (id: IOrder) => {
+    const handleViewDetails = (id: number) => {
         navigate({
             to: `/orders/order-details`,
-            state: { orderId: id },
+            state: { orderId: id } as unknown as undefined,
         }).then();
     };
 
@@ -220,7 +219,6 @@ export default function OrdersList() {
         y += 10;
         pdf.setFontSize(12);
         pdf.text(`Order ID: ${order.id}`, 10, y);
-        pdf.text(`Restaurant: ${order.restaurantName}`, 10, y + 8);
         pdf.text(`Date: ${new Date(order.createdAt).toLocaleString()}`, 10, y + 16);
 
         if (order.deliveryAddress) {
@@ -229,22 +227,40 @@ export default function OrdersList() {
         }
 
         y += 30;
+
+        // Group items by restaurant name
+        const groupedItems: { [restaurantName: string]: typeof order.items } = {};
+        order.items.forEach(item => {
+            if (!groupedItems[item.restaurantName]) {
+                groupedItems[item.restaurantName] = [];
+            }
+            groupedItems[item.restaurantName].push(item);
+        });
+
         pdf.setFont("helvetica", "bold");
         pdf.text("Qty", 10, y);
         pdf.text("Item", 30, y);
         pdf.text("Price", 160, y, { align: "right" });
-
-        pdf.setFont("helvetica", "normal");
         y += 6;
 
-        order.items.forEach((item) => {
-            pdf.text(`${item.quantity}`, 10, y);
-            pdf.text(item.itemName, 30, y);
-            pdf.text(`$${item.totalPrice.toFixed(2)}`, 160, y, { align: "right" });
+        pdf.setFont("helvetica", "normal");
+
+        Object.entries(groupedItems).forEach(([restaurantName, items]) => {
+            pdf.setFont("helvetica", "bold");
+            pdf.text(restaurantName, 10, y);
             y += 6;
+
+            pdf.setFont("helvetica", "normal");
+            items.forEach(item => {
+                pdf.text(`${item.quantity}`, 10, y);
+                pdf.text(item.itemName, 30, y);
+                pdf.text(`$${item.totalPrice.toFixed(2)}`, 160, y, { align: "right" });
+                y += 6;
+            });
+
+            y += 4;
         });
 
-        y += 4;
         pdf.line(10, y, 200, y);
         y += 8;
 
@@ -508,8 +524,19 @@ export default function OrdersList() {
                                             Cancel Order
                                         </Button>
                                     )}
+                                    {order.status === "DRIVER_ASSIGNED" && (
+                                        <Button
+                                            variant="default"
+                                            size="sm"
+                                            // onClick={() => {
+                                            //    console.log(order.id);
+                                            // }}
+                                        >
+                                            Track Order
+                                        </Button>
+                                    )}
 
-                                    {(order.status === "DELIVERED" || order.status === "RESTAURANT_ACCEPTED" || order.status === "DRIVER_ASSIGNED") && (
+                                    {(order.status === "DELIVERED" ) && (
                                         <Button
                                             variant="default"
                                             size="sm"
