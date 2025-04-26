@@ -3,7 +3,6 @@ package com.ds.masterservice;
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
 import com.ds.masterservice.dao.Deliveries;
-import com.ds.masterservice.dao.Restaurant;
 import com.ds.masterservice.dao.RestaurantManager;
 import com.ds.masterservice.dto.request.*;
 import com.ds.masterservice.dto.response.*;
@@ -76,6 +75,11 @@ public class MasterServiceImpl implements MasterService {
     @Override
     public ApiResponse<List<FoodItemResponse>> getFoodItems(Long restaurantId) throws CustomException {
         return restaurantService.getFoodItems(restaurantId);
+    }
+
+    @Override
+    public ApiResponse<List<RestaurantInitResponse>> getAllRestaurants() throws CustomException {
+        return restaurantService.getAllRestaurants();
     }
 
     @Override

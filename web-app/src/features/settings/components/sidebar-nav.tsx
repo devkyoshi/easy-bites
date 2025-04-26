@@ -1,4 +1,4 @@
-import { useState, type JSX } from 'react'
+import React, { useState, type JSX } from 'react'
 import { useLocation, useNavigate } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
 import { cn } from '@/lib/utils.ts'
@@ -31,7 +31,7 @@ export default function SidebarNav({
 
   const handleSelect = (e: string) => {
     setVal(e)
-    navigate({ to: e })
+    navigate({ to: e }).then()
   }
 
   return (

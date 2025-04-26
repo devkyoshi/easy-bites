@@ -88,7 +88,6 @@ public class UserServiceImpl implements UserService {
                 default -> throw new CustomException(ExceptionCode.INVALID_USER_TYPE);
             };
 
-
             user.setFirstName(registerRequest.getFirstName());
             user.setLastName(registerRequest.getLastName());
             user.setUsername(registerRequest.getUsername());
@@ -163,6 +162,7 @@ public class UserServiceImpl implements UserService {
                    .firstName( user.getFirstName())
                    .lastName(user.getLastName())
                    .email(user.getEmail())
+                   .role(user.getRoles().stream().map(Role::getName).findFirst().orElse(null))
                    .build();
 
            return ApiResponse.successResponse("Login successful", loginResponse);

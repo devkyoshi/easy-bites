@@ -15,8 +15,9 @@ import { ThemeProvider } from './context/theme-context.tsx'
 import './index.css'
 
 
-import {AuthProvider, authRef} from "@/stores/authStore.tsx";
+import {AuthProvider, authRef} from "@/stores/auth-context.tsx";
 import {router} from "@/lib/router.ts";
+
 
 
 
@@ -91,12 +92,16 @@ if (!rootElement.innerHTML) {
       <StrictMode>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+
             <FontProvider>
               <AuthProvider>
                 <RouterProvider router={router} />
               </AuthProvider>
+
             </FontProvider>
-          </ThemeProvider>
+
+            </ThemeProvider>
+
         </QueryClientProvider>
       </StrictMode>
   )

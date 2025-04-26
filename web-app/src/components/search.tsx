@@ -2,6 +2,7 @@ import { IconSearch } from '@tabler/icons-react'
 import { cn } from '@/lib/utils.ts'
 import { useSearch } from '@/context/search-context.tsx'
 import { Button } from './ui/button.tsx'
+import React from "react";
 
 interface Props {
   className?: string

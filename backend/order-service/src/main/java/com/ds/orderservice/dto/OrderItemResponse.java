@@ -9,6 +9,7 @@ import lombok.Setter;
 @Setter
 public class OrderItemResponse {
     private Long itemId;
+    private String itemName;
     private int quantity;
     private double unitPrice;
     private double totalPrice;

@@ -21,4 +21,5 @@ public interface RestaurantService {
     ApiResponse<FoodItemResponse> addFoodItems(Long restaurantId, FoodItemRequest request) throws CustomException;
     ApiResponse<List<MenuCategoryResponse>> getMenuCategories(Long restaurantId) throws CustomException;
     ApiResponse<List<FoodItemResponse>> getFoodItems(Long restaurantId) throws CustomException;
+    public ApiResponse<List<RestaurantInitResponse>> getAllRestaurants() throws CustomException;
  }

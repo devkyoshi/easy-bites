@@ -33,6 +33,8 @@ public interface MasterService {
 
     ApiResponse<List<FoodItemResponse>> getFoodItems(Long restaurantId) throws CustomException;
 
+    ApiResponse<List<RestaurantInitResponse>> getAllRestaurants() throws CustomException;
+
     ApiResponse<List<DriverResponse>> getAllDrivers() throws CustomException;
 
     ApiResponse<DriverResponse> updateDriver(Long driverId, DriverRegistrationRequest registrationDTO) throws CustomException;

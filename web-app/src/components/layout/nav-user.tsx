@@ -23,7 +23,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar.tsx'
-import {useAuth} from "@/stores/authStore.tsx";
+import {useAuth} from "@/stores/auth-context.tsx";
 
 export function NavUser() {
   const { isMobile } = useSidebar()

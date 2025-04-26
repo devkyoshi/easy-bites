@@ -1,10 +1,11 @@
 import Cookies from 'js-cookie'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { cn } from '@/lib/utils.ts'
-import { SearchProvider } from '@/context/search-context.tsx'
+
 import { SidebarProvider } from '@/components/ui/sidebar.tsx'
 import { AppSidebar } from '@/components/layout/app-sidebar.tsx'
 import SkipToMain from '@/components/skip-to-main.tsx'
+import {SearchProvider} from "@/context/search-context.tsx";
 
 export const Route = createFileRoute('/_authenticated')({
   component: RouteComponent,
@@ -13,7 +14,7 @@ export const Route = createFileRoute('/_authenticated')({
 function RouteComponent() {
   const defaultOpen = Cookies.get('sidebar_state') !== 'false'
   return (
-    <SearchProvider>
+<SearchProvider>
       <SidebarProvider defaultOpen={defaultOpen}>
         <SkipToMain />
         <AppSidebar />
@@ -32,6 +33,6 @@ function RouteComponent() {
           <Outlet />
         </div>
       </SidebarProvider>
-    </SearchProvider>
+</SearchProvider>
   )
 }

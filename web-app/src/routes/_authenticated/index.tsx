@@ -1,6 +1,6 @@
 import {createFileRoute, redirect} from '@tanstack/react-router'
 import Dashboard from '@/features/dashboard'
-import {authRef} from "@/stores/authStore.tsx";
+import {authRef} from "@/stores/auth-context.tsx";
 
 export const Route = createFileRoute('/_authenticated/')({
 
