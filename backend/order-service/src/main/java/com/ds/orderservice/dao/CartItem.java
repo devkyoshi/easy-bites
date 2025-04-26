@@ -31,5 +31,4 @@ public class CartItem {
     @Column(name = "total_price")
     private Double totalPrice;
 
-    // Getters and setters
 }

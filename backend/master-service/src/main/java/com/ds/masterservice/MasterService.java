@@ -2,6 +2,7 @@ package com.ds.masterservice;
 
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
+import com.ds.masterservice.dao.Deliveries;
 import com.ds.masterservice.dao.RestaurantManager;
 import com.ds.masterservice.dto.request.food.FoodItemRequest;
 import com.ds.masterservice.dto.request.menu.MenuCategoryCreateRequest;
@@ -11,9 +12,12 @@ import com.ds.masterservice.dto.response.menu.MenuCategoryResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantAdminResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantInitResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantResponse;
+import com.ds.masterservice.dto.request.*;
+import com.ds.masterservice.dto.response.*;
 import com.ds.masterservice.service.RoleService;
 import com.ds.masterservice.service.UserService;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface MasterService {
@@ -40,4 +44,28 @@ public interface MasterService {
     ApiResponse<List<RestaurantInitResponse>> getAllRestaurants() throws CustomException;
 
     ApiResponse<RestaurantAdminResponse> getAdminRestaurantData(Integer restaurantId) throws CustomException;
+
+    ApiResponse<List<DriverResponse>> getAllDrivers() throws CustomException;
+
+    ApiResponse<DriverResponse> updateDriver(Long driverId, DriverRegistrationRequest registrationDTO) throws CustomException;
+
+    ApiResponse<String> deleteDriver(Long driverId) throws CustomException;
+
+    ApiResponse<String> updateLocation(Long driverId, BigDecimal lat, BigDecimal lng) throws CustomException;
+
+    ApiResponse<String> setDriverAvailability(Long driverId, boolean isAvailable) throws CustomException;
+
+    ApiResponse<List<DriverResponse>> getAvailableDrivers() throws CustomException;
+
+    ApiResponse<List<OrderResponse>> getNearbyOrders(Long driverId, BigDecimal lat, BigDecimal lng) throws CustomException;
+
+    ApiResponse<String> notifyNearbyDriversForNewOrder(Long orderId) throws CustomException;
+
+    ApiResponse<DeliveryResponse> acceptOrder(Long driverId, DeliveryAcceptanceRequest dto) throws CustomException;
+
+    ApiResponse<DeliveryResponse> completeDelivery(Long deliveryId, DeliveryCompletionRequest dto) throws CustomException;
+
+    ApiResponse<List<Deliveries>> getDeliveryHistory(Long driverId) throws CustomException;
+
+    ApiResponse<DeliveryResponse> getActiveDelivery(Long driverId) throws CustomException;
 }

@@ -1,11 +1,19 @@
 package com.ds.commons.dto.request;
 
 import com.ds.commons.enums.UserType;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public class RegisterUserRequest {
     private String firstName;
     private String lastName;
@@ -14,13 +22,4 @@ public class RegisterUserRequest {
     private String email;
     private UserType userType;
     private List<String> roles;
-
-    //delivery person specific fields
-    private String vehicleType;
-    private String licenseNumber;
-
-    //restaurant specific fields
-
-
-
 }
