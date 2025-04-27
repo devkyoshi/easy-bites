@@ -39,7 +39,7 @@ public class OrderServiceImpl implements OrderService {
         Cart cart = cartRepository.findById(request.getCartId())
                 .orElseThrow(() -> {
                     logger.error("Cart not found with id: {}", request.getCartId());
-                    return new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+                    return new CustomException(ExceptionCode.CART_NOT_FOUND);
                 });
 
         logger.debug("Cart retrieved: id={}, status={}, userId={}",
@@ -86,7 +86,7 @@ public class OrderServiceImpl implements OrderService {
     }
     public OrderResponse getOrder(Long orderId) throws CustomException {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_NOT_FOUND));
         return mapToOrderResponse(order);
     }
 
@@ -112,7 +112,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId, UpdateOrderStatusRequest request) throws CustomException {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_NOT_FOUND));
 
         try {
             OrderStatus newStatus = OrderStatus.valueOf(request.getStatus());
@@ -127,7 +127,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void deleteOrder(Long orderId) throws CustomException {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_NOT_FOUND));
         orderRepository.delete(order);
     }
     public List<BillResponse> getUserPaidBills(Long userId) {
@@ -139,7 +139,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse updatePaymentStatus(Long orderId, PaymentStatus paymentStatus) throws CustomException {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_NOT_FOUND));
 
         order.setPaymentStatus(paymentStatus);
         order.setUpdatedAt(LocalDateTime.now());
@@ -154,7 +154,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> {
                     logger.error("Order not found with ID: {}", orderId);
-                    return new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+                    return new CustomException(ExceptionCode.ORDER_NOT_FOUND);
                 });
 
         if (order.getStatus() != OrderStatus.PENDING) {

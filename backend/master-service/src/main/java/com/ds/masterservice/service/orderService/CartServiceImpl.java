@@ -129,20 +129,20 @@ public class CartServiceImpl implements CartService {
 
     public CartResponse getCart(Long cartId) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new CustomException(ExceptionCode.CART_NOT_FOUND));
         return mapToCartResponse(cart);
     }
 
     public CartResponse getUserActiveCart(Long userId) throws CustomException {
         Cart cart = cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE)
-                .orElseThrow(() -> new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
         return mapToCartResponse(cart);
     }
 
     @Transactional
     public CartResponse updateCart(Long cartId, UpdateCartRequest request) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new CustomException(ExceptionCode.CART_NOT_FOUND));
 
         if (cart.getStatus() != CartStatus.ACTIVE) {
             throw new IllegalStateException("Cannot update a cart that is not active");
@@ -178,7 +178,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public void deleteCart(Long cartId) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new CustomException(ExceptionCode.CART_NOT_FOUND));
 
         if (cart.getStatus() != CartStatus.ACTIVE) {
             throw new IllegalStateException("Cannot delete a cart that is not active");
@@ -190,7 +190,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public CartResponse checkoutCart(Long cartId) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new CustomException(ExceptionCode.CART_NOT_FOUND));
 
         if (cart.getStatus() != CartStatus.ACTIVE) {
             throw new IllegalStateException("Cannot checkout a cart that is not active");
@@ -211,7 +211,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public CartResponse addItemToCart(Long cartId, AddCartItemRequest request) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new CustomException(ExceptionCode.CART_NOT_FOUND));
 
         if (cart.getStatus() != CartStatus.ACTIVE) {
             throw new IllegalStateException("Cannot add item to a non-active cart");
@@ -246,7 +246,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public CartResponse removeItemFromCart(Long cartId, RemoveCartItemRequest request) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new CustomException(ExceptionCode.CART_NOT_FOUND));
 
         if (cart.getStatus() != CartStatus.ACTIVE) {
             throw new IllegalStateException("Cannot remove item from a non-active cart");
@@ -279,7 +279,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public CartResponse removeOrDecrementItem(Long cartId, RemoveOrDecrementItemRequest request) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new CustomException(ExceptionCode.CART_NOT_FOUND));
 
         if (cart.getStatus() != CartStatus.ACTIVE) {
             throw new IllegalStateException("Cannot modify a non-active cart");
@@ -288,7 +288,7 @@ public class CartServiceImpl implements CartService {
         CartItem item = cart.getItems().stream()
                 .filter(i -> i.getItemId().equals(request.getItemId()))
                 .findFirst()
-                .orElseThrow(() -> new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new CustomException(ExceptionCode.ITEM_NOT_FOUND_IN_CART));
 
         if (item.getQuantity() > 1) {
             item.setQuantity(item.getQuantity() - 1);
@@ -303,7 +303,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public CartResponse clearCart(Long cartId) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new CustomException(ExceptionCode.CART_NOT_FOUND));
 
         if (cart.getStatus() != CartStatus.ACTIVE) {
             throw new IllegalStateException("Cannot clear a non-active cart");
