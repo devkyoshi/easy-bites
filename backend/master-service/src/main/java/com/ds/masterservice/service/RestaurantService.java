@@ -16,15 +16,26 @@ import java.util.List;
 public interface RestaurantService {
 
     ApiResponse<RestaurantResponse> getRestaurant(Long restaurantId) throws CustomException;
+
     ApiResponse<RestaurantInitResponse> createRestaurant(RestaurantCreateUpdateRequest request) throws CustomException;
+
     ApiResponse<MenuCategoryResponse> addMenuCategory(Long restaurantId, MenuCategoryCreateRequest request) throws CustomException;
+
     ApiResponse<FoodItemResponse> addFoodItems(Long restaurantId, FoodItemRequest request) throws CustomException;
+
     ApiResponse<List<MenuCategoryResponse>> getMenuCategories(Long restaurantId) throws CustomException;
+
     ApiResponse<List<FoodItemResponse>> getFoodItems(Long restaurantId) throws CustomException;
+
     ApiResponse<List<RestaurantInitResponse>> getAllRestaurants() throws CustomException;
+
     ApiResponse<RestaurantAdminResponse> getAdminRestaurantData(Integer restaurantId) throws CustomException;
+
     ApiResponse<FoodItemResponse> updateFoodItem(Long restaurantId, Long foodItemId, FoodItemRequest request) throws CustomException;
+
     ApiResponse<Void> deleteFoodItem(Long restaurantId, Long foodItemId) throws CustomException;
+
     ApiResponse<MenuCategoryResponse> updateMenuCategory(Long restaurantId, Long menuCategoryId, MenuCategoryCreateRequest request) throws CustomException;
+
     ApiResponse<Void> deleteMenuCategory(Long restaurantId, Long menuCategoryId) throws CustomException;
  }

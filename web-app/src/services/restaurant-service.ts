@@ -13,6 +13,7 @@ export const getRestaurantDetailsByRestaurant = async (
     const response = await api.get(`/api/restaurants/${restaurantId}`)
     return response.data.result as IRestaurantDetails
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.log(e)
   }
 }
@@ -24,6 +25,7 @@ export const getRestaurantAdminDetails = async (adminId: number) => {
     )
     return response.data.result as AdminRestaurantResult
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.log(e)
   }
 }
