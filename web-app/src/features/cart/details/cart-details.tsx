@@ -77,6 +77,7 @@ export default function CartDetails() {
                 cartId: cart.id,
                 deliveryAddress
             });
+            // eslint-disable-next-line no-console
             console.log(response);
             toast("Order placed successfully!");
             navigate({
@@ -88,7 +89,7 @@ export default function CartDetails() {
     };
 
     return (
-        <div className="container mx-auto py-8 space-y-6 max-w-3xl">
+        <div className="container mx-auto py-8 space-y-6">
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">Your Cart</h2>
                 <Button

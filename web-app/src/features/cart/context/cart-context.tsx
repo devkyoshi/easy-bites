@@ -78,6 +78,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setCart(res.data);
 
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error("Failed to fetch cart:", error);
             setCart(null);
         } finally {
@@ -102,6 +103,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 });
                 setCart(res.data);
             } catch (error) {
+                // eslint-disable-next-line no-console
                 console.error("Failed to add item:", error);
                 throw error;
             }
@@ -118,6 +120,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             });
             setCart(res.data);
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error("Failed to update item:", error);
             throw error;
         }
@@ -132,6 +135,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             });
             setCart(res.data);
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error("Failed to remove item:", error);
             throw error;
         }
@@ -146,6 +150,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             });
             setCart(res.data);
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error("Failed to decrement item:", error);
             throw error;
         }
@@ -158,6 +163,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const res = await api.delete(`/api/order/${cart.id}/clear`);
             setCart(res.data);
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error("Failed to clear cart:", error);
             throw error;
         }
@@ -170,6 +176,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const res = await api.post(`/api/order/${cart.id}/checkout`);
             setCart(res.data);
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error("Failed to checkout:", error);
             throw error;
         }

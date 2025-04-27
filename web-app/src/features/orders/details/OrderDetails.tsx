@@ -332,11 +332,11 @@ export default function OrdersList() {
 
     return (
         <OrderProvider>
-            <div className="container mx-auto py-8 space-y-6 max-w-3xl">
+            <div className="container mx-auto py-8 space-y-6">
                 <h2 className="text-2xl font-bold">Your Orders</h2>
 
                 {/* Order Status Tabs */}
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2">
                     <Card
                         className={`p-3 cursor-pointer transition-colors ${activeTab === 'all' ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}`}
                         onClick={() => setActiveTab('all')}
