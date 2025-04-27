@@ -61,9 +61,7 @@ export const Cart = () => {
 
   const handleViewCart = () => {
     navigate({
-      to: '/cart', // or your specific cart detail route
-      // if you need to pass cartId, use search params or a shared store
-      // example: search: { cartId: cart?.id?.toString() }
+      to: '/cart',
     }).then()
   }
 
