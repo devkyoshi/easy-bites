@@ -40,4 +40,9 @@ public interface MasterService {
     ApiResponse<List<RestaurantInitResponse>> getAllRestaurants() throws CustomException;
 
     ApiResponse<RestaurantAdminResponse> getAdminRestaurantData(Integer restaurantId) throws CustomException;
+
+    ApiResponse<FoodItemResponse> updateFoodItem(Long restaurantId, Long foodItemId, FoodItemRequest request) throws CustomException;
+
+    ApiResponse<Void> deleteFoodItem(Long restaurantId, Long foodItemId) throws CustomException;
+
 }

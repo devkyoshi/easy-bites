@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { addFoodItem } from '@/services/restaurant-service'
+import { addFoodItem, updateFoodItem } from '@/services/restaurant-service'
 import {
   FoodItem,
   AddFoodItemRequest,
@@ -74,11 +74,16 @@ export const FoodItemForm = ({
     )
 
     try {
-      const response = await addFoodItem(restaurantId, data)
+      let response
+      if (!foodItem) {
+        response = await addFoodItem(restaurantId, data)
+      } else {
+        response = await updateFoodItem(restaurantId, foodItem.foodItemId, data)
+      }
 
       if (!response.success) {
         toast.dismiss(toastId)
-        toast.error(response.message, {
+        toast.error(response.message || 'An error occurred. Please try again', {
           duration: 5000,
           position: 'top-center',
         })

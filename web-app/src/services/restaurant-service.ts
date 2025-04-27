@@ -49,3 +49,47 @@ export const addFoodItem = async (
     )
   }
 }
+
+export const updateFoodItem = async (
+  restaurantId: number,
+  foodItemId: number,
+  foodItem: AddFoodItemRequest
+) => {
+  try {
+    const response = await api.put(
+      `/api/restaurants/${restaurantId}/food-items/${foodItemId}`,
+      foodItem
+    )
+    return response.data
+  } catch (e) {
+    toast.error(
+      (e as any).response.data.message ||
+        'Error updating food item. Please try again later.',
+      {
+        duration: 5000,
+        position: 'top-center',
+      }
+    )
+  }
+}
+
+export const deleteFoodItem = async (
+  restaurantId: number,
+  foodItemId: number
+) => {
+  try {
+    const response = await api.delete(
+      `/api/restaurants/${restaurantId}/food-items/${foodItemId}`
+    )
+    return response.data
+  } catch (e) {
+    toast.error(
+      (e as any).response.data.message ||
+        'Error deleting food item. Please try again later.',
+      {
+        duration: 5000,
+        position: 'top-center',
+      }
+    )
+  }
+}

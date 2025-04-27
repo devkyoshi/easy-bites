@@ -13,7 +13,10 @@ import {
   IconCircleX,
   IconCategory,
 } from '@tabler/icons-react'
-import { getRestaurantAdminDetails } from '@/services/restaurant-service.ts'
+import {
+  deleteFoodItem,
+  getRestaurantAdminDetails,
+} from '@/services/restaurant-service.ts'
 import {
   AdminRestaurantResult,
   FoodItem,
@@ -214,6 +217,16 @@ const FoodItemTable = ({
   )
   const [openForm, setOpenForm] = useState(false)
 
+  const handleDelete = async (foodItemId: number) => {
+    if (!restaurantDetails) return
+    try {
+      await deleteFoodItem(restaurantDetails.restaurantId, foodItemId)
+      setRefreshTrigger((prev) => !prev)
+    } catch (error) {
+      console.error('Error deleting food item:', error)
+    }
+  }
+
   return (
     <>
       <Card>
@@ -289,7 +302,10 @@ const FoodItemTable = ({
                           <IconEdit className='mr-2 h-4 w-4' />
                           Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem className='text-red-600'>
+                        <DropdownMenuItem
+                          className='text-red-600'
+                          onClick={() => handleDelete(item.foodItemId)}
+                        >
                           <IconTrash className='mr-2 h-4 w-4' />
                           Delete
                         </DropdownMenuItem>

@@ -31,17 +31,19 @@ import java.util.List;
 @Service
 public class RestaurantServiceImpl implements RestaurantService {
 
-    @Autowired
-    private UserService userService;
+
+    private final UserService userService;
+    private final RestaurantRepository restaurantRepository;
+    private final MenuCategoryRepository menuCategoryRepository;
+    private final FoodItemRepository foodItemRepository;
 
     @Autowired
-    private RestaurantRepository restaurantRepository;
-
-    @Autowired
-    private MenuCategoryRepository menuCategoryRepository;
-
-    @Autowired
-    private FoodItemRepository foodItemRepository;
+    public RestaurantServiceImpl(UserService userService, RestaurantRepository restaurantRepository, MenuCategoryRepository menuCategoryRepository, FoodItemRepository foodItemRepository) {
+        this.userService = userService;
+        this.restaurantRepository = restaurantRepository;
+        this.menuCategoryRepository = menuCategoryRepository;
+        this.foodItemRepository = foodItemRepository;
+    }
 
 
     @Override
@@ -355,7 +357,95 @@ public class RestaurantServiceImpl implements RestaurantService {
        }
     }
 
+    @Override
+    public ApiResponse<FoodItemResponse> updateFoodItem(Long restaurantId, Long foodItemId, FoodItemRequest request) throws CustomException {
+        try {
+            // Check if required fields are present
+            if (request.getName() == null || request.getName().isEmpty()) {
+                log.error("Update Food Item Request Failed: Required fields are missing");
+                throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
+            }
+
+
+            if(!isRestaurantExistById(restaurantId)){
+                log.error("Restaurant with ID {} not found", restaurantId);
+                throw new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND);
+            }
+
+            FoodItem foodItem = foodItemRepository.findById(foodItemId)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.FOOD_ITEM_NOT_FOUND));
+
+            // Update the food item details
+            if(request.getName() != null) {
+                foodItem.setName(request.getName());
+            }
+            if(request.getDescription() != null) {
+                foodItem.setDescription(request.getDescription());
+            }
+            if(request.getPrice() != null) {
+                foodItem.setPrice(request.getPrice());
+            }
+
+            if(request.getImageUrl() != null) {
+                foodItem.setImageUrl(request.getImageUrl());
+            }
+            if(request.getStockQuantityPerDay() != null) {
+                foodItem.setStockQuantityPerDay(request.getStockQuantityPerDay());
+            }
+            if(request.getIsAvailable() != null) {
+                foodItem.setIsAvailable(request.getIsAvailable());
+            }
+            if(request.getCategoryId() != null) {
+                MenuCategory category = menuCategoryRepository.findById(request.getCategoryId())
+                        .orElseThrow(() -> new CustomException(ExceptionCode.MENU_CATEGORY_NOT_FOUND));
+                foodItem.setCategory(category);
+            }
+
+            foodItem = foodItemRepository.save(foodItem);
+
+            FoodItemResponse foodItemResponse = new FoodItemResponse(foodItem);
+
+            return ApiResponse.successResponse("Food item updated successfully", foodItemResponse);
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("An error occurred while updating the food item: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
+    @Override
+    public ApiResponse<Void> deleteFoodItem(Long restaurantId, Long foodItemId) throws CustomException {
+        try {
+            if(!isRestaurantExistById(restaurantId)){
+                log.error("Restaurant {} not found", restaurantId);
+                throw new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND);
+            }
+
+            FoodItem foodItem = foodItemRepository.findById(foodItemId)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.FOOD_ITEM_NOT_FOUND));
+
+            foodItemRepository.delete(foodItem);
+
+            return ApiResponse.successResponse("Food item deleted successfully", null);
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("An error occurred while deleting the food item: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
     public boolean isRestaurantExists(String name) {
         return restaurantRepository.existsByName(name);
     }
+
+    public boolean isRestaurantExistById(Long id) {
+        return restaurantRepository.existsById(id);
+    }
+
 }

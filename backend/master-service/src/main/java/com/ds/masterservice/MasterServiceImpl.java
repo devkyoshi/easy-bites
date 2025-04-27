@@ -88,4 +88,14 @@ public class MasterServiceImpl implements MasterService {
     public ApiResponse<RestaurantAdminResponse> getAdminRestaurantData(Integer restaurantId) throws CustomException {
         return restaurantService.getAdminRestaurantData(restaurantId);
     }
+
+    @Override
+    public ApiResponse<FoodItemResponse> updateFoodItem(Long restaurantId, Long foodItemId, FoodItemRequest request) throws CustomException {
+        return restaurantService.updateFoodItem(restaurantId, foodItemId, request);
+    }
+
+    @Override
+    public ApiResponse<Void> deleteFoodItem(Long restaurantId, Long foodItemId) throws CustomException {
+        return restaurantService.deleteFoodItem(restaurantId, foodItemId);
+    }
 }
