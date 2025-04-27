@@ -1,6 +1,6 @@
 package com.ds.masterservice.dto.response.menu;
 
-import com.ds.masterservice.dao.MenuCategory;
+import com.ds.masterservice.dao.restaurantService.MenuCategory;
 import lombok.Data;
 
 @Data

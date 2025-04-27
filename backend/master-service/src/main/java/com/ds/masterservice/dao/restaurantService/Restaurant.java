@@ -1,6 +1,7 @@
-package com.ds.masterservice.dao;
+package com.ds.masterservice.dao.restaurantService;
 
 import com.ds.commons.enums.DayOfWeek;
+import com.ds.masterservice.dao.RestaurantManager;
 import jakarta.persistence.*;
 import lombok.*;
 
