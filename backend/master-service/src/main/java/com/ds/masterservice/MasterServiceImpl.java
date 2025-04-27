@@ -98,4 +98,14 @@ public class MasterServiceImpl implements MasterService {
     public ApiResponse<Void> deleteFoodItem(Long restaurantId, Long foodItemId) throws CustomException {
         return restaurantService.deleteFoodItem(restaurantId, foodItemId);
     }
+
+    @Override
+    public ApiResponse<MenuCategoryResponse> updateMenuCategory(Long restaurantId, Long menuCategoryId, MenuCategoryCreateRequest request) throws CustomException {
+        return restaurantService.updateMenuCategory(restaurantId, menuCategoryId, request);
+    }
+
+    @Override
+    public ApiResponse<Void> deleteMenuCategory(Long restaurantId, Long menuCategoryId) throws CustomException {
+        return restaurantService.deleteMenuCategory(restaurantId, menuCategoryId);
+    }
 }

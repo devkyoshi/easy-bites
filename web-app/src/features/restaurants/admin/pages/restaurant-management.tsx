@@ -5,13 +5,11 @@ import {
   IconPlus,
   IconMeat,
   IconInfoCircle,
-  IconChevronDown,
   IconClock,
   IconSalad,
   IconCurrencyDollar,
   IconCircleCheck,
   IconCircleX,
-  IconCategory,
 } from '@tabler/icons-react'
 import {
   deleteFoodItem,
@@ -20,8 +18,8 @@ import {
 import {
   AdminRestaurantResult,
   FoodItem,
-  IMenuCategory,
 } from '@/services/types/restaurant.type.ts'
+import { SettingsIcon } from 'lucide-react'
 import { useAuth } from '@/stores/auth-context.tsx'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -44,6 +42,7 @@ import {
 import { Header } from '@/components/layout/header.tsx'
 import { ProfileDropdown } from '@/components/profile-dropdown.tsx'
 import { ThemeSwitch } from '@/components/theme-switch.tsx'
+import { MenuCategoryTable } from '@/features/restaurants/admin/components/menu-items.tsx'
 import { FoodItemForm } from '../components/fooditem-dialog'
 
 export const RestaurantManagementTab = () => {
@@ -183,11 +182,11 @@ export const RestaurantManagementTab = () => {
         />
 
         <MenuCategoryTable
+          onUpdate={() => setRefreshTrigger((prev) => !prev)}
+          restaurantId={restaurantDetails?.restaurantId || 0}
           menus={restaurantDetails?.menuCategories || []}
           foodItems={restaurantDetails?.foodItems || []}
         />
-
-        {/*     Food Item Form Dialog */}
       </div>
     </>
   )
@@ -219,12 +218,9 @@ const FoodItemTable = ({
 
   const handleDelete = async (foodItemId: number) => {
     if (!restaurantDetails) return
-    try {
-      await deleteFoodItem(restaurantDetails.restaurantId, foodItemId)
-      setRefreshTrigger((prev) => !prev)
-    } catch (error) {
-      console.error('Error deleting food item:', error)
-    }
+
+    await deleteFoodItem(restaurantDetails.restaurantId, foodItemId)
+    setRefreshTrigger((prev) => !prev)
   }
 
   return (
@@ -289,7 +285,7 @@ const FoodItemTable = ({
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant='ghost' size='sm'>
-                          <IconChevronDown className='h-4 w-4' />
+                          <SettingsIcon className='h-4 w-4' />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align='end'>
@@ -329,87 +325,5 @@ const FoodItemTable = ({
         menuCategories={restaurantDetails?.menuCategories || []}
       />
     </>
-  )
-}
-const MenuCategoryTable = ({
-  menus,
-  foodItems,
-}: {
-  menus: IMenuCategory[]
-  foodItems: FoodItem[]
-}) => {
-  return (
-    <Card>
-      <CardHeader className='flex flex-row items-center justify-between'>
-        <div className='flex items-center gap-4'>
-          <CardTitle>Menu Categories</CardTitle>
-          <Badge variant='secondary' className='px-2 py-1'>
-            {menus.length} Categories
-          </Badge>
-        </div>
-        <Button>
-          <IconPlus className='mr-2 h-4 w-4' />
-          Add Category
-        </Button>
-      </CardHeader>
-      <CardContent>
-        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-          {menus.map((menu, index) => {
-            const itemCount = foodItems.filter(
-              (item) => item.categoryName === menu.name
-            ).length
-
-            return (
-              <Card key={index} className='group relative hover:shadow-md'>
-                <CardContent className='p-6'>
-                  <div className='flex items-start justify-between'>
-                    <div className='flex items-center gap-4'>
-                      <div className='bg-secondary rounded-lg p-2'></div>
-                      <div>
-                        <h3 className='text-lg font-semibold'>{menu.name}</h3>
-                        <p className='text-muted-foreground text-sm'>
-                          {itemCount} {itemCount === 1 ? 'Item' : 'Items'}
-                        </p>
-                      </div>
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant='ghost'
-                          size='sm'
-                          className='opacity-0 group-hover:opacity-100'
-                        >
-                          <IconChevronDown className='h-4 w-4' />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align='end'>
-                        <DropdownMenuItem>
-                          <IconEdit className='mr-2 h-4 w-4' />
-                          Edit Category
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className='text-red-600'>
-                          <IconTrash className='mr-2 h-4 w-4' />
-                          Delete Category
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-        {menus.length === 0 && (
-          <div className='flex flex-col items-center justify-center space-y-4 py-12'>
-            <IconCategory className='text-muted-foreground h-12 w-12' />
-            <p className='text-muted-foreground'>No categories found</p>
-            <Button>
-              <IconPlus className='mr-2 h-4 w-4' />
-              Create Your First Category
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
   )
 }

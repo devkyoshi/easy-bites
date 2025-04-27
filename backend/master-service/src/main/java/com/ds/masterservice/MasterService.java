@@ -45,4 +45,8 @@ public interface MasterService {
 
     ApiResponse<Void> deleteFoodItem(Long restaurantId, Long foodItemId) throws CustomException;
 
+    ApiResponse<MenuCategoryResponse> updateMenuCategory(Long restaurantId, Long menuCategoryId, MenuCategoryCreateRequest request) throws CustomException;
+
+    ApiResponse<Void> deleteMenuCategory(Long restaurantId, Long menuCategoryId) throws CustomException;
+
 }

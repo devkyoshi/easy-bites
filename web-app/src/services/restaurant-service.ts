@@ -37,6 +37,7 @@ export const addFoodItem = async (
       `/api/restaurants/${restaurantId}/food-items`,
       foodItem
     )
+
     return response.data
   } catch (e) {
     toast.error(
@@ -60,6 +61,7 @@ export const updateFoodItem = async (
       `/api/restaurants/${restaurantId}/food-items/${foodItemId}`,
       foodItem
     )
+
     return response.data
   } catch (e) {
     toast.error(
@@ -81,11 +83,107 @@ export const deleteFoodItem = async (
     const response = await api.delete(
       `/api/restaurants/${restaurantId}/food-items/${foodItemId}`
     )
+
+    if (response.data.success) {
+      toast.success('Food item removed successfully', {
+        duration: 5000,
+        position: 'top-center',
+      })
+    }
+
     return response.data
   } catch (e) {
     toast.error(
       (e as any).response.data.message ||
         'Error deleting food item. Please try again later.',
+      {
+        duration: 5000,
+        position: 'top-center',
+      }
+    )
+  }
+}
+
+export const updateMenuCategory = async (
+  restaurantId: number,
+  categoryId: number,
+  categoryName: string
+) => {
+  try {
+    const response = await api.put(
+      `/api/restaurants/${restaurantId}/categories/${categoryId}`,
+      { name: categoryName }
+    )
+
+    if (response.data.success) {
+      toast.success('Menu category updated successfully', {
+        duration: 5000,
+        position: 'top-center',
+      })
+    }
+    return response.data
+  } catch (e) {
+    toast.error(
+      (e as any).response.data.message ||
+        'Error updating menu category. Please try again later.',
+      {
+        duration: 5000,
+        position: 'top-center',
+      }
+    )
+  }
+}
+
+export const deleteMenuCategory = async (
+  restaurantId: number,
+  categoryId: number
+) => {
+  try {
+    const response = await api.delete(
+      `/api/restaurants/${restaurantId}/categories/${categoryId}`
+    )
+
+    if (response.data.success) {
+      toast.success('Menu category removed successfully', {
+        duration: 5000,
+        position: 'top-center',
+      })
+    }
+    return response.data
+  } catch (e) {
+    toast.error(
+      (e as any).response.data.message ||
+        'Error deleting menu category. Please try again later.',
+      {
+        duration: 5000,
+        position: 'top-center',
+      }
+    )
+  }
+}
+
+export const addMenuCategory = async (
+  restaurantId: number,
+  categoryName: string
+) => {
+  try {
+    const response = await api.post(
+      `/api/restaurants/${restaurantId}/categories`,
+      { name: categoryName }
+    )
+
+    if (response.data.success) {
+      toast.success('Menu category added successfully', {
+        duration: 5000,
+        position: 'top-center',
+      })
+    }
+
+    return response.data
+  } catch (e) {
+    toast.error(
+      (e as any).response.data.message ||
+        'Error adding menu category. Please try again later.',
       {
         duration: 5000,
         position: 'top-center',

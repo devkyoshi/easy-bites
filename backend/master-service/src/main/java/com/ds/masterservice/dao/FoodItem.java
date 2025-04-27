@@ -39,4 +39,7 @@ public class FoodItem {
     @JoinColumn(name = "menu_category_id", nullable = false)
     private MenuCategory category;
 
+    @Column(name = "is_disabled")
+    private Boolean isDisabled = false;
+
 }

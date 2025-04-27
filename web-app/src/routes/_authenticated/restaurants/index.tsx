@@ -1,8 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import RestaurantTab from "@/features/restaurants";
+import CustomerRestaurantsTab from '@/features/restaurants/customer/pages/customer-restaurants.tsx'
 
 export const Route = createFileRoute('/_authenticated/restaurants/')({
-  component: RestaurantTab,
+  component: CustomerRestaurantsTab,
 })
-
-

@@ -39,12 +39,6 @@ public class RestaurantController {
         return masterService.createRestaurant(request);
     }
 
-    @PostMapping("/{restaurantId}/categories")
-    public ApiResponse<MenuCategoryResponse> addMenuCategory(@RequestBody MenuCategoryCreateRequest request, @PathVariable("restaurantId") Long restaurantId) throws CustomException {
-        log.info("Attempting to add menu category for restaurant with ID: {}", restaurantId);
-        return masterService.addMenuCategory(restaurantId, request);
-    }
-
     //FoodItems
     @PostMapping("/{restaurantId}/food-items")
     public ApiResponse<FoodItemResponse> addFoodItems(@RequestBody FoodItemRequest request, @PathVariable("restaurantId") Long restaurantId) throws CustomException {
@@ -70,12 +64,31 @@ public class RestaurantController {
         return masterService.deleteFoodItem(restaurantId, foodItemId);
     }
 
+
+    //Menu Categories
     @GetMapping("/{restaurantId}/categories")
     public ApiResponse<List<MenuCategoryResponse>> getMenuCategories(@PathVariable("restaurantId") Long restaurantId) throws CustomException {
         log.info("Attempting to get menu categories for restaurant with ID: {}", restaurantId);
         return masterService.getMenuCategories(restaurantId);
     }
 
+    @PostMapping("/{restaurantId}/categories")
+    public ApiResponse<MenuCategoryResponse> addMenuCategory(@RequestBody MenuCategoryCreateRequest request, @PathVariable("restaurantId") Long restaurantId) throws CustomException {
+        log.info("Attempting to add menu category for restaurant with ID: {}", restaurantId);
+        return masterService.addMenuCategory(restaurantId, request);
+    }
+
+    @PutMapping("/{restaurantId}/categories/{menuCategoryId}")
+    public ApiResponse<MenuCategoryResponse> updateMenuCategory(@PathVariable("restaurantId") Long restaurantId, @PathVariable("menuCategoryId") Long menuCategoryId, @RequestBody MenuCategoryCreateRequest request) throws CustomException {
+        log.info("Attempting to update menu category with ID: {} for restaurant with ID: {}", menuCategoryId, restaurantId);
+        return masterService.updateMenuCategory(restaurantId, menuCategoryId, request);
+    }
+
+    @DeleteMapping("/{restaurantId}/categories/{menuCategoryId}")
+    public ApiResponse<Void> deleteMenuCategory(@PathVariable("restaurantId") Long restaurantId, @PathVariable("menuCategoryId") Long menuCategoryId) throws CustomException {
+        log.info("Attempting to delete menu category with ID: {} for restaurant with ID: {}", menuCategoryId, restaurantId);
+        return masterService.deleteMenuCategory(restaurantId, menuCategoryId);
+    }
 
     @GetMapping("/{restaurantId}")
     public ApiResponse<RestaurantResponse> getRestaurant(@PathVariable("restaurantId") Long restaurantId) throws CustomException {

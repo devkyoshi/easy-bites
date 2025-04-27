@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -72,12 +73,14 @@ public class RestaurantServiceImpl implements RestaurantService {
 
             List<FoodItemInitResponse> foodItemResponses =  restaurant.getMenuCategories().stream()
                     .flatMap(category -> category.getFoodItems().stream())
+                    .filter(foodItem -> !foodItem.getIsDisabled())
                     .map(FoodItemInitResponse::new)
                     .toList();
 
             response.setFoodItems(foodItemResponses);
 
             List<MenuCategoryInitResponse> menuCategories = restaurant.getMenuCategories().stream()
+                    .filter(category -> !category.getIsDisabled())
                     .map(MenuCategoryInitResponse::new)
                     .toList();
 
@@ -155,16 +158,33 @@ public class RestaurantServiceImpl implements RestaurantService {
             Restaurant restaurant = restaurantRepository.findById(restaurantId)
                     .orElseThrow(() -> new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND));
 
-            if (restaurant.getMenuCategories().stream().anyMatch(category -> category.getName().equalsIgnoreCase(request.getName()))) {
-                log.error("Menu category with name {} already exists", request.getName());
-                throw new CustomException(ExceptionCode.MENU_CATEGORY_ALREADY_EXISTS);
-            }
+              Optional<MenuCategory> existingCategory = restaurant.getMenuCategories().stream()
+                      .filter(category -> category.getName().equalsIgnoreCase(request.getName()))
+                      .findFirst();
+
+              if (existingCategory.isPresent()) {
+                  MenuCategory category = existingCategory.get();
+                  if (category.getIsDisabled()) {
+                      category.setIsDisabled(false);
+                      menuCategoryRepository.save(category);
+                        log.info("Menu category with name {} is reactivated", request.getName());
+                        MenuCategoryResponse menuCategoryResponse = new MenuCategoryResponse();
+                        menuCategoryResponse.setCategoryId(category.getId());
+                        menuCategoryResponse.setName(request.getName());
+                        menuCategoryResponse.setRestaurantId(restaurantId);
+                        return ApiResponse.successResponse("Menu category reactivated successfully", menuCategoryResponse);
+                  } else {
+                      log.error("Menu category with name {} already exists", request.getName());
+                      throw new CustomException(ExceptionCode.MENU_CATEGORY_ALREADY_EXISTS);
+                  }
+              }
 
             // Create and save the new menu category
             MenuCategory menuCategory = new MenuCategory();
 
             menuCategory.setName(request.getName());
             menuCategory.setRestaurant(restaurant);
+            menuCategory.setIsDisabled(false);
 
             restaurant.getMenuCategories().add(menuCategory);
             restaurantRepository.save(restaurant);
@@ -205,7 +225,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                     .orElseThrow(() -> new CustomException(ExceptionCode.MENU_CATEGORY_NOT_FOUND));
 
             // Check if the food item already exists
-            if (foodItemRepository.existsByNameAndCategoryId(request.getName(), request.getCategoryId())) {
+            if (isFoodItemExists(request.getName(), request.getCategoryId())) {
                 log.error("Food item with name {} already exists in category {}", request.getName(), request.getCategoryId());
                 throw new CustomException(ExceptionCode.FOOD_ITEM_ALREADY_EXISTS);
             }
@@ -219,6 +239,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                     .stockQuantityPerDay(request.getStockQuantityPerDay() != null ? request.getStockQuantityPerDay() : 0)
                     .isAvailable(request.getIsAvailable() != null ? request.getIsAvailable() : false)
                     .category(category)
+                    .isDisabled(false)
                     .restaurant(restaurant)
                     .build();
 
@@ -246,9 +267,10 @@ public class RestaurantServiceImpl implements RestaurantService {
             Restaurant restaurant = restaurantRepository.findById(restaurantId)
                     .orElseThrow(() -> new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND));
 
-          List<MenuCategoryResponse> menuCategories = restaurant.getMenuCategories().stream()
-              .map(MenuCategoryResponse::new)
-              .toList();
+        List<MenuCategoryResponse> menuCategories = restaurant.getMenuCategories().stream()
+            .filter(category -> !category.getIsDisabled())
+            .map(MenuCategoryResponse::new)
+            .toList();
 
             return ApiResponse.successResponse("Menu categories fetched successfully", menuCategories);
         } catch (Exception e) {
@@ -268,14 +290,15 @@ public class RestaurantServiceImpl implements RestaurantService {
             Restaurant restaurant = restaurantRepository.findById(restaurantId)
                     .orElseThrow(() -> new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND));
 
+           List<FoodItem> foodItems = restaurant.getMenuCategories().stream()
+             .filter(category -> !category.getIsDisabled())
+             .flatMap(category -> category.getFoodItems().stream())
+             .filter(foodItem -> !foodItem.getIsDisabled())
+             .toList();
 
-            List<FoodItem> foodItems = restaurant.getMenuCategories().stream()
-                    .flatMap(category -> category.getFoodItems().stream())
-                    .toList();
-
-            List<FoodItemResponse> foodItemResponses = foodItems.stream()
-                    .map(FoodItemResponse::new)
-                    .toList();
+           List<FoodItemResponse> foodItemResponses = foodItems.stream()
+                   .map(FoodItemResponse::new)
+                   .toList();
 
             return ApiResponse.successResponse("Food items fetched successfully", foodItemResponses);
         } catch (Exception e) {
@@ -335,13 +358,16 @@ public class RestaurantServiceImpl implements RestaurantService {
                                 .map(DayOfWeek::name)
                                 .toList() : List.of())
                         .isOpen(restaurant != null && restaurant.getIsOpen())
-                         .foodItems(restaurant != null ? restaurant.getMenuCategories().stream()
-                                 .flatMap(category -> category.getFoodItems().stream())
-                                 .map(FoodItemResponse::new)
-                                 .toList() : List.of())
-                        .menuCategories(restaurant != null ? restaurant.getMenuCategories().stream()
-                                .map(MenuCategoryInitResponse::new)
-                                .toList() : List.of())
+                      .foodItems(restaurant != null ? restaurant.getMenuCategories().stream()
+                               .filter(category -> !category.getIsDisabled())
+                               .flatMap(category -> category.getFoodItems().stream())
+                               .filter(foodItem -> !foodItem.getIsDisabled())
+                               .map(FoodItemResponse::new)
+                               .toList() : List.of())
+                      .menuCategories(restaurant != null ? restaurant.getMenuCategories().stream()
+                              .filter(category -> !category.getIsDisabled())
+                              .map(MenuCategoryInitResponse::new)
+                              .toList() : List.of())
                          .build();
 
 
@@ -427,7 +453,9 @@ public class RestaurantServiceImpl implements RestaurantService {
             FoodItem foodItem = foodItemRepository.findById(foodItemId)
                     .orElseThrow(() -> new CustomException(ExceptionCode.FOOD_ITEM_NOT_FOUND));
 
-            foodItemRepository.delete(foodItem);
+
+            foodItem.setIsDisabled(true);
+            foodItemRepository.save(foodItem);
 
             return ApiResponse.successResponse("Food item deleted successfully", null);
         } catch (Exception e) {
@@ -440,12 +468,81 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
+    @Override
+    public ApiResponse<MenuCategoryResponse> updateMenuCategory(Long restaurantId, Long menuCategoryId, MenuCategoryCreateRequest request) throws CustomException {
+        try {
+            // Check if required fields are present
+            if (request.getName() == null || request.getName().isEmpty()) {
+                log.error("Update Menu Category Request Failed: Required fields are missing");
+                throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
+            }
+
+            if(!isRestaurantExistById(restaurantId)){
+                log.error("Restaurant with ID {} not found", restaurantId);
+                throw new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND);
+            }
+
+            MenuCategory menuCategory = menuCategoryRepository.findById(menuCategoryId)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.MENU_CATEGORY_NOT_FOUND));
+
+            // Update the menu category details
+            menuCategory.setName(request.getName());
+
+            menuCategory = menuCategoryRepository.save(menuCategory);
+
+            MenuCategoryResponse menuCategoryResponse = new MenuCategoryResponse(menuCategory);
+
+            return ApiResponse.successResponse("Menu category updated successfully", menuCategoryResponse);
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("An error occurred while updating the menu category: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
+    @Override
+    public ApiResponse<Void> deleteMenuCategory(Long restaurantId, Long menuCategoryId) throws CustomException {
+        try {
+            if(!isRestaurantExistById(restaurantId)){
+                log.error("Restaurant {} not found", restaurantId);
+                throw new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND);
+            }
+
+            MenuCategory menuCategory = menuCategoryRepository.findById(menuCategoryId)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.MENU_CATEGORY_NOT_FOUND));
+
+
+            menuCategory.setIsDisabled(true);
+            menuCategoryRepository.save(menuCategory);
+
+            return ApiResponse.successResponse("Menu category deleted successfully", null);
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("An error occurred while deleting the menu category: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
     public boolean isRestaurantExists(String name) {
         return restaurantRepository.existsByName(name);
     }
 
     public boolean isRestaurantExistById(Long id) {
         return restaurantRepository.existsById(id);
+    }
+
+    public boolean isFoodItemExists( String name, Long categoryId) {
+        return foodItemRepository.existsByNameAndCategoryIdAndIsDisabledFalse( name, categoryId);
+    }
+
+    public boolean isMenuCategoryExists(String name, Long restaurantId) {
+        return menuCategoryRepository.existsMenuCategoryByNameAndRestaurantIdAndIsDisabledFalse(name, restaurantId);
     }
 
 }
