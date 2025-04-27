@@ -1,4 +1,3 @@
-// src/services/auth-service.ts
 import { api } from "@/config/axios.ts"
 
 export interface LoginRequest {
@@ -20,9 +19,7 @@ export interface LoginResponse {
     }
 }
 
-/**
- * Calls POST /auth/login and returns the `result` object
- */
+
 export async function loginUser(
     request: LoginRequest
 ): Promise<LoginResponse["result"]> {

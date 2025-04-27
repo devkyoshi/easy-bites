@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MenuCategoryRepository extends JpaRepository<MenuCategory, Long> {
+
+    Boolean existsMenuCategoryByNameAndRestaurantIdAndIsDisabledFalse( String name, Long restaurantId);
 }

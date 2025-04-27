@@ -1,6 +1,8 @@
-package com.ds.masterservice.dto.response;
+package com.ds.masterservice.dto.response.restaurant;
 
 
+import com.ds.masterservice.dto.response.food.FoodItemInitResponse;
+import com.ds.masterservice.dto.response.menu.MenuCategoryInitResponse;
 import lombok.Data;
 
 import java.util.List;

@@ -8,10 +8,16 @@ import com.ds.masterservice.dao.FoodItem;
 import com.ds.masterservice.dao.MenuCategory;
 import com.ds.masterservice.dao.Restaurant;
 import com.ds.masterservice.dao.RestaurantManager;
-import com.ds.masterservice.dto.request.FoodItemRequest;
-import com.ds.masterservice.dto.request.MenuCategoryCreateRequest;
-import com.ds.masterservice.dto.request.RestaurantCreateUpdateRequest;
-import com.ds.masterservice.dto.response.*;
+import com.ds.masterservice.dto.request.food.FoodItemRequest;
+import com.ds.masterservice.dto.request.menu.MenuCategoryCreateRequest;
+import com.ds.masterservice.dto.request.restaurant.RestaurantCreateUpdateRequest;
+import com.ds.masterservice.dto.response.food.FoodItemInitResponse;
+import com.ds.masterservice.dto.response.food.FoodItemResponse;
+import com.ds.masterservice.dto.response.menu.MenuCategoryInitResponse;
+import com.ds.masterservice.dto.response.menu.MenuCategoryResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantAdminResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantInitResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantResponse;
 import com.ds.masterservice.repository.FoodItemRepository;
 import com.ds.masterservice.repository.MenuCategoryRepository;
 import com.ds.masterservice.repository.RestaurantRepository;
@@ -20,22 +26,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
 public class RestaurantServiceImpl implements RestaurantService {
 
-    @Autowired
-    private UserService userService;
+
+    private final UserService userService;
+    private final RestaurantRepository restaurantRepository;
+    private final MenuCategoryRepository menuCategoryRepository;
+    private final FoodItemRepository foodItemRepository;
 
     @Autowired
-    private RestaurantRepository restaurantRepository;
-
-    @Autowired
-    private MenuCategoryRepository menuCategoryRepository;
-
-    @Autowired
-    private FoodItemRepository foodItemRepository;
+    public RestaurantServiceImpl(UserService userService, RestaurantRepository restaurantRepository, MenuCategoryRepository menuCategoryRepository, FoodItemRepository foodItemRepository) {
+        this.userService = userService;
+        this.restaurantRepository = restaurantRepository;
+        this.menuCategoryRepository = menuCategoryRepository;
+        this.foodItemRepository = foodItemRepository;
+    }
 
 
     @Override
@@ -64,12 +73,14 @@ public class RestaurantServiceImpl implements RestaurantService {
 
             List<FoodItemInitResponse> foodItemResponses =  restaurant.getMenuCategories().stream()
                     .flatMap(category -> category.getFoodItems().stream())
+                    .filter(foodItem -> !foodItem.getIsDisabled())
                     .map(FoodItemInitResponse::new)
                     .toList();
 
             response.setFoodItems(foodItemResponses);
 
             List<MenuCategoryInitResponse> menuCategories = restaurant.getMenuCategories().stream()
+                    .filter(category -> !category.getIsDisabled())
                     .map(MenuCategoryInitResponse::new)
                     .toList();
 
@@ -147,16 +158,33 @@ public class RestaurantServiceImpl implements RestaurantService {
             Restaurant restaurant = restaurantRepository.findById(restaurantId)
                     .orElseThrow(() -> new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND));
 
-            if (restaurant.getMenuCategories().stream().anyMatch(category -> category.getName().equalsIgnoreCase(request.getName()))) {
-                log.error("Menu category with name {} already exists", request.getName());
-                throw new CustomException(ExceptionCode.MENU_CATEGORY_ALREADY_EXISTS);
-            }
+              Optional<MenuCategory> existingCategory = restaurant.getMenuCategories().stream()
+                      .filter(category -> category.getName().equalsIgnoreCase(request.getName()))
+                      .findFirst();
+
+              if (existingCategory.isPresent()) {
+                  MenuCategory category = existingCategory.get();
+                  if (category.getIsDisabled()) {
+                      category.setIsDisabled(false);
+                      menuCategoryRepository.save(category);
+                        log.info("Menu category with name {} is reactivated", request.getName());
+                        MenuCategoryResponse menuCategoryResponse = new MenuCategoryResponse();
+                        menuCategoryResponse.setCategoryId(category.getId());
+                        menuCategoryResponse.setName(request.getName());
+                        menuCategoryResponse.setRestaurantId(restaurantId);
+                        return ApiResponse.successResponse("Menu category reactivated successfully", menuCategoryResponse);
+                  } else {
+                      log.error("Menu category with name {} already exists", request.getName());
+                      throw new CustomException(ExceptionCode.MENU_CATEGORY_ALREADY_EXISTS);
+                  }
+              }
 
             // Create and save the new menu category
             MenuCategory menuCategory = new MenuCategory();
 
             menuCategory.setName(request.getName());
             menuCategory.setRestaurant(restaurant);
+            menuCategory.setIsDisabled(false);
 
             restaurant.getMenuCategories().add(menuCategory);
             restaurantRepository.save(restaurant);
@@ -197,7 +225,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                     .orElseThrow(() -> new CustomException(ExceptionCode.MENU_CATEGORY_NOT_FOUND));
 
             // Check if the food item already exists
-            if (foodItemRepository.existsByNameAndCategoryId(request.getName(), request.getCategoryId())) {
+            if (isFoodItemExists(request.getName(), request.getCategoryId())) {
                 log.error("Food item with name {} already exists in category {}", request.getName(), request.getCategoryId());
                 throw new CustomException(ExceptionCode.FOOD_ITEM_ALREADY_EXISTS);
             }
@@ -211,6 +239,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                     .stockQuantityPerDay(request.getStockQuantityPerDay() != null ? request.getStockQuantityPerDay() : 0)
                     .isAvailable(request.getIsAvailable() != null ? request.getIsAvailable() : false)
                     .category(category)
+                    .isDisabled(false)
                     .restaurant(restaurant)
                     .build();
 
@@ -238,9 +267,10 @@ public class RestaurantServiceImpl implements RestaurantService {
             Restaurant restaurant = restaurantRepository.findById(restaurantId)
                     .orElseThrow(() -> new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND));
 
-          List<MenuCategoryResponse> menuCategories = restaurant.getMenuCategories().stream()
-              .map(MenuCategoryResponse::new)
-              .toList();
+        List<MenuCategoryResponse> menuCategories = restaurant.getMenuCategories().stream()
+            .filter(category -> !category.getIsDisabled())
+            .map(MenuCategoryResponse::new)
+            .toList();
 
             return ApiResponse.successResponse("Menu categories fetched successfully", menuCategories);
         } catch (Exception e) {
@@ -260,14 +290,15 @@ public class RestaurantServiceImpl implements RestaurantService {
             Restaurant restaurant = restaurantRepository.findById(restaurantId)
                     .orElseThrow(() -> new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND));
 
+           List<FoodItem> foodItems = restaurant.getMenuCategories().stream()
+             .filter(category -> !category.getIsDisabled())
+             .flatMap(category -> category.getFoodItems().stream())
+             .filter(foodItem -> !foodItem.getIsDisabled())
+             .toList();
 
-            List<FoodItem> foodItems = restaurant.getMenuCategories().stream()
-                    .flatMap(category -> category.getFoodItems().stream())
-                    .toList();
-
-            List<FoodItemResponse> foodItemResponses = foodItems.stream()
-                    .map(FoodItemResponse::new)
-                    .toList();
+           List<FoodItemResponse> foodItemResponses = foodItems.stream()
+                   .map(FoodItemResponse::new)
+                   .toList();
 
             return ApiResponse.successResponse("Food items fetched successfully", foodItemResponses);
         } catch (Exception e) {
@@ -291,12 +322,227 @@ public class RestaurantServiceImpl implements RestaurantService {
 
             return ApiResponse.successResponse("Restaurants fetched successfully", restaurantResponses);
         } catch (Exception e) {
-            log.error("An error occurred while fetching all restaurants: {}", e.getMessage());
-            throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+                log.error("An error occurred while fetching all restaurants: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ApiResponse<RestaurantAdminResponse> getAdminRestaurantData(Integer adminId) throws CustomException {
+       try{
+
+              RestaurantManager restaurantManager = userService.getRestaurantManagerByUserId(adminId);
+
+                if (restaurantManager == null) {
+                    log.error("Restaurant manager with ID {} not found", adminId);
+                    throw new CustomException(ExceptionCode.RESTAURANT_MANAGER_NOT_FOUND);
+                }
+
+                List<Restaurant> restaurants = restaurantRepository.findByManagerId(adminId);
+
+                //get the first restaurant
+                Restaurant restaurant = restaurants.isEmpty() ? null : restaurants.getFirst();
+
+                RestaurantAdminResponse restaurantAdminResponse = RestaurantAdminResponse.builder()
+                        .restaurantId(restaurant != null ? restaurant.getId() : null)
+                        .restaurantName(restaurant != null ? restaurant.getName() : null)
+                        .restaurantAddress(restaurant != null ? restaurant.getDescription() : null)
+                        .address(restaurant != null ? restaurant.getAddress() : null)
+                        .phone(restaurant != null ? restaurant.getPhone() : null)
+                        .email(restaurant != null ? restaurant.getEmail() : null)
+                        .logo(restaurant != null ? restaurant.getLogoUrl() : null)
+                        .openingHour(restaurant != null ? restaurant.getOpeningHour() : null)
+                        .closingHour(restaurant != null ? restaurant.getClosingHour() : null)
+                        .description(restaurant != null ? restaurant.getDescription() : null)
+                        .daysOpen(restaurant != null ? restaurant.getDaysOpen().stream()
+                                .map(DayOfWeek::name)
+                                .toList() : List.of())
+                        .isOpen(restaurant != null && restaurant.getIsOpen())
+                      .foodItems(restaurant != null ? restaurant.getMenuCategories().stream()
+                               .filter(category -> !category.getIsDisabled())
+                               .flatMap(category -> category.getFoodItems().stream())
+                               .filter(foodItem -> !foodItem.getIsDisabled())
+                               .map(FoodItemResponse::new)
+                               .toList() : List.of())
+                      .menuCategories(restaurant != null ? restaurant.getMenuCategories().stream()
+                              .filter(category -> !category.getIsDisabled())
+                              .map(MenuCategoryInitResponse::new)
+                              .toList() : List.of())
+                         .build();
+
+
+           return ApiResponse.successResponse("Admin restaurant data fetched successfully", restaurantAdminResponse);
+       } catch (Exception e) {
+           if (e instanceof CustomException) {
+               log.error("An custom error occurred while fetching the admin restaurant: {}", e.getMessage());
+               throw (CustomException) e;
+           } else {
+               log.error("An error occurred while fetching the admin restaurant: {}", e.getMessage());
+               throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+           }
+       }
+    }
+
+    @Override
+    public ApiResponse<FoodItemResponse> updateFoodItem(Long restaurantId, Long foodItemId, FoodItemRequest request) throws CustomException {
+        try {
+            // Check if required fields are present
+            if (request.getName() == null || request.getName().isEmpty()) {
+                log.error("Update Food Item Request Failed: Required fields are missing");
+                throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
+            }
+
+
+            if(!isRestaurantExistById(restaurantId)){
+                log.error("Restaurant with ID {} not found", restaurantId);
+                throw new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND);
+            }
+
+            FoodItem foodItem = foodItemRepository.findById(foodItemId)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.FOOD_ITEM_NOT_FOUND));
+
+            // Update the food item details
+            if(request.getName() != null) {
+                foodItem.setName(request.getName());
+            }
+            if(request.getDescription() != null) {
+                foodItem.setDescription(request.getDescription());
+            }
+            if(request.getPrice() != null) {
+                foodItem.setPrice(request.getPrice());
+            }
+
+            if(request.getImageUrl() != null) {
+                foodItem.setImageUrl(request.getImageUrl());
+            }
+            if(request.getStockQuantityPerDay() != null) {
+                foodItem.setStockQuantityPerDay(request.getStockQuantityPerDay());
+            }
+            if(request.getIsAvailable() != null) {
+                foodItem.setIsAvailable(request.getIsAvailable());
+            }
+            if(request.getCategoryId() != null) {
+                MenuCategory category = menuCategoryRepository.findById(request.getCategoryId())
+                        .orElseThrow(() -> new CustomException(ExceptionCode.MENU_CATEGORY_NOT_FOUND));
+                foodItem.setCategory(category);
+            }
+
+            foodItem = foodItemRepository.save(foodItem);
+
+            FoodItemResponse foodItemResponse = new FoodItemResponse(foodItem);
+
+            return ApiResponse.successResponse("Food item updated successfully", foodItemResponse);
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("An error occurred while updating the food item: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
+    @Override
+    public ApiResponse<Void> deleteFoodItem(Long restaurantId, Long foodItemId) throws CustomException {
+        try {
+            if(!isRestaurantExistById(restaurantId)){
+                log.error("Restaurant {} not found", restaurantId);
+                throw new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND);
+            }
+
+            FoodItem foodItem = foodItemRepository.findById(foodItemId)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.FOOD_ITEM_NOT_FOUND));
+
+
+            foodItem.setIsDisabled(true);
+            foodItemRepository.save(foodItem);
+
+            return ApiResponse.successResponse("Food item deleted successfully", null);
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("An error occurred while deleting the food item: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
+    @Override
+    public ApiResponse<MenuCategoryResponse> updateMenuCategory(Long restaurantId, Long menuCategoryId, MenuCategoryCreateRequest request) throws CustomException {
+        try {
+            // Check if required fields are present
+            if (request.getName() == null || request.getName().isEmpty()) {
+                log.error("Update Menu Category Request Failed: Required fields are missing");
+                throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
+            }
+
+            if(!isRestaurantExistById(restaurantId)){
+                log.error("Restaurant with ID {} not found", restaurantId);
+                throw new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND);
+            }
+
+            MenuCategory menuCategory = menuCategoryRepository.findById(menuCategoryId)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.MENU_CATEGORY_NOT_FOUND));
+
+            // Update the menu category details
+            menuCategory.setName(request.getName());
+
+            menuCategory = menuCategoryRepository.save(menuCategory);
+
+            MenuCategoryResponse menuCategoryResponse = new MenuCategoryResponse(menuCategory);
+
+            return ApiResponse.successResponse("Menu category updated successfully", menuCategoryResponse);
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("An error occurred while updating the menu category: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
+    @Override
+    public ApiResponse<Void> deleteMenuCategory(Long restaurantId, Long menuCategoryId) throws CustomException {
+        try {
+            if(!isRestaurantExistById(restaurantId)){
+                log.error("Restaurant {} not found", restaurantId);
+                throw new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND);
+            }
+
+            MenuCategory menuCategory = menuCategoryRepository.findById(menuCategoryId)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.MENU_CATEGORY_NOT_FOUND));
+
+
+            menuCategory.setIsDisabled(true);
+            menuCategoryRepository.save(menuCategory);
+
+            return ApiResponse.successResponse("Menu category deleted successfully", null);
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("An error occurred while deleting the menu category: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
     public boolean isRestaurantExists(String name) {
         return restaurantRepository.existsByName(name);
     }
+
+    public boolean isRestaurantExistById(Long id) {
+        return restaurantRepository.existsById(id);
+    }
+
+    public boolean isFoodItemExists( String name, Long categoryId) {
+        return foodItemRepository.existsByNameAndCategoryIdAndIsDisabledFalse( name, categoryId);
+    }
+
+    public boolean isMenuCategoryExists(String name, Long restaurantId) {
+        return menuCategoryRepository.existsMenuCategoryByNameAndRestaurantIdAndIsDisabledFalse(name, restaurantId);
+    }
+
 }
