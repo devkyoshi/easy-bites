@@ -49,7 +49,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkAuthState = useCallback(() => {
     const token = localStorage.getItem('access_token')
     if (!token || isTokenExpired(token)) {
-      toast.error('Your session has expired. Please sign in again.')
+      toast.error('Your session has expired. Please sign in again.', {
+        duration: 5000,
+        position: 'top-center',
+      })
       logout()
     }
   }, [])
@@ -73,7 +76,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async ({ username, password }: LoginRequest) => {
     const data = await loginUser({ username, password })
 
-    // loginUser returns { userId, username, email, firstName, lastName, accessToken }
     const {
       userId,
       email,

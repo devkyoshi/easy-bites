@@ -10,6 +10,7 @@ export const getRestaurantDetailsByRestaurant = async (
   restaurantId: number
 ) => {
   try {
+    if (!restaurantId) return
     const response = await api.get(`/api/restaurants/${restaurantId}`)
     return response.data.result as IRestaurantDetails
   } catch (e) {
@@ -20,6 +21,7 @@ export const getRestaurantDetailsByRestaurant = async (
 
 export const getRestaurantAdminDetails = async (adminId: number) => {
   try {
+    if (!adminId) return
     const response = await api.get(
       `/api/restaurants/admin-restaurants/${adminId}`
     )

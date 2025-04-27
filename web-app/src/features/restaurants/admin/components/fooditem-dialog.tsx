@@ -70,7 +70,11 @@ export const FoodItemForm = ({
   const onSubmit = async (data: AddFoodItemRequest) => {
     setIsSubmitting(true)
     const toastId = toast.loading(
-      foodItem ? 'Updating item...' : 'Adding new item...'
+      foodItem ? 'Updating item...' : 'Adding new item...',
+      {
+        duration: 0,
+        position: 'top-center',
+      }
     )
 
     try {
@@ -94,9 +98,11 @@ export const FoodItemForm = ({
         foodItem ? 'Item updated successfully' : 'Item added successfully',
         { id: toastId }
       )
+
       onSuccess()
       onOpenChange(false)
     } finally {
+      toast.dismiss(toastId)
       setIsSubmitting(false)
     }
   }

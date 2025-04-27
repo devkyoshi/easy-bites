@@ -13,7 +13,6 @@ import {
   IRestaurantDetails,
   IFoodItem,
 } from '@/services/types/restaurant.type.ts'
-import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { Card, CardContent, CardHeader } from '@/components/ui/card.tsx'
@@ -39,9 +38,7 @@ export function RestaurantDetails() {
         return (await getRestaurantDetailsByRestaurant(
           restaurantId
         )) as IRestaurantDetails
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error) {
-        toast.error('Error Occurred while fetching restaurant details')
+      } catch (_error) {
         return setLoading(false)
       } finally {
         setLoading(false)
