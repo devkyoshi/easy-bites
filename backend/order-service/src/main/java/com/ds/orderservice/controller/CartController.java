@@ -2,6 +2,7 @@ package com.ds.orderservice.controller;
 
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
+import com.ds.communicationservice.CommunicationService;
 import com.ds.masterservice.dto.request.orderService.*;
 import com.ds.masterservice.dto.response.orderService.BillResponse;
 import com.ds.masterservice.dto.response.orderService.CartResponse;
@@ -24,6 +25,7 @@ public class CartController {
 
     private final CartServiceImpl cartServiceImpl;
     private final StripeService stripeService;
+    private final CommunicationService communicationService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
