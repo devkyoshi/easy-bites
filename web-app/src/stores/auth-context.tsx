@@ -4,9 +4,13 @@ import {
   useEffect,
   useState,
   ReactNode,
-} from "react"
-import { loginUser, LoginRequest } from "@/services/auth-service.ts"
+  useCallback,
+} from 'react'
+import { loginUser, LoginRequest } from '@/services/auth-service.ts'
+import { toast } from 'sonner'
 import { router } from '@/lib/router'
+import { isTokenExpired } from '@/utils/jwt-util-functions.ts'
+
 interface AuthUser {
   userId: number
   username: string
@@ -32,23 +36,55 @@ export const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
-  const [accessToken, setAccessToken] = useState("")
+  const [accessToken, setAccessToken] = useState('')
 
   // on-mount: hydrate from localStorage
   useEffect(() => {
-    const usr = localStorage.getItem("auth_user")
-    const tok = localStorage.getItem("access_token")
+    const usr = localStorage.getItem('auth_user')
+    const tok = localStorage.getItem('access_token')
     if (usr) setCurrentUser(JSON.parse(usr))
     if (tok) setAccessToken(tok)
   }, [])
+
+  const checkAuthState = useCallback(() => {
+    const token = localStorage.getItem('access_token')
+    if (!token || isTokenExpired(token)) {
+      toast.error('Your session has expired. Please sign in again.', {
+        duration: 5000,
+        position: 'top-center',
+      })
+      logout()
+    }
+  }, [])
+
+  useEffect(() => {
+    // Hydrate state from localStorage
+    const usr = localStorage.getItem('auth_user')
+    const tok = localStorage.getItem('access_token')
+
+    if (usr) setCurrentUser(JSON.parse(usr))
+    if (tok) setAccessToken(tok)
+
+    // Set up the expiration checker
+    const interval = setInterval(checkAuthState, 30000) // Check every 30 seconds
+    checkAuthState() // Initial check
+
+    return () => clearInterval(interval)
+  }, [checkAuthState])
 
   // signIn calls your service, then updates state & storage
   const signIn = async ({ username, password }: LoginRequest) => {
     const data = await loginUser({ username, password })
 
-    // loginUser returns { userId, username, email, firstName, lastName, accessToken }
-    const { userId, email, firstName, lastName, accessToken, username: uname , role} =
-        data
+    const {
+      userId,
+      email,
+      firstName,
+      lastName,
+      accessToken,
+      username: uname,
+      role,
+    } = data
 
     const user: AuthUser = {
       userId,
@@ -56,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       firstName,
       lastName,
-      role
+      role,
     }
 
     // set in state
@@ -64,32 +100,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(accessToken)
 
     // persist
-    localStorage.setItem("auth_user", JSON.stringify(user))
-    localStorage.setItem("access_token", accessToken)
+    localStorage.setItem('auth_user', JSON.stringify(user))
+    localStorage.setItem('access_token', accessToken)
   }
 
   const logout = () => {
     setCurrentUser(null)
-    setAccessToken("")
-    localStorage.removeItem("auth_user")
-    localStorage.removeItem("access_token")
+    setAccessToken('')
+    localStorage.removeItem('auth_user')
+    localStorage.removeItem('access_token')
     router.invalidate().then()
     router.navigate({ to: '/sign-in' })
-
   }
 
   const value: AuthContextType = { currentUser, accessToken, signIn, logout }
   authRef.current = value
 
-  return (
-      <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
   const ctx = useContext(AuthContext)
   if (!ctx) {
-    throw new Error("useAuth must be inside AuthProvider")
+    throw new Error('useAuth must be inside AuthProvider')
   }
   return ctx
 }

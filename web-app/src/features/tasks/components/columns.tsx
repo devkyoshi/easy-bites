@@ -4,7 +4,6 @@ import { Checkbox } from '@/components/ui/checkbox.tsx'
 import { labels, priorities, statuses } from '../data/data.tsx'
 import { Task } from '../data/schema.ts'
 import { DataTableColumnHeader } from './data-table-column-header.tsx'
-import { DataTableRowActions } from './data-table-row-actions.tsx'
 
 export const columns: ColumnDef<Task>[] = [
   {
@@ -112,8 +111,8 @@ export const columns: ColumnDef<Task>[] = [
       return value.includes(row.getValue(id))
     },
   },
-  {
+/*  {
     id: 'actions',
     cell: ({ row }) => <DataTableRowActions row={row} />,
-  },
+  },*/
 ]

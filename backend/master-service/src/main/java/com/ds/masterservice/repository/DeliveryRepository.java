@@ -3,7 +3,7 @@ package com.ds.masterservice.repository;
 import com.ds.commons.enums.DeliveryStatus;
 import com.ds.masterservice.dao.Deliveries;
 import com.ds.masterservice.dao.DeliveryPerson;
-import com.ds.masterservice.dao.Order;
+import com.ds.masterservice.dao.orderService.Order;
 import com.ds.masterservice.dto.response.RatingDistributionResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,7 +19,7 @@ public interface DeliveryRepository extends JpaRepository<Deliveries, Long> {
     boolean existsByOrderAndStatusIn(Order order, List<DeliveryStatus> statuses);
 
     @Query(value = """
-    SELECT 
+    SELECT\s
         DAYNAME(d.created_at) AS day,
         COUNT(d.id) AS deliveryCount,
         COALESCE(SUM(o.total_amount * 0.1), 0) AS totalEarnings
@@ -28,7 +28,7 @@ public interface DeliveryRepository extends JpaRepository<Deliveries, Long> {
     WHERE d.driver_id = :driverId
     AND d.created_at >= :startDate
     GROUP BY DAYNAME(d.created_at)
-    """, nativeQuery = true)
+   \s""", nativeQuery = true)
     List<WeeklyStatsProjection> findWeeklyStatsByDriverNative(
             @Param("driverId") Long driverId,
             @Param("startDate") LocalDate startDate);

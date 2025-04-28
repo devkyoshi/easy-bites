@@ -9,6 +9,8 @@ import com.ds.masterservice.dto.request.DeliveryCompletionRequest;
 import com.ds.masterservice.dto.request.DeliveryRatingRequest;
 import com.ds.masterservice.dto.request.DriverRegistrationRequest;
 import com.ds.masterservice.dto.response.*;
+import com.ds.masterservice.dto.response.orderService.OrderResponse;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,23 +35,23 @@ public class DeliveryController {
 
     @GetMapping("/orders/nearby")
     public ApiResponse<List<OrderResponse>> getNearbyOrders(
-            @RequestParam Long driverId,
-            @RequestParam BigDecimal lat,
-            @RequestParam BigDecimal lng
+            @RequestParam("driverId") Long driverId,
+            @RequestParam("lat") BigDecimal lat,
+            @RequestParam("lng") BigDecimal lng
     ) throws CustomException {
         log.info("Fetching nearby orders for driver ID: {}", driverId);
         return masterService.getNearbyOrders(driverId, lat, lng);
     }
 
     @PostMapping("/drivers/notify")
-    public ApiResponse<String> notifyDrivers(@RequestParam Long orderId) throws CustomException {
+    public ApiResponse<String> notifyDrivers(@RequestParam("orderId") Long orderId) throws CustomException {
         log.info("Notifying nearby drivers for order ID: {}", orderId);
         return masterService.notifyNearbyDriversForNewOrder(orderId);
     }
 
     @PostMapping("/orders/accept")
     public ApiResponse<DeliveryResponse> acceptOrder(
-            @RequestParam Long driverId,
+            @RequestParam("driverId") Long driverId,
             @RequestBody DeliveryAcceptanceRequest dto
     ) throws CustomException {
         log.info("Driver ID {} attempting to accept order", driverId);
@@ -58,7 +60,7 @@ public class DeliveryController {
 
     @PostMapping("/delivery/complete")
     public ApiResponse<DeliveryResponse> completeDelivery(
-            @RequestParam Long deliveryId,
+            @RequestParam("deliveryId") Long deliveryId,
             @RequestBody DeliveryCompletionRequest dto
     ) throws CustomException {
         log.info("Completing delivery ID: {}", deliveryId);
@@ -66,7 +68,7 @@ public class DeliveryController {
     }
 
     @GetMapping("/delivery/history")
-    public ApiResponse<List<Deliveries>> getDeliveryHistory(@RequestParam Long driverId) throws CustomException {
+    public ApiResponse<List<DeliveryHistoryResponse>> getDeliveryHistory(@RequestParam("driverId") Long driverId) throws CustomException {
         log.info("Fetching delivery history for driver ID: {}", driverId);
         return masterService.getDeliveryHistory(driverId);
     }
@@ -84,33 +86,33 @@ public class DeliveryController {
     }
 
     @GetMapping("/delivery/active")
-    public ApiResponse<DeliveryResponse> getActiveDelivery(@RequestParam Long driverId) throws CustomException {
+    public ApiResponse<DeliveryResponse> getActiveDelivery(@RequestParam("driverId") Long driverId) throws CustomException {
         log.info("Fetching active delivery for driver ID: {}", driverId);
         return masterService.getActiveDelivery(driverId);
     }
 
     @GetMapping("/analytics/weekly")
     public ApiResponse<List<WeeklyStatsResponse>> getWeeklyStats(
-            @RequestParam Long driverId) throws CustomException {
+            @RequestParam("driverId") Long driverId) throws CustomException {
         return masterService.getWeeklyStats(driverId);
     }
 
     @GetMapping("/analytics/ratings")
     public ApiResponse<List<RatingDistributionResponse>> getRatingDistribution(
-            @RequestParam Long driverId) throws CustomException {
+            @RequestParam("driverId") Long driverId) throws CustomException {
         return masterService.getRatingDistribution(driverId);
     }
 
     @GetMapping("/analytics/average-rating")
     public ApiResponse<Double> getAverageRating(
-            @RequestParam Long driverId) throws CustomException {
+            @RequestParam("driverId") Long driverId) throws CustomException {
         return masterService.getAverageRating(driverId);
     }
 
     @PostMapping("/delivery/{deliveryId}/rate")
     public ApiResponse<String> rateDelivery(
-            @PathVariable Long deliveryId,
-            @RequestBody DeliveryRatingRequest request) throws CustomException {
+            @PathVariable("deliveryId") Long deliveryId,
+            @Valid @RequestBody DeliveryRatingRequest request) throws CustomException {
         return masterService.rateDelivery(deliveryId, request);
     }
 
@@ -123,14 +125,14 @@ public class DeliveryController {
     }
 
     @GetMapping("/drivers/{driverId}")
-    public ApiResponse<DriverResponse> getDriver(@PathVariable Long driverId) throws CustomException {
+    public ApiResponse<DriverResponse> getDriver(@PathVariable("driverId") Long driverId) throws CustomException {
         log.info("Fetching driver ID: {}", driverId);
         return masterService.getDriver(driverId);
     }
 
     @PutMapping("/drivers/{driverId}")
     public ApiResponse<DriverResponse> updateDriver(
-            @PathVariable Long driverId,
+            @PathVariable("driverId") Long driverId,
             @RequestBody DriverRegistrationRequest registrationDTO
     ) throws CustomException {
         log.info("Updating driver ID: {}", driverId);
@@ -138,14 +140,14 @@ public class DeliveryController {
     }
 
     @DeleteMapping("/drivers/{driverId}")
-    public ApiResponse<String> deleteDriver(@PathVariable Long driverId) throws CustomException {
+    public ApiResponse<String> deleteDriver(@PathVariable("driverId") Long driverId) throws CustomException {
         log.info("Deleting driver ID: {}", driverId);
         return masterService.deleteDriver(driverId);
     }
 
     @PutMapping("/drivers/{driverId}/location")
     public ApiResponse<String> updateLocation(
-            @PathVariable Long driverId,
+            @PathVariable("driverId") Long driverId,
             @RequestParam BigDecimal lat,
             @RequestParam BigDecimal lng
     ) throws CustomException {
@@ -155,8 +157,8 @@ public class DeliveryController {
 
     @PutMapping("/drivers/{driverId}/availability")
     public ApiResponse<String> setDriverAvailability(
-            @PathVariable Long driverId,
-            @RequestParam boolean isAvailable
+            @PathVariable("driverId") Long driverId,
+            @Valid @RequestParam("isAvailable") boolean isAvailable
     ) throws CustomException {
         log.info("Setting availability for driver ID: {} to {}", driverId, isAvailable);
         return masterService.setDriverAvailability(driverId, isAvailable);

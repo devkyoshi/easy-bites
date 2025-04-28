@@ -1,6 +1,7 @@
 package com.ds.masterservice.dao;
 
 import com.ds.commons.enums.DeliveryStatus;
+import com.ds.masterservice.dao.orderService.Order;
 import jakarta.persistence.*;
 import lombok.*;
 

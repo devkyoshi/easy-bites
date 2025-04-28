@@ -1,7 +1,6 @@
 package com.ds.masterservice.service;
 
 import com.ds.commons.enums.DeliveryStatus;
-import com.ds.commons.enums.OrderStatus;
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.exception.ExceptionCode;
 import com.ds.commons.template.ApiResponse;
@@ -9,14 +8,18 @@ import com.ds.commons.utils.EmailUtil;
 import com.ds.commons.utils.GeoUtils;
 import com.ds.commons.utils.GeocodingUtil;
 import com.ds.masterservice.dao.*;
+import com.ds.masterservice.dao.orderService.Order;
+import com.ds.masterservice.dao.orderService.OrderStatus;
 import com.ds.masterservice.dto.request.DeliveryAcceptanceRequest;
 import com.ds.masterservice.dto.request.DeliveryCompletionRequest;
 import com.ds.masterservice.dto.request.DeliveryRatingRequest;
+import com.ds.masterservice.dto.response.DeliveryHistoryResponse;
 import com.ds.masterservice.dto.response.DeliveryResponse;
-import com.ds.masterservice.dto.response.OrderResponse;
 import com.ds.masterservice.dto.response.RatingDistributionResponse;
 import com.ds.masterservice.dto.response.WeeklyStatsResponse;
+import com.ds.masterservice.dto.response.orderService.OrderResponse;
 import com.ds.masterservice.repository.*;
+import com.ds.masterservice.repository.orderService.OrderRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +43,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Autowired(required = false)
     private Optional<EmailUtil> emailUtil;
     private final Set<Long> notifiedOrderIds = new HashSet<>();
-    private static final double DELIVERY_RADIUS_KM = 5.0;
+    private static final double DELIVERY_RADIUS_KM = 55.0;
 
     @Autowired
     public DeliveryServiceImpl(DeliveryRepository deliveryRepository, DeliveryDriverRepository deliveryDriverRepository, OrderRepository orderRepository, RestaurantRepository restaurantRepository, UserRepository userRepository ) {
@@ -63,14 +66,18 @@ public class DeliveryServiceImpl implements DeliveryService {
             driver.setCurrentLng(lng);
             deliveryDriverRepository.save(driver);
 
-            List<OrderResponse> orders = orderRepository.findByStatus(OrderStatus.RESTAURANT_ACCEPTED);
+            List<Order> orders = orderRepository.findByStatus(OrderStatus.RESTAURANT_ACCEPTED);
+
             List<OrderResponse> nearbyOrders = new ArrayList<>();
 
-            for (OrderResponse order : orders) {
+            log.debug("Found {} orders in RESTAURANT_ACCEPTED status", orders.size());
+            for (Order order : orders) {
                 try {
                     BigDecimal[] coordinates = geocodingUtil
                             .orElseThrow(() -> new CustomException(ExceptionCode.GEOCODING_UNAVAILABLE))
                             .getCoordinates(order.getDeliveryAddress());
+                    log.debug("Order {} address {} converted to coordinates: {}, {}",
+                            order.getId(), order.getDeliveryAddress(), coordinates[0], coordinates[1]);
 
                     double distance = GeoUtils.calculateDistance(
                             lat,
@@ -78,8 +85,11 @@ public class DeliveryServiceImpl implements DeliveryService {
                             coordinates[0],
                             coordinates[1]
                     );
+                    log.debug("Distance for order {}: {} km (radius: {} km)",
+                            order.getId(), distance, DELIVERY_RADIUS_KM);
+
                     if (distance <= DELIVERY_RADIUS_KM) {
-                        nearbyOrders.add(order);
+                        nearbyOrders.add(convertOrderToResponse(order));
                     }
                 } catch (CustomException e) {
                     log.warn("Geocoding failed for order ID {}: {}", order.getId(), e.getMessage());
@@ -96,6 +106,63 @@ public class DeliveryServiceImpl implements DeliveryService {
             }
         }
     }
+
+    private OrderResponse convertOrderToResponse(Order order) {
+        OrderResponse response = new OrderResponse();
+        response.setId(order.getId());
+        response.setUserId(order.getUserId());
+        response.setTotalAmount(order.getTotalAmount());
+        response.setStatus(order.getStatus());
+        response.setPaymentStatus(String.valueOf(order.getPaymentStatus()));
+        response.setDeliveryAddress(order.getDeliveryAddress());
+        response.setCreatedAt(order.getCreatedAt());
+        response.setUpdatedAt(order.getUpdatedAt());
+        return response;
+    }
+//    public ApiResponse<List<OrderResponse>> getNearbyOrders(Long driverId, BigDecimal lat, BigDecimal lng) throws CustomException {
+//        try {
+//            log.debug("Fetching nearby orders for driverId: {}", driverId);
+//
+//            DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
+//                    .orElseThrow(() -> new CustomException(ExceptionCode.DRIVER_NOT_FOUND));
+//
+//            driver.setCurrentLat(lat);
+//            driver.setCurrentLng(lng);
+//            deliveryDriverRepository.save(driver);
+//
+//            List<OrderResponse> orders = orderRepository.findByStatus(OrderStatus.RESTAURANT_ACCEPTED);
+//            List<OrderResponse> nearbyOrders = new ArrayList<>();
+//
+//            for (OrderResponse order : orders) {
+//                try {
+//                    BigDecimal[] coordinates = geocodingUtil
+//                            .orElseThrow(() -> new CustomException(ExceptionCode.GEOCODING_UNAVAILABLE))
+//                            .getCoordinates(order.getDeliveryAddress());
+//
+//                    double distance = GeoUtils.calculateDistance(
+//                            lat,
+//                            lng,
+//                            coordinates[0],
+//                            coordinates[1]
+//                    );
+//                    if (distance <= DELIVERY_RADIUS_KM) {
+//                        nearbyOrders.add(order);
+//                    }
+//                } catch (CustomException e) {
+//                    log.warn("Geocoding failed for order ID {}: {}", order.getId(), e.getMessage());
+//                }
+//            }
+//
+//            return ApiResponse.successResponse("Nearby orders fetched", nearbyOrders);
+//        } catch (Exception e) {
+//            if (e instanceof CustomException) {
+//                throw (CustomException) e;
+//            } else {
+//                log.error("Unexpected error in getNearbyOrders: {}", e.getMessage(), e);
+//                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+//            }
+//        }
+//    }
 
     public ApiResponse<String> notifyNearbyDriversForNewOrder(Long orderId) throws CustomException {
         try {
@@ -129,7 +196,7 @@ public class DeliveryServiceImpl implements DeliveryService {
                     String message = String.format("Hi %s, a new order is available within %.1f KM from your location. Order ID: %d",
                             fullName, distance, order.getId());
 
-                    sendEmailWithFallback(driver.getEmail(), subject, message);
+                    //sendEmailWithFallback(driver.getEmail(), subject, message);
                     notifiedCount++;
                 }
             }
@@ -167,11 +234,17 @@ public class DeliveryServiceImpl implements DeliveryService {
             Order order = orderRepository.findById(dto.getOrderId())
                     .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_NOT_FOUND));
 
-            Restaurant restaurant = restaurantRepository.findById(order.getRestaurantId())
+            // 🛠️ Get restaurantId from the first order item
+            if (order.getItems() == null || order.getItems().isEmpty()) {
+                throw new CustomException(ExceptionCode.ORDER_ITEM_NOT_FOUND);
+            }
+
+            Long restaurantId = order.getItems().getFirst().getRestaurantId(); // Assuming all items are from the same restaurant
+            Restaurant restaurant = restaurantRepository.findById(restaurantId)
                     .orElseThrow(() -> new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND));
 
             boolean alreadyAssigned = deliveryRepository.existsByOrderAndStatusIn(
-                    order, List.of(DeliveryStatus.ACCEPTED, DeliveryStatus.ACCEPTED)
+                    order, List.of(DeliveryStatus.ACCEPTED)
             );
 
             if (alreadyAssigned) {
@@ -185,6 +258,7 @@ public class DeliveryServiceImpl implements DeliveryService {
             BigDecimal[] orderCoordinates = geocodingUtil
                     .orElseThrow(() -> new CustomException(ExceptionCode.GEOCODING_UNAVAILABLE))
                     .getCoordinates(order.getDeliveryAddress());
+
             BigDecimal[] restaurantCoordinates = geocodingUtil
                     .orElseThrow(() -> new CustomException(ExceptionCode.GEOCODING_UNAVAILABLE))
                     .getCoordinates(restaurant.getAddress());
@@ -197,17 +271,17 @@ public class DeliveryServiceImpl implements DeliveryService {
             delivery.setDeliveryLat(orderCoordinates[0]);
             delivery.setDeliveryLng(orderCoordinates[1]);
             delivery.setStatus(DeliveryStatus.ACCEPTED);
+
             driver.setIsAvailable(false);
             deliveryDriverRepository.save(driver);
 
             Customer customer = userRepository.findCustomerById(Math.toIntExact(order.getUserId()))
                     .orElseThrow(() -> new CustomException(ExceptionCode.CUSTOMER_NOT_FOUND));
 
-            // Use EmailUtil
             String subject = "Order Accepted";
             String message = String.format("Hi %s, your order #%d has been accepted by a driver and is on the way!",
                     customer.getFirstName(), order.getId());
-            sendEmailWithFallback(customer.getEmail(), subject, message);
+            //sendEmailWithFallback(customer.getEmail(), subject, message);
 
             log.info("Driver {} accepted order {}", driverId, order.getId());
 
@@ -263,7 +337,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         String subject = "Order Accepted";
         String message = String.format("Hi %s, your order #%d has been delivered. Enjoy the order!",
                 customer.getFirstName(), order.getId());
-        sendEmailWithFallback(customer.getEmail(), subject, message);
+        //sendEmailWithFallback(customer.getEmail(), subject, message);
 
         DeliveryResponse response = convertToResponse(delivery);
 
@@ -272,7 +346,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     @Transactional
-    public ApiResponse<List<Deliveries>> getDeliveryHistory(Long driverId) throws CustomException {
+    public ApiResponse<List<DeliveryHistoryResponse>> getDeliveryHistory(Long driverId) throws CustomException {
         DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
                 .orElseThrow(() -> {
                     log.warn("Driver with ID {} not found for getting history", driverId);
@@ -285,9 +359,12 @@ public class DeliveryServiceImpl implements DeliveryService {
             throw new CustomException(ExceptionCode.NO_DELIVERY_HISTORY);
         }
 
-        return ApiResponse.successResponse("Delivery history fetched", deliveries);
-    }
+        List<DeliveryHistoryResponse> response = deliveries.stream()
+                .map(this::mapToDeliveryHistoryResponse)
+                .collect(Collectors.toList());
 
+        return ApiResponse.successResponse("Delivery history fetched", response);
+    }
     @Override
     public ApiResponse<List<Deliveries>> getAllDeliveries() throws CustomException {
         List<Deliveries> deliveries = deliveryRepository.findAll();
@@ -418,6 +495,39 @@ public class DeliveryServiceImpl implements DeliveryService {
         response.setPickupLat(delivery.getPickupLat());
         response.setDeliveryLat(delivery.getDeliveryLat());
         response.setDeliveryLng(delivery.getDeliveryLng());
+        return response;
+    }
+
+    private DeliveryHistoryResponse mapToDeliveryHistoryResponse(Deliveries delivery) {
+        DeliveryHistoryResponse response = new DeliveryHistoryResponse();
+
+        // Map basic delivery fields
+        response.setId(delivery.getId());
+        response.setPickupLat(delivery.getPickupLat());
+        response.setPickupLng(delivery.getPickupLng());
+        response.setDeliveryLat(delivery.getDeliveryLat());
+        response.setDeliveryLng(delivery.getDeliveryLng());
+        response.setStatus(delivery.getStatus().name());
+        response.setNotes(delivery.getNotes());
+        response.setProofImage(delivery.getProofImage());
+        response.setRating(delivery.getRating());
+        response.setRatingComment(delivery.getRatingComment());
+        response.setCreatedAt(delivery.getCreatedAt());
+        response.setUpdatedAt(delivery.getUpdatedAt());
+
+        // Map order details
+        if (delivery.getOrder() != null) {
+            response.setOrderId(delivery.getOrder().getId());
+            response.setDeliveryAddress(delivery.getOrder().getDeliveryAddress());
+            response.setRestaurantName(delivery.getOrder().getRestaurantName());
+        }
+
+        // Map driver details (if needed)
+        if (delivery.getDriver() != null) {
+            response.setDriverId((long) delivery.getDriver().getId());
+            response.setDriverName(delivery.getDriver().getFirstName() + " " + delivery.getDriver().getLastName());
+        }
+
         return response;
     }
 }

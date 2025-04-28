@@ -25,4 +25,7 @@ public class MenuCategory {
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<FoodItem> foodItems;
+
+    @Column(name = "is_disabled")
+    private Boolean isDisabled = false;
 }

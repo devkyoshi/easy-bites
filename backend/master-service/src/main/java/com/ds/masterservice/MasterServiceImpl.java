@@ -5,7 +5,16 @@ import com.ds.commons.template.ApiResponse;
 import com.ds.masterservice.dao.Deliveries;
 import com.ds.masterservice.dao.RestaurantManager;
 import com.ds.masterservice.dto.request.*;
+import com.ds.masterservice.dto.request.food.FoodItemRequest;
+import com.ds.masterservice.dto.request.menu.MenuCategoryCreateRequest;
+import com.ds.masterservice.dto.request.restaurant.RestaurantCreateUpdateRequest;
 import com.ds.masterservice.dto.response.*;
+import com.ds.masterservice.dto.response.food.FoodItemResponse;
+import com.ds.masterservice.dto.response.menu.MenuCategoryResponse;
+import com.ds.masterservice.dto.response.orderService.OrderResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantAdminResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantInitResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantResponse;
 import com.ds.masterservice.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -83,6 +92,31 @@ public class MasterServiceImpl implements MasterService {
     }
 
     @Override
+    public ApiResponse<RestaurantAdminResponse> getAdminRestaurantData(Integer restaurantId) throws CustomException {
+        return restaurantService.getAdminRestaurantData(restaurantId);
+    }
+
+    @Override
+    public ApiResponse<FoodItemResponse> updateFoodItem(Long restaurantId, Long foodItemId, FoodItemRequest request) throws CustomException {
+        return restaurantService.updateFoodItem(restaurantId, foodItemId, request);
+    }
+
+    @Override
+    public ApiResponse<Void> deleteFoodItem(Long restaurantId, Long foodItemId) throws CustomException {
+        return restaurantService.deleteFoodItem(restaurantId, foodItemId);
+    }
+
+    @Override
+    public ApiResponse<MenuCategoryResponse> updateMenuCategory(Long restaurantId, Long menuCategoryId, MenuCategoryCreateRequest request) throws CustomException {
+        return restaurantService.updateMenuCategory(restaurantId, menuCategoryId, request);
+    }
+
+    @Override
+    public ApiResponse<Void> deleteMenuCategory(Long restaurantId, Long menuCategoryId) throws CustomException {
+        return restaurantService.deleteMenuCategory(restaurantId, menuCategoryId);
+    }
+
+    @Override
     public ApiResponse<List<DriverResponse>> getAllDrivers() throws CustomException {
         return deliveryDriverService.getAllDrivers();
     }
@@ -138,7 +172,7 @@ public class MasterServiceImpl implements MasterService {
     }
 
     @Override
-    public ApiResponse<List<Deliveries>> getDeliveryHistory(Long driverId) throws CustomException {
+    public ApiResponse<List<DeliveryHistoryResponse>> getDeliveryHistory(Long driverId) throws CustomException {
         return deliveryService.getDeliveryHistory(driverId);
     }
 

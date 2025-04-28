@@ -5,7 +5,16 @@ import com.ds.commons.template.ApiResponse;
 import com.ds.masterservice.dao.Deliveries;
 import com.ds.masterservice.dao.RestaurantManager;
 import com.ds.masterservice.dto.request.*;
+import com.ds.masterservice.dto.request.food.FoodItemRequest;
+import com.ds.masterservice.dto.request.menu.MenuCategoryCreateRequest;
+import com.ds.masterservice.dto.request.restaurant.RestaurantCreateUpdateRequest;
 import com.ds.masterservice.dto.response.*;
+import com.ds.masterservice.dto.response.food.FoodItemResponse;
+import com.ds.masterservice.dto.response.menu.MenuCategoryResponse;
+import com.ds.masterservice.dto.response.orderService.OrderResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantAdminResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantInitResponse;
+import com.ds.masterservice.dto.response.restaurant.RestaurantResponse;
 import com.ds.masterservice.service.RoleService;
 import com.ds.masterservice.service.UserService;
 
@@ -57,7 +66,7 @@ public interface MasterService {
 
     ApiResponse<DeliveryResponse> completeDelivery(Long deliveryId, DeliveryCompletionRequest dto) throws CustomException;
 
-    ApiResponse<List<Deliveries>> getDeliveryHistory(Long driverId) throws CustomException;
+    ApiResponse<List<DeliveryHistoryResponse>> getDeliveryHistory(Long driverId) throws CustomException;
 
     ApiResponse<List<Deliveries>> getAllDeliveries() throws CustomException;
 
@@ -72,4 +81,15 @@ public interface MasterService {
     ApiResponse<List<RatingDistributionResponse>> getRatingDistribution(Long driverId) throws CustomException;
 
     ApiResponse<Double> getAverageRating(Long driverId) throws CustomException;
+
+    ApiResponse<RestaurantAdminResponse> getAdminRestaurantData(Integer restaurantId) throws CustomException;
+
+    ApiResponse<FoodItemResponse> updateFoodItem(Long restaurantId, Long foodItemId, FoodItemRequest request) throws CustomException;
+
+    ApiResponse<Void> deleteFoodItem(Long restaurantId, Long foodItemId) throws CustomException;
+
+    ApiResponse<MenuCategoryResponse> updateMenuCategory(Long restaurantId, Long menuCategoryId, MenuCategoryCreateRequest request) throws CustomException;
+
+    ApiResponse<Void> deleteMenuCategory(Long restaurantId, Long menuCategoryId) throws CustomException;
+
 }
