@@ -2,6 +2,8 @@ package com.ds.masterservice.service.deliveryService;
 
 import com.ds.commons.enums.VehicleType;
 import com.ds.commons.exception.CustomException;
+import com.ds.commons.exception.NotFoundException;
+import com.ds.commons.exception.NoContentException;
 import com.ds.commons.exception.ExceptionCode;
 import com.ds.commons.template.ApiResponse;
 import com.ds.masterservice.dao.deliveryService.DeliveryPerson;
@@ -42,7 +44,7 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
                 .orElseThrow(() -> {
                     log.warn("Driver with ID {} not found", driverId);
-                    return new CustomException(ExceptionCode.DRIVER_NOT_FOUND);
+                    return new NotFoundException(ExceptionCode.DRIVER_NOT_FOUND);
                 });
 
         return ApiResponse.successResponse("Driver fetched successfully", mapToDriverResponse(driver));
@@ -54,9 +56,8 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
                 .orElseThrow(() -> {
                     log.warn("Driver with ID {} not found", driverId);
-                    return new CustomException(ExceptionCode.DRIVER_NOT_FOUND);
+                    return new NotFoundException(ExceptionCode.DRIVER_NOT_FOUND);
                 });
-
         try {
             VehicleType vehicleType = updateDTO.getVehicleType();
             driver.setVehicleType(vehicleType);
@@ -89,7 +90,7 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
                 .orElseThrow(() -> {
                     log.warn("Driver with ID {} not found for deletion", driverId);
-                    return new CustomException(ExceptionCode.DRIVER_NOT_FOUND);
+                    return new NotFoundException(ExceptionCode.DRIVER_NOT_FOUND);
                 });
 
         deliveryDriverRepository.delete(driver);
@@ -103,7 +104,7 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
                 .orElseThrow(() -> {
                     log.warn("Driver with ID {} not found for location update", driverId);
-                    return new CustomException(ExceptionCode.DRIVER_NOT_FOUND);
+                    return new NotFoundException(ExceptionCode.DRIVER_NOT_FOUND);
                 });
 
         driver.setCurrentLat(lat);
@@ -120,7 +121,7 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
                 .orElseThrow(() -> {
                     log.warn("Driver with ID {} not found for availability update", driverId);
-                    return new CustomException(ExceptionCode.DRIVER_NOT_FOUND);
+                    return new NotFoundException(ExceptionCode.DRIVER_NOT_FOUND);
                 });
 
         driver.setIsAvailable(isAvailable);
@@ -137,6 +138,11 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
                 .stream()
                 .map(this::mapToDriverResponse)
                 .toList();
+
+        if (availableDrivers.isEmpty()) {
+            throw new NoContentException(ExceptionCode.NO_AVAILABLE_DRIVERS);
+        }
+
         log.debug("Available drivers found: {}", availableDrivers.size());
         return ApiResponse.successResponse("Available drivers fetched", availableDrivers);
     }

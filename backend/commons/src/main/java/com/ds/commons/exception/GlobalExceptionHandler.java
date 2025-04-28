@@ -22,6 +22,20 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleNotFound(NotFoundException ex) {
+        log.error("NotFoundException: {}", ex.getMessage());
+        return new ResponseEntity<>(
+                ApiResponse.errorResponse(ex.getMessage(), HttpStatus.NOT_FOUND),
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    @ExceptionHandler(NoContentException.class)
+    public ResponseEntity<ApiResponse<?>> handleNoContent(NoContentException ex) {
+        return ResponseEntity.ok(ApiResponse.successResponse(ex.getMessage(), null));
+    }
+
     @ExceptionHandler(AuthenticationException.class)
     public ApiResponse<String> handleAuthenticationException(AuthenticationException ex) {
         log.error("AuthenticationException: {}", ex.getMessage());

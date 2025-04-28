@@ -2,6 +2,8 @@ package com.ds.masterservice.service.deliveryService;
 
 import com.ds.commons.enums.DeliveryStatus;
 import com.ds.commons.exception.CustomException;
+import com.ds.commons.exception.NoContentException;
+import com.ds.commons.exception.NotFoundException;
 import com.ds.commons.exception.ExceptionCode;
 import com.ds.commons.template.ApiResponse;
 import com.ds.commons.utils.EmailUtil;
@@ -369,12 +371,13 @@ public class DeliveryServiceImpl implements DeliveryService {
 
         return ApiResponse.successResponse("Delivery history fetched", response);
     }
+
     @Override
     public ApiResponse<List<DeliveryResponse>> getAllDeliveries() throws CustomException {
         List<Deliveries> deliveries = deliveryRepository.findAll();
 
         if (deliveries.isEmpty()) {
-            throw new CustomException(ExceptionCode.NO_DELIVERY_FOUND);
+            throw new NoContentException(ExceptionCode.NO_DELIVERY_FOUND);
         }
 
         List<DeliveryResponse> deliveryResponses = deliveries.stream()
@@ -389,10 +392,10 @@ public class DeliveryServiceImpl implements DeliveryService {
         Deliveries delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> {
                     log.warn("Delivery with ID {} does not exists.", deliveryId);
-                    return new CustomException(ExceptionCode.DELIVERY_NOT_FOUND);
+                    return new NotFoundException(ExceptionCode.DELIVERY_NOT_FOUND);
                 });
 
-        return ApiResponse.successResponse("Active delivery fetched", convertToResponse(delivery));
+        return ApiResponse.successResponse("Delivery fetched", convertToResponse(delivery));
     }
 
     @Override
@@ -400,17 +403,16 @@ public class DeliveryServiceImpl implements DeliveryService {
     public ApiResponse<DeliveryResponse> getActiveDelivery(Long driverId) throws CustomException {
         DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
                 .orElseThrow(() -> {
-                    log.warn("Driver with ID {} has no active delivery", driverId);
-                    return new CustomException(ExceptionCode.DRIVER_NOT_FOUND);
+                    log.warn("Driver with ID {} not found", driverId);
+                    return new NotFoundException(ExceptionCode.DRIVER_NOT_FOUND);
                 });
 
         Deliveries delivery = deliveryRepository.findByDriverAndStatus(driver, DeliveryStatus.ACCEPTED)
                 .stream()
                 .findFirst()
-                .orElseThrow(() -> new CustomException(ExceptionCode.NO_ACTIVE_HISTORY));
+                .orElseThrow(() -> new NoContentException(ExceptionCode.NO_ACTIVE_HISTORY));
 
         DeliveryResponse response = convertToResponse(delivery);
-
         return ApiResponse.successResponse("Active delivery fetched", response);
     }
 
@@ -435,6 +437,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         return ApiResponse.successResponse("Rating submitted successfully");
     }
 
+    @Override
     public ApiResponse<List<WeeklyStatsResponse>> getWeeklyStats(Long driverId) throws CustomException {
         LocalDate startDate = LocalDate.now().minusDays(7);
 
@@ -442,7 +445,7 @@ public class DeliveryServiceImpl implements DeliveryService {
                 .findWeeklyStatsByDriverNative(driverId, startDate);
 
         if (projections.isEmpty()) {
-            throw new CustomException(ExceptionCode.NO_DRIVER_STATS);
+            throw new NoContentException(ExceptionCode.NO_DRIVER_STATS);
         }
 
         List<WeeklyStatsResponse> stats = projections.stream()
@@ -459,7 +462,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     public ApiResponse<List<RatingDistributionResponse>> getRatingDistribution(Long driverId) throws CustomException {
         List<RatingDistributionResponse> distribution = deliveryRepository.findRatingDistributionByDriver(driverId);
         if (distribution.isEmpty()) {
-            throw new CustomException(ExceptionCode.NO_DRIVER_RATING);
+            throw new NoContentException(ExceptionCode.NO_DRIVER_RATING);
         }
         return ApiResponse.successResponse("Rating distribution fetched", distribution);
     }
@@ -468,7 +471,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     public ApiResponse<Double> getAverageRating(Long driverId) throws CustomException {
         Double average = deliveryRepository.findAverageRatingByDriver(driverId);
         if (average == null) {
-            throw new CustomException(ExceptionCode.NO_DRIVER_RATING);
+            throw new NoContentException(ExceptionCode.NO_DRIVER_RATING);
         }
         return ApiResponse.successResponse("Average rating fetched", average);
     }

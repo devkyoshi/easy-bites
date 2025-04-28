@@ -55,7 +55,8 @@ public enum ExceptionCode {
     CANNOT_CREATE_ORDER_FROM_CART("CANNOT_CREATE_ORDER_FROM_CART"),
     CANNOT_CANCEL_NON_PENDING_ORDER("CANNOT_CANCEL_NON_PENDING_ORDER"),
     INVALID_ORDER_STATUS("INVALID_ORDER_STATUS"),
-    ORDER_ITEM_NOT_FOUND("No item found"),;
+    ORDER_ITEM_NOT_FOUND("No item found"),
+    NO_AVAILABLE_DRIVERS("No drivers are currently available."),;
 
     private final String exceptionCode;
 }
