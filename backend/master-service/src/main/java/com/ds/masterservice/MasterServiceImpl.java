@@ -88,6 +88,11 @@ public class MasterServiceImpl implements MasterService {
     }
 
     @Override
+    public ApiResponse<DriverResponse> getDriver(Long driverId) throws CustomException {
+        return deliveryDriverService.getDriver(driverId);
+    }
+
+    @Override
     public ApiResponse<DriverResponse> updateDriver(Long driverId, DriverRegistrationRequest registrationDTO) throws CustomException {
         return deliveryDriverService.updateDriver(driverId, registrationDTO);
     }
@@ -138,7 +143,37 @@ public class MasterServiceImpl implements MasterService {
     }
 
     @Override
+    public ApiResponse<List<Deliveries>> getAllDeliveries() throws CustomException {
+        return deliveryService.getAllDeliveries();
+    }
+
+    @Override
+    public ApiResponse<DeliveryResponse> getDelivery(Long deliveryId) throws CustomException {
+        return deliveryService.getDelivery(deliveryId);
+    }
+
+    @Override
     public ApiResponse<DeliveryResponse> getActiveDelivery(Long driverId) throws CustomException {
         return deliveryService.getActiveDelivery(driverId);
+    }
+
+    @Override
+    public ApiResponse<String> rateDelivery(Long deliveryId, DeliveryRatingRequest request) throws CustomException {
+        return deliveryService.rateDelivery(deliveryId, request);
+    }
+
+    @Override
+    public ApiResponse<List<WeeklyStatsResponse>> getWeeklyStats(Long driverId) throws CustomException {
+        return deliveryService.getWeeklyStats(driverId);
+    }
+
+    @Override
+    public ApiResponse<List<RatingDistributionResponse>> getRatingDistribution(Long driverId) throws CustomException {
+        return deliveryService.getRatingDistribution(driverId);
+    }
+
+    @Override
+    public ApiResponse<Double> getAverageRating(Long driverId) throws CustomException {
+        return deliveryService.getAverageRating(driverId);
     }
 }

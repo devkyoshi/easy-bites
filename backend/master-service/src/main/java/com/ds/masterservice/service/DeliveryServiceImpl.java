@@ -11,8 +11,11 @@ import com.ds.commons.utils.GeocodingUtil;
 import com.ds.masterservice.dao.*;
 import com.ds.masterservice.dto.request.DeliveryAcceptanceRequest;
 import com.ds.masterservice.dto.request.DeliveryCompletionRequest;
+import com.ds.masterservice.dto.request.DeliveryRatingRequest;
 import com.ds.masterservice.dto.response.DeliveryResponse;
 import com.ds.masterservice.dto.response.OrderResponse;
+import com.ds.masterservice.dto.response.RatingDistributionResponse;
+import com.ds.masterservice.dto.response.WeeklyStatsResponse;
 import com.ds.masterservice.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -192,7 +197,6 @@ public class DeliveryServiceImpl implements DeliveryService {
             delivery.setDeliveryLat(orderCoordinates[0]);
             delivery.setDeliveryLng(orderCoordinates[1]);
             delivery.setStatus(DeliveryStatus.ACCEPTED);
-
             driver.setIsAvailable(false);
             deliveryDriverRepository.save(driver);
 
@@ -285,6 +289,27 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     @Override
+    public ApiResponse<List<Deliveries>> getAllDeliveries() throws CustomException {
+        List<Deliveries> deliveries = deliveryRepository.findAll();
+        if (deliveries.isEmpty()) {
+            throw new CustomException(ExceptionCode.NO_DELIVERY_FOUND);
+        }
+
+        return ApiResponse.successResponse("Deliveries fetched", deliveries);
+    }
+
+    @Override
+    public ApiResponse<DeliveryResponse> getDelivery(Long deliveryId) throws CustomException {
+        Deliveries delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> {
+                    log.warn("Delivery with ID {} does not exists.", deliveryId);
+                    return new CustomException(ExceptionCode.DELIVERY_NOT_FOUND);
+                });
+
+        return ApiResponse.successResponse("Active delivery fetched", convertToResponse(delivery));
+    }
+
+    @Override
     @Transactional
     public ApiResponse<DeliveryResponse> getActiveDelivery(Long driverId) throws CustomException {
         DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
@@ -301,6 +326,65 @@ public class DeliveryServiceImpl implements DeliveryService {
         DeliveryResponse response = convertToResponse(delivery);
 
         return ApiResponse.successResponse("Active delivery fetched", response);
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<String> rateDelivery(Long deliveryId, DeliveryRatingRequest request) throws CustomException {
+        Deliveries delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.DELIVERY_NOT_FOUND));
+
+        if (delivery.getStatus() != DeliveryStatus.DELIVERED) {
+            throw new CustomException(ExceptionCode.DELIVERY_NOT_COMPLETED);
+        }
+
+        if (request.getRating() < 1 || request.getRating() > 5) {
+            throw new CustomException(ExceptionCode.INVALID_RATING);
+        }
+
+        delivery.setRating(request.getRating());
+        delivery.setRatingComment(request.getComment());
+        deliveryRepository.save(delivery);
+
+        return ApiResponse.successResponse("Rating submitted successfully");
+    }
+
+    public ApiResponse<List<WeeklyStatsResponse>> getWeeklyStats(Long driverId) throws CustomException {
+        LocalDate startDate = LocalDate.now().minusDays(7);
+
+        List<DeliveryRepository.WeeklyStatsProjection> projections = deliveryRepository
+                .findWeeklyStatsByDriverNative(driverId, startDate);
+
+        if (projections.isEmpty()) {
+            throw new CustomException(ExceptionCode.NO_DRIVER_STATS);
+        }
+
+        List<WeeklyStatsResponse> stats = projections.stream()
+                .map(p -> new WeeklyStatsResponse(
+                        p.getDay(),
+                        p.getDeliveryCount(),
+                        p.getTotalEarnings()))
+                .collect(Collectors.toList());
+
+        return ApiResponse.successResponse("Weekly stats fetched", stats);
+    }
+
+    @Override
+    public ApiResponse<List<RatingDistributionResponse>> getRatingDistribution(Long driverId) throws CustomException {
+        List<RatingDistributionResponse> distribution = deliveryRepository.findRatingDistributionByDriver(driverId);
+        if (distribution.isEmpty()) {
+            throw new CustomException(ExceptionCode.NO_DRIVER_RATING);
+        }
+        return ApiResponse.successResponse("Rating distribution fetched", distribution);
+    }
+
+    @Override
+    public ApiResponse<Double> getAverageRating(Long driverId) throws CustomException {
+        Double average = deliveryRepository.findAverageRatingByDriver(driverId);
+        if (average == null) {
+            throw new CustomException(ExceptionCode.NO_DRIVER_RATING);
+        }
+        return ApiResponse.successResponse("Average rating fetched", average);
     }
 
     private void sendEmailWithFallback(String to, String subject, String message) throws CustomException {
@@ -326,6 +410,14 @@ public class DeliveryServiceImpl implements DeliveryService {
         response.setStatus(delivery.getStatus().name());
         response.setNotes(delivery.getNotes());
         response.setProofImage(delivery.getProofImage());
+        response.setRating(delivery.getRating());
+        response.setRatingComment(delivery.getRatingComment());
+        response.setCreatedAt(delivery.getCreatedAt());
+        response.setUpdatedAt(delivery.getUpdatedAt());
+        response.setPickupLng(delivery.getPickupLng());
+        response.setPickupLat(delivery.getPickupLat());
+        response.setDeliveryLat(delivery.getDeliveryLat());
+        response.setDeliveryLng(delivery.getDeliveryLng());
         return response;
     }
 }

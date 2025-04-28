@@ -37,6 +37,8 @@ public interface MasterService {
 
     ApiResponse<List<DriverResponse>> getAllDrivers() throws CustomException;
 
+    ApiResponse<DriverResponse> getDriver(Long driverId) throws CustomException;
+
     ApiResponse<DriverResponse> updateDriver(Long driverId, DriverRegistrationRequest registrationDTO) throws CustomException;
 
     ApiResponse<String> deleteDriver(Long driverId) throws CustomException;
@@ -57,5 +59,17 @@ public interface MasterService {
 
     ApiResponse<List<Deliveries>> getDeliveryHistory(Long driverId) throws CustomException;
 
+    ApiResponse<List<Deliveries>> getAllDeliveries() throws CustomException;
+
+    ApiResponse<DeliveryResponse> getDelivery(Long deliveryId) throws CustomException;
+
     ApiResponse<DeliveryResponse> getActiveDelivery(Long driverId) throws CustomException;
+
+    ApiResponse<String> rateDelivery(Long deliveryId, DeliveryRatingRequest request) throws CustomException;
+
+    ApiResponse<List<WeeklyStatsResponse>> getWeeklyStats(Long driverId) throws CustomException;
+
+    ApiResponse<List<RatingDistributionResponse>> getRatingDistribution(Long driverId) throws CustomException;
+
+    ApiResponse<Double> getAverageRating(Long driverId) throws CustomException;
 }

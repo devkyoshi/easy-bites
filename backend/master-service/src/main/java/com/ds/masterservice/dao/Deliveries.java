@@ -42,6 +42,11 @@ public class Deliveries {
     @Column(name = "proof_image", columnDefinition = "LONGTEXT")
     private String proofImage;
 
+    private Integer rating;
+
+    @Column(length = 500)
+    private String ratingComment;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

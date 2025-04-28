@@ -1,0 +1,103 @@
+export interface IDeliveryAcceptanceRequest {
+    orderId: number;
+    currentLat: number;
+    currentLng: number;
+}
+
+export interface IDeliveryCompletionRequest {
+    notes: string;
+    proofImage?: string;
+    isCompleted: boolean;
+}
+
+export interface IDeliveryRatingRequest {
+    rating: number;
+    comment: string;
+}
+
+export interface IDeliveryResponse {
+    deliveryId: number;
+    orderId: number;
+    driverId: number;
+    status: string;
+    notes?: string;
+    proofImage?: string;
+    rating?: number;
+    ratingComment?: string;
+    createdAt: string;
+    updatedAt: string;
+    pickupLat: number;
+    pickupLng: number;
+    deliveryLat: number;
+    deliveryLng: number;
+    currentLat: number;
+    currentLng: number;
+}
+
+export interface IDriverProfile {
+    vehicleType: string;
+    vehicleNumber: string;
+    licenseNumber: string;
+}
+
+export interface IDriverResponse {
+    licenseNumber: string;
+    driverId: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+    roles: string;
+    createdAt: string;
+    updatedAt: string;
+    vehicleType: string;
+    vehicleNumber: string;
+    isAvailable: boolean;
+}
+
+export interface IRatingDistributionResponse {
+    rating: number;
+    count: number;
+}
+
+export interface IWeeklyStatsResponse {
+    day: string;
+    deliveryCount: number;
+    totalEarnings: number;
+}
+
+export interface IOrder {
+    id: number;
+    userId: number;
+    restaurantId: number;
+    status: 'PENDING' | 'RESTAURANT_ACCEPTED' | 'DRIVER_ASSIGNED' | 'DELIVERED' | 'DELIVERY_FAILED';
+    deliveryAddress: string;
+    items: {
+        itemId: number;
+        name: string;
+        quantity: number;
+        price: number;
+    }[];
+    totalAmount: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ILocation {
+    lat: number;
+    lng: number;
+    timestamp?: number;
+    accuracy?: number;
+}
+
+export interface RestaurantDetails {
+    restaurantId: number;
+    name: string;
+    address: string;
+}
+
+export interface IDeliveryAnalytics {
+    weeklyStats: IWeeklyStatsResponse[];
+    ratingDistribution: IRatingDistributionResponse[];
+    averageRating: number;
+}

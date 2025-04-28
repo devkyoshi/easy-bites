@@ -6,12 +6,10 @@ import com.ds.masterservice.MasterService;
 import com.ds.masterservice.dao.Deliveries;
 import com.ds.masterservice.dto.request.DeliveryAcceptanceRequest;
 import com.ds.masterservice.dto.request.DeliveryCompletionRequest;
+import com.ds.masterservice.dto.request.DeliveryRatingRequest;
 import com.ds.masterservice.dto.request.DriverRegistrationRequest;
-import com.ds.masterservice.dto.response.DeliveryResponse;
-import com.ds.masterservice.dto.response.DriverResponse;
-import com.ds.masterservice.dto.response.OrderResponse;
+import com.ds.masterservice.dto.response.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -73,10 +71,47 @@ public class DeliveryController {
         return masterService.getDeliveryHistory(driverId);
     }
 
+    @GetMapping("/delivery")
+    public ApiResponse<List<Deliveries>> getAllDeliveries() throws CustomException {
+        log.info("Fetching all deliveries.");
+        return masterService.getAllDeliveries();
+    }
+
+    @GetMapping("/delivery/{deliveryId}")
+    public ApiResponse<DeliveryResponse> getDelivery(@PathVariable Long deliveryId) throws CustomException {
+        log.info("Fetching delivery for delivery ID: {}", deliveryId);
+        return masterService.getDelivery(deliveryId);
+    }
+
     @GetMapping("/delivery/active")
     public ApiResponse<DeliveryResponse> getActiveDelivery(@RequestParam Long driverId) throws CustomException {
         log.info("Fetching active delivery for driver ID: {}", driverId);
         return masterService.getActiveDelivery(driverId);
+    }
+
+    @GetMapping("/analytics/weekly")
+    public ApiResponse<List<WeeklyStatsResponse>> getWeeklyStats(
+            @RequestParam Long driverId) throws CustomException {
+        return masterService.getWeeklyStats(driverId);
+    }
+
+    @GetMapping("/analytics/ratings")
+    public ApiResponse<List<RatingDistributionResponse>> getRatingDistribution(
+            @RequestParam Long driverId) throws CustomException {
+        return masterService.getRatingDistribution(driverId);
+    }
+
+    @GetMapping("/analytics/average-rating")
+    public ApiResponse<Double> getAverageRating(
+            @RequestParam Long driverId) throws CustomException {
+        return masterService.getAverageRating(driverId);
+    }
+
+    @PostMapping("/delivery/{deliveryId}/rate")
+    public ApiResponse<String> rateDelivery(
+            @PathVariable Long deliveryId,
+            @RequestBody DeliveryRatingRequest request) throws CustomException {
+        return masterService.rateDelivery(deliveryId, request);
     }
 
     // --- Driver Endpoints ---
@@ -85,6 +120,12 @@ public class DeliveryController {
     public ApiResponse<List<DriverResponse>> getAllDrivers() throws CustomException {
         log.info("Fetching all delivery drivers");
         return masterService.getAllDrivers();
+    }
+
+    @GetMapping("/drivers/{driverId}")
+    public ApiResponse<DriverResponse> getDriver(@PathVariable Long driverId) throws CustomException {
+        log.info("Fetching driver ID: {}", driverId);
+        return masterService.getDriver(driverId);
     }
 
     @PutMapping("/drivers/{driverId}")

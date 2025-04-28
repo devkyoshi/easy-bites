@@ -37,7 +37,14 @@ public enum ExceptionCode {
     NO_ACTIVE_HISTORY("No active delivery found"),
     EMAIL_UNAVAILABLE("Email feature is currently unavailable."),
     GEOCODING_UNAVAILABLE("Geocoding is currently unavailable"),
-    EMAIL_SEND_FAILURE("Failed to send email"),;
+    EMAIL_SEND_FAILURE("Failed to send email"),
+    DELIVERY_NOT_COMPLETED("Delivery is not completed yet."),
+    INVALID_RATING("Invalid rating"),
+    NO_DRIVER_STATS("There is no driver stats."),
+    NO_DRIVER_RATING("There is no driver rating"),
+    NO_DELIVERY_FOUND("There are no deliveries found"),
+    INVALID_REQUEST_TYPE("Sending invalid request type. Please check your role"),
+    EMAIL_ALREADY_EXISTS("The email address already exists"),;
 
     private final String exceptionCode;
 }

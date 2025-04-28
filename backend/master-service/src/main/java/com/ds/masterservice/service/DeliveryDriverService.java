@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface DeliveryDriverService {
     ApiResponse<List<DriverResponse>> getAllDrivers() throws CustomException;
+    ApiResponse<DriverResponse> getDriver(Long driverId)throws CustomException;
     ApiResponse<DriverResponse> updateDriver(Long driverId, DriverRegistrationRequest registrationDTO) throws CustomException;
     ApiResponse<String> deleteDriver(Long driverId) throws CustomException;
     ApiResponse<String> updateLocation(Long driverId, BigDecimal lat, BigDecimal lng) throws CustomException;

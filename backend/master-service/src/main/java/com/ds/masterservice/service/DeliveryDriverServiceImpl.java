@@ -37,6 +37,18 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
     }
 
     @Override
+    public ApiResponse<DriverResponse> getDriver(Long driverId) throws CustomException {
+        log.info("Fetching driver with ID: {}", driverId);
+        DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
+                .orElseThrow(() -> {
+                    log.warn("Driver with ID {} not found", driverId);
+                    return new CustomException(ExceptionCode.DRIVER_NOT_FOUND);
+                });
+
+        return ApiResponse.successResponse("Driver fetched successfully", mapToDriverResponse(driver));
+    }
+
+    @Override
     public ApiResponse<DriverResponse> updateDriver(Long driverId, DriverRegistrationRequest updateDTO) throws CustomException {
         log.info("Updating driver with ID: {}", driverId);
         DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
@@ -131,6 +143,7 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
 
     private DriverResponse mapToDriverResponse(DeliveryPerson driver) {
         return DriverResponse.builder()
+                .driverID((long) driver.getId())
                 .firstName(driver.getFirstName())
                 .lastName(driver.getLastName())
                 .email(driver.getEmail())
@@ -138,6 +151,7 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
                 .roles(List.of("DELIVERY_PERSON"))
                 .createdAt(driver.getCreatedAt())
                 .updatedAt(driver.getUpdatedAt())
+                .licenseNumber(driver.getLicenseNumber())
                 .vehicleNumber(driver.getVehicleNumber())
                 .vehicleType(String.valueOf(driver.getVehicleType()))
                 .isAvailable(driver.getIsAvailable())
