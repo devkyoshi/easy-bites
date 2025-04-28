@@ -40,6 +40,8 @@ import { Route as AuthenticatedSettingsAccountImport } from './routes/_authentic
 import { Route as AuthenticatedRestaurantsRestaurantManagementImport } from './routes/_authenticated/restaurants/restaurant-management'
 import { Route as AuthenticatedRestaurantsRestaurantDetailsImport } from './routes/_authenticated/restaurants/restaurant-details'
 import { Route as AuthenticatedOrdersOrderDetailsImport } from './routes/_authenticated/orders/order-details'
+import { Route as AuthenticatedOrdersOrderIdSuccessImport } from './routes/_authenticated/orders/$orderId/success'
+import { Route as AuthenticatedOrdersOrderIdCancelImport } from './routes/_authenticated/orders/$orderId/cancel'
 
 // Create/Update Routes
 
@@ -226,6 +228,20 @@ const AuthenticatedOrdersOrderDetailsRoute =
   AuthenticatedOrdersOrderDetailsImport.update({
     id: '/orders/order-details',
     path: '/orders/order-details',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+
+const AuthenticatedOrdersOrderIdSuccessRoute =
+  AuthenticatedOrdersOrderIdSuccessImport.update({
+    id: '/orders/$orderId/success',
+    path: '/orders/$orderId/success',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+
+const AuthenticatedOrdersOrderIdCancelRoute =
+  AuthenticatedOrdersOrderIdCancelImport.update({
+    id: '/orders/$orderId/cancel',
+    path: '/orders/$orderId/cancel',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -436,6 +452,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersIndexImport
       parentRoute: typeof AuthenticatedRouteImport
     }
+    '/_authenticated/orders/$orderId/cancel': {
+      id: '/_authenticated/orders/$orderId/cancel'
+      path: '/orders/$orderId/cancel'
+      fullPath: '/orders/$orderId/cancel'
+      preLoaderRoute: typeof AuthenticatedOrdersOrderIdCancelImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/orders/$orderId/success': {
+      id: '/_authenticated/orders/$orderId/success'
+      path: '/orders/$orderId/success'
+      fullPath: '/orders/$orderId/success'
+      preLoaderRoute: typeof AuthenticatedOrdersOrderIdSuccessImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
   }
 }
 
@@ -478,6 +508,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRestaurantsIndexRoute: typeof AuthenticatedRestaurantsIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedOrdersOrderIdCancelRoute: typeof AuthenticatedOrdersOrderIdCancelRoute
+  AuthenticatedOrdersOrderIdSuccessRoute: typeof AuthenticatedOrdersOrderIdSuccessRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -496,6 +528,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRestaurantsIndexRoute: AuthenticatedRestaurantsIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedOrdersOrderIdCancelRoute: AuthenticatedOrdersOrderIdCancelRoute,
+  AuthenticatedOrdersOrderIdSuccessRoute:
+    AuthenticatedOrdersOrderIdSuccessRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -531,6 +566,8 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/orders/$orderId/cancel': typeof AuthenticatedOrdersOrderIdCancelRoute
+  '/orders/$orderId/success': typeof AuthenticatedOrdersOrderIdSuccessRoute
 }
 
 export interface FileRoutesByTo {
@@ -561,6 +598,8 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/orders/$orderId/cancel': typeof AuthenticatedOrdersOrderIdCancelRoute
+  '/orders/$orderId/success': typeof AuthenticatedOrdersOrderIdSuccessRoute
 }
 
 export interface FileRoutesById {
@@ -594,6 +633,8 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/orders/$orderId/cancel': typeof AuthenticatedOrdersOrderIdCancelRoute
+  '/_authenticated/orders/$orderId/success': typeof AuthenticatedOrdersOrderIdSuccessRoute
 }
 
 export interface FileRouteTypes {
@@ -628,6 +669,8 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/tasks'
     | '/users'
+    | '/orders/$orderId/cancel'
+    | '/orders/$orderId/success'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/forgot-password'
@@ -657,6 +700,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/users'
+    | '/orders/$orderId/cancel'
+    | '/orders/$orderId/success'
   id:
     | '__root__'
     | '/_authenticated'
@@ -688,6 +733,8 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
+    | '/_authenticated/orders/$orderId/cancel'
+    | '/_authenticated/orders/$orderId/success'
   fileRoutesById: FileRoutesById
 }
 
@@ -757,7 +804,9 @@ export const routeTree = rootRoute
         "/_authenticated/orders/",
         "/_authenticated/restaurants/",
         "/_authenticated/tasks/",
-        "/_authenticated/users/"
+        "/_authenticated/users/",
+        "/_authenticated/orders/$orderId/cancel",
+        "/_authenticated/orders/$orderId/success"
       ]
     },
     "/_authenticated/settings": {
@@ -867,6 +916,14 @@ export const routeTree = rootRoute
     },
     "/_authenticated/users/": {
       "filePath": "_authenticated/users/index.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/orders/$orderId/cancel": {
+      "filePath": "_authenticated/orders/$orderId/cancel.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/orders/$orderId/success": {
+      "filePath": "_authenticated/orders/$orderId/success.tsx",
       "parent": "/_authenticated"
     }
   }

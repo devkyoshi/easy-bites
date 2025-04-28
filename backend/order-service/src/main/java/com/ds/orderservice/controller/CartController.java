@@ -5,15 +5,15 @@ import com.ds.commons.template.ApiResponse;
 import com.ds.masterservice.dto.request.orderService.*;
 import com.ds.masterservice.dto.response.orderService.BillResponse;
 import com.ds.masterservice.dto.response.orderService.CartResponse;
+import com.ds.masterservice.dto.response.orderService.CheckoutSessionResponse;
 import com.ds.masterservice.dto.response.orderService.OrderResponse;
 import com.ds.masterservice.service.orderService.CartServiceImpl;
 import com.ds.masterservice.service.orderService.OrderServiceImpl;
+import com.ds.orderservice.service.StripeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-
 
 import java.util.List;
 
@@ -23,6 +23,7 @@ import java.util.List;
 public class CartController {
 
     private final CartServiceImpl cartServiceImpl;
+    private final StripeService stripeService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -86,10 +87,12 @@ public class CartController {
             @Valid @RequestBody RemoveOrDecrementItemRequest request) throws CustomException {
         return cartServiceImpl.removeOrDecrementItem(cartId, request);
     }
+
     @DeleteMapping("/{cartId}/clear")
     public CartResponse clearCart(@PathVariable("cartId") Long cartId) throws CustomException {
         return cartServiceImpl.clearCart(cartId);
     }
+
     // Add this new endpoint
     @PostMapping("/add-or-create")
     @ResponseStatus(HttpStatus.CREATED)
@@ -161,4 +164,15 @@ public class CartController {
         return orderServiceImpl.cancelOrderIfPending(orderId);
     }
 
+    @PostMapping("/checkout-session")
+    public CheckoutSessionResponse createCheckoutSession(@Valid @RequestBody CreateCheckoutSessionRequest request) throws CustomException {
+        String checkoutUrl = stripeService.createCheckoutSession(
+                request.getOrderId(),
+                request.getAmount(),
+                request.getDescription(),
+                request.getSuccessUrl(),
+                request.getCancelUrl()
+        );
+        return CheckoutSessionResponse.builder().checkoutUrl(checkoutUrl).build();
+    }
 }

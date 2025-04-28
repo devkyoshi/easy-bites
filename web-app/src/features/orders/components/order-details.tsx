@@ -18,6 +18,7 @@ import {
 } from '@tabler/icons-react'
 import { api } from '@/config/axios.ts'
 import { getOrderDetailsById } from '@/services/order-service.ts'
+import { initiateStripePayment, updatePaymentStatus } from '@/services/payment-service.ts'
 import { IOrderDetails, IOrderItem } from '@/services/types/order.type.ts'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
@@ -142,6 +143,31 @@ export function OrderDetails() {
         </Button>
       </div>
     )
+  }
+
+  async function handleStripePayment(orderDetails: IOrderDetails) {
+    try {
+      toast.loading('Redirecting to payment gateway...')
+
+      const result = await initiateStripePayment(
+        orderDetails.id,
+        orderDetails.totalAmount,
+        `Payment for order #${orderDetails.id}`
+      )
+
+      if (result.success) {
+        await updatePaymentStatus(orderDetails.id, 'PAID')
+        toast.success('Payment completed successfully!')
+        window.location.reload()
+      }
+
+      // eslint-disable-next-line no-console
+      console.log('Payment result:', result)
+    } catch (error) {
+      toast.error('Payment failed. Please try again.')
+      // eslint-disable-next-line no-console
+      console.error('Payment error:', error)
+    }
   }
 
   const groupedItems = groupItemsByRestaurant()
@@ -384,10 +410,7 @@ export function OrderDetails() {
           orderDetails.paymentStatus === 'NOT_PAID') && (
           <div className='mt-4 flex justify-end gap-3'>
             {orderDetails.paymentStatus === 'NOT_PAID' && (
-              <Button
-                //TODO: Implement payment flow
-                // eslint-disable-next-line no-console
-                onClick={() => console.log('Trigger payment flow')}
+              <Button onClick={() => handleStripePayment(orderDetails)}
                 className='bg-blue-600 text-white transition hover:bg-blue-700'
               >
                 Pay
