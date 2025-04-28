@@ -1,4 +1,4 @@
-package com.ds.masterservice.service;
+package com.ds.masterservice.service.deliveryService;
 
 import com.ds.commons.enums.DeliveryStatus;
 import com.ds.commons.exception.CustomException;
@@ -8,17 +8,21 @@ import com.ds.commons.utils.EmailUtil;
 import com.ds.commons.utils.GeoUtils;
 import com.ds.commons.utils.GeocodingUtil;
 import com.ds.masterservice.dao.*;
+import com.ds.masterservice.dao.deliveryService.Deliveries;
+import com.ds.masterservice.dao.deliveryService.DeliveryPerson;
 import com.ds.masterservice.dao.orderService.Order;
 import com.ds.masterservice.dao.orderService.OrderStatus;
-import com.ds.masterservice.dto.request.DeliveryAcceptanceRequest;
-import com.ds.masterservice.dto.request.DeliveryCompletionRequest;
-import com.ds.masterservice.dto.request.DeliveryRatingRequest;
-import com.ds.masterservice.dto.response.DeliveryHistoryResponse;
-import com.ds.masterservice.dto.response.DeliveryResponse;
+import com.ds.masterservice.dto.request.deliveryService.DeliveryAcceptanceRequest;
+import com.ds.masterservice.dto.request.deliveryService.DeliveryCompletionRequest;
+import com.ds.masterservice.dto.request.deliveryService.DeliveryRatingRequest;
+import com.ds.masterservice.dto.response.deliveryService.DeliveryHistoryResponse;
+import com.ds.masterservice.dto.response.deliveryService.DeliveryResponse;
 import com.ds.masterservice.dto.response.RatingDistributionResponse;
 import com.ds.masterservice.dto.response.WeeklyStatsResponse;
 import com.ds.masterservice.dto.response.orderService.OrderResponse;
 import com.ds.masterservice.repository.*;
+import com.ds.masterservice.repository.deliveryService.DeliveryDriverRepository;
+import com.ds.masterservice.repository.deliveryService.DeliveryRepository;
 import com.ds.masterservice.repository.orderService.OrderRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -366,13 +370,18 @@ public class DeliveryServiceImpl implements DeliveryService {
         return ApiResponse.successResponse("Delivery history fetched", response);
     }
     @Override
-    public ApiResponse<List<Deliveries>> getAllDeliveries() throws CustomException {
+    public ApiResponse<List<DeliveryResponse>> getAllDeliveries() throws CustomException {
         List<Deliveries> deliveries = deliveryRepository.findAll();
+
         if (deliveries.isEmpty()) {
             throw new CustomException(ExceptionCode.NO_DELIVERY_FOUND);
         }
 
-        return ApiResponse.successResponse("Deliveries fetched", deliveries);
+        List<DeliveryResponse> deliveryResponses = deliveries.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+
+        return ApiResponse.successResponse("Deliveries fetched", deliveryResponses);
     }
 
     @Override

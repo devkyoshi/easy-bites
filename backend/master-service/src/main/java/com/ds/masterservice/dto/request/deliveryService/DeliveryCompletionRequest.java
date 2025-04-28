@@ -1,4 +1,4 @@
-package com.ds.masterservice.dto.request;
+package com.ds.masterservice.dto.request.deliveryService;
 
 import lombok.Data;
 

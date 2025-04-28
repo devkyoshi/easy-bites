@@ -1,13 +1,13 @@
-package com.ds.masterservice.service;
+package com.ds.masterservice.service.deliveryService;
 
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
-import com.ds.masterservice.dao.Deliveries;
-import com.ds.masterservice.dto.request.DeliveryAcceptanceRequest;
-import com.ds.masterservice.dto.request.DeliveryCompletionRequest;
-import com.ds.masterservice.dto.request.DeliveryRatingRequest;
-import com.ds.masterservice.dto.response.DeliveryHistoryResponse;
-import com.ds.masterservice.dto.response.DeliveryResponse;
+import com.ds.masterservice.dao.deliveryService.Deliveries;
+import com.ds.masterservice.dto.request.deliveryService.DeliveryAcceptanceRequest;
+import com.ds.masterservice.dto.request.deliveryService.DeliveryCompletionRequest;
+import com.ds.masterservice.dto.request.deliveryService.DeliveryRatingRequest;
+import com.ds.masterservice.dto.response.deliveryService.DeliveryHistoryResponse;
+import com.ds.masterservice.dto.response.deliveryService.DeliveryResponse;
 import com.ds.masterservice.dto.response.RatingDistributionResponse;
 import com.ds.masterservice.dto.response.WeeklyStatsResponse;
 import com.ds.masterservice.dto.response.orderService.OrderResponse;
@@ -21,7 +21,7 @@ public interface DeliveryService {
     ApiResponse<DeliveryResponse> acceptOrder(Long driverId, DeliveryAcceptanceRequest dto) throws CustomException;
     ApiResponse<DeliveryResponse> completeDelivery(Long deliveryId, DeliveryCompletionRequest dto) throws CustomException;
     ApiResponse<List<DeliveryHistoryResponse>> getDeliveryHistory(Long driverId) throws CustomException;
-    ApiResponse<List<Deliveries>> getAllDeliveries() throws CustomException;
+    ApiResponse<List<DeliveryResponse>> getAllDeliveries() throws CustomException;
     ApiResponse<DeliveryResponse> getDelivery(Long deliveryId) throws CustomException;
     ApiResponse<DeliveryResponse> getActiveDelivery(Long driverId) throws CustomException;
     ApiResponse<String> rateDelivery(Long deliveryId, DeliveryRatingRequest request) throws CustomException;

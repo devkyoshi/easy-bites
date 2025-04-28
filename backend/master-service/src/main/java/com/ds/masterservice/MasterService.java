@@ -2,13 +2,19 @@ package com.ds.masterservice;
 
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
-import com.ds.masterservice.dao.Deliveries;
+import com.ds.masterservice.dao.deliveryService.Deliveries;
 import com.ds.masterservice.dao.RestaurantManager;
-import com.ds.masterservice.dto.request.*;
+import com.ds.masterservice.dto.request.deliveryService.DeliveryAcceptanceRequest;
+import com.ds.masterservice.dto.request.deliveryService.DeliveryCompletionRequest;
+import com.ds.masterservice.dto.request.deliveryService.DeliveryRatingRequest;
+import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
 import com.ds.masterservice.dto.request.food.FoodItemRequest;
 import com.ds.masterservice.dto.request.menu.MenuCategoryCreateRequest;
 import com.ds.masterservice.dto.request.restaurant.RestaurantCreateUpdateRequest;
 import com.ds.masterservice.dto.response.*;
+import com.ds.masterservice.dto.response.deliveryService.DeliveryHistoryResponse;
+import com.ds.masterservice.dto.response.deliveryService.DeliveryResponse;
+import com.ds.masterservice.dto.response.deliveryService.DriverResponse;
 import com.ds.masterservice.dto.response.food.FoodItemResponse;
 import com.ds.masterservice.dto.response.menu.MenuCategoryResponse;
 import com.ds.masterservice.dto.response.orderService.OrderResponse;
@@ -68,7 +74,7 @@ public interface MasterService {
 
     ApiResponse<List<DeliveryHistoryResponse>> getDeliveryHistory(Long driverId) throws CustomException;
 
-    ApiResponse<List<Deliveries>> getAllDeliveries() throws CustomException;
+    ApiResponse<List<DeliveryResponse>> getAllDeliveries() throws CustomException;
 
     ApiResponse<DeliveryResponse> getDelivery(Long deliveryId) throws CustomException;
 

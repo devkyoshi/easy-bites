@@ -11,7 +11,7 @@ import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
 
 import com.ds.masterservice.MasterService;
-import com.ds.masterservice.dto.request.DriverRegistrationRequest;
+import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

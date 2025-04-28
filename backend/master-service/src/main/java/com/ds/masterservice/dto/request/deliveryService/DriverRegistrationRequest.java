@@ -1,4 +1,4 @@
-package com.ds.masterservice.dto.request;
+package com.ds.masterservice.dto.request.deliveryService;
 
 import com.ds.commons.dto.request.RegisterUserRequest;
 import com.ds.commons.enums.VehicleType;

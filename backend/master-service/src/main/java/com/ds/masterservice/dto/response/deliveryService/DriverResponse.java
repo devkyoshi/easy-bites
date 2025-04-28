@@ -1,7 +1,6 @@
-package com.ds.masterservice.dto.response;
+package com.ds.masterservice.dto.response.deliveryService;
 
 import com.ds.commons.dto.response.RegisterResponse;
-import com.ds.masterservice.dao.DeliveryPerson;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 

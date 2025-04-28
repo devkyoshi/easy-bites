@@ -1,9 +1,9 @@
-package com.ds.masterservice.service;
+package com.ds.masterservice.service.deliveryService;
 
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
-import com.ds.masterservice.dto.request.DriverRegistrationRequest;
-import com.ds.masterservice.dto.response.DriverResponse;
+import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
+import com.ds.masterservice.dto.response.deliveryService.DriverResponse;
 
 import java.math.BigDecimal;
 import java.util.List;

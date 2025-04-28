@@ -3,12 +3,15 @@ package com.ds.deliveryservice.controller;
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
 import com.ds.masterservice.MasterService;
-import com.ds.masterservice.dao.Deliveries;
-import com.ds.masterservice.dto.request.DeliveryAcceptanceRequest;
-import com.ds.masterservice.dto.request.DeliveryCompletionRequest;
-import com.ds.masterservice.dto.request.DeliveryRatingRequest;
-import com.ds.masterservice.dto.request.DriverRegistrationRequest;
+import com.ds.masterservice.dao.deliveryService.Deliveries;
+import com.ds.masterservice.dto.request.deliveryService.DeliveryAcceptanceRequest;
+import com.ds.masterservice.dto.request.deliveryService.DeliveryCompletionRequest;
+import com.ds.masterservice.dto.request.deliveryService.DeliveryRatingRequest;
+import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
 import com.ds.masterservice.dto.response.*;
+import com.ds.masterservice.dto.response.deliveryService.DeliveryHistoryResponse;
+import com.ds.masterservice.dto.response.deliveryService.DeliveryResponse;
+import com.ds.masterservice.dto.response.deliveryService.DriverResponse;
 import com.ds.masterservice.dto.response.orderService.OrderResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -74,7 +77,7 @@ public class DeliveryController {
     }
 
     @GetMapping("/delivery")
-    public ApiResponse<List<Deliveries>> getAllDeliveries() throws CustomException {
+    public ApiResponse<List<DeliveryResponse>> getAllDeliveries() throws CustomException {
         log.info("Fetching all deliveries.");
         return masterService.getAllDeliveries();
     }

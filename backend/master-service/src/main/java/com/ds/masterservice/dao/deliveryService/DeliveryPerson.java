@@ -1,6 +1,7 @@
-package com.ds.masterservice.dao;
+package com.ds.masterservice.dao.deliveryService;
 
 import com.ds.commons.enums.VehicleType;
+import com.ds.masterservice.dao.User;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;

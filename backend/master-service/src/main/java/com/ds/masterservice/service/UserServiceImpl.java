@@ -7,15 +7,15 @@ import com.ds.commons.dto.request.RegisterUserRequest;
 
 import com.ds.commons.dto.response.LoginResponse;
 import com.ds.commons.dto.response.RegisterResponse;
-import com.ds.commons.enums.VehicleType;
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.exception.ExceptionCode;
 import com.ds.commons.template.ApiResponse;
 
 import com.ds.masterservice.dao.*;
-import com.ds.masterservice.dto.request.DriverRegistrationRequest;
-import com.ds.masterservice.dto.response.DriverResponse;
-import com.ds.masterservice.repository.DeliveryDriverRepository;
+import com.ds.masterservice.dao.deliveryService.DeliveryPerson;
+import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
+import com.ds.masterservice.dto.response.deliveryService.DriverResponse;
+import com.ds.masterservice.repository.deliveryService.DeliveryDriverRepository;
 import com.ds.masterservice.repository.RoleRepository;
 import com.ds.masterservice.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;

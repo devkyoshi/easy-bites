@@ -1,4 +1,4 @@
-package com.ds.masterservice.dao;
+package com.ds.masterservice.dao.deliveryService;
 
 import com.ds.commons.enums.DeliveryStatus;
 import com.ds.masterservice.dao.orderService.Order;

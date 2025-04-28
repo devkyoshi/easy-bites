@@ -1,13 +1,13 @@
-package com.ds.masterservice.service;
+package com.ds.masterservice.service.deliveryService;
 
 import com.ds.commons.enums.VehicleType;
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.exception.ExceptionCode;
 import com.ds.commons.template.ApiResponse;
-import com.ds.masterservice.dao.DeliveryPerson;
-import com.ds.masterservice.dto.request.DriverRegistrationRequest;
-import com.ds.masterservice.dto.response.DriverResponse;
-import com.ds.masterservice.repository.DeliveryDriverRepository;
+import com.ds.masterservice.dao.deliveryService.DeliveryPerson;
+import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
+import com.ds.masterservice.dto.response.deliveryService.DriverResponse;
+import com.ds.masterservice.repository.deliveryService.DeliveryDriverRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

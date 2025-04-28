@@ -1,8 +1,8 @@
-package com.ds.masterservice.repository;
+package com.ds.masterservice.repository.deliveryService;
 
 import com.ds.commons.enums.DeliveryStatus;
-import com.ds.masterservice.dao.Deliveries;
-import com.ds.masterservice.dao.DeliveryPerson;
+import com.ds.masterservice.dao.deliveryService.Deliveries;
+import com.ds.masterservice.dao.deliveryService.DeliveryPerson;
 import com.ds.masterservice.dao.orderService.Order;
 import com.ds.masterservice.dto.response.RatingDistributionResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
