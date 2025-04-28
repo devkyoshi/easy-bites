@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.ds.orderservice", "com.ds.commons",  "com.ds.masterservice"})
+@ComponentScan(basePackages = {"com.ds.orderservice", "com.ds.commons",  "com.ds.masterservice", "com.ds.communicationservice"})
 @EnableJpaRepositories(basePackages = "com.ds.masterservice.repository")
 @EntityScan(basePackages = "com.ds.masterservice.dao")
 public class OrderServiceApplication {
