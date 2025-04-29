@@ -240,10 +240,6 @@ public class UserServiceImpl implements UserService {
             user.setRoles(List.of(roleRepository.findByName("ROLE_RESTAURANT_MANAGER")
                     .orElseThrow(() -> new CustomException(ExceptionCode.ROLE_NOT_FOUND))));
 
-            if(restaurantManager.getLicenseNumber() != null) {
-                user.setLicenseNumber(restaurantManager.getLicenseNumber());
-            }
-
             // Save the user to the database
             User savedUser = userRepository.save(user);
 
