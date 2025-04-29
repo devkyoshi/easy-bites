@@ -1,4 +1,3 @@
-// sign-up.tsx
 import { Link } from '@tanstack/react-router'
 import {
   Card,
@@ -52,6 +51,7 @@ export default function SignUp() {
                   Sign In
                 </Link>
               </p>
+
               <p className='mt-4 text-center text-xs text-gray-500'>
                 By continuing, you agree to our{' '}
                 <a href='/terms' className='text-primary hover:underline'>
@@ -61,6 +61,15 @@ export default function SignUp() {
                 <a href='/privacy' className='text-primary hover:underline'>
                   Privacy Policy
                 </a>
+              </p>
+              <p className='text-xs text-gray-600'>
+                Want to Register as a Shop?{' '}
+                <Link
+                  to='/staff-signup'
+                  className='text-primary font-semibold hover:underline'
+                >
+                  Join Us
+                </Link>
               </p>
             </CardFooter>
           </Card>

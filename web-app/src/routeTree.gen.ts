@@ -38,6 +38,7 @@ import { Route as AuthenticatedSettingsNotificationsImport } from './routes/_aut
 import { Route as AuthenticatedSettingsDisplayImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountImport } from './routes/_authenticated/settings/account'
+import { Route as AuthenticatedRestaurantsRestaurantRegistrationImport } from './routes/_authenticated/restaurants/restaurant-registration'
 import { Route as AuthenticatedRestaurantsRestaurantManagementImport } from './routes/_authenticated/restaurants/restaurant-management'
 import { Route as AuthenticatedRestaurantsRestaurantDetailsImport } from './routes/_authenticated/restaurants/restaurant-details'
 import { Route as AuthenticatedOrdersOrderDetailsImport } from './routes/_authenticated/orders/order-details'
@@ -217,6 +218,13 @@ const AuthenticatedSettingsAccountRoute =
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
 
+const AuthenticatedRestaurantsRestaurantRegistrationRoute =
+  AuthenticatedRestaurantsRestaurantRegistrationImport.update({
+    id: '/restaurants/restaurant-registration',
+    path: '/restaurants/restaurant-registration',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+
 const AuthenticatedRestaurantsRestaurantManagementRoute =
   AuthenticatedRestaurantsRestaurantManagementImport.update({
     id: '/restaurants/restaurant-management',
@@ -375,6 +383,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRestaurantsRestaurantManagementImport
       parentRoute: typeof AuthenticatedRouteImport
     }
+    '/_authenticated/restaurants/restaurant-registration': {
+      id: '/_authenticated/restaurants/restaurant-registration'
+      path: '/restaurants/restaurant-registration'
+      fullPath: '/restaurants/restaurant-registration'
+      preLoaderRoute: typeof AuthenticatedRestaurantsRestaurantRegistrationImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
     '/_authenticated/settings/account': {
       id: '/_authenticated/settings/account'
       path: '/account'
@@ -514,6 +529,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOrdersOrderDetailsRoute: typeof AuthenticatedOrdersOrderDetailsRoute
   AuthenticatedRestaurantsRestaurantDetailsRoute: typeof AuthenticatedRestaurantsRestaurantDetailsRoute
   AuthenticatedRestaurantsRestaurantManagementRoute: typeof AuthenticatedRestaurantsRestaurantManagementRoute
+  AuthenticatedRestaurantsRestaurantRegistrationRoute: typeof AuthenticatedRestaurantsRestaurantRegistrationRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedCartIndexRoute: typeof AuthenticatedCartIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
@@ -534,6 +550,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedRestaurantsRestaurantDetailsRoute,
   AuthenticatedRestaurantsRestaurantManagementRoute:
     AuthenticatedRestaurantsRestaurantManagementRoute,
+  AuthenticatedRestaurantsRestaurantRegistrationRoute:
+    AuthenticatedRestaurantsRestaurantRegistrationRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedCartIndexRoute: AuthenticatedCartIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
@@ -568,6 +586,7 @@ export interface FileRoutesByFullPath {
   '/orders/order-details': typeof AuthenticatedOrdersOrderDetailsRoute
   '/restaurants/restaurant-details': typeof AuthenticatedRestaurantsRestaurantDetailsRoute
   '/restaurants/restaurant-management': typeof AuthenticatedRestaurantsRestaurantManagementRoute
+  '/restaurants/restaurant-registration': typeof AuthenticatedRestaurantsRestaurantRegistrationRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
@@ -601,6 +620,7 @@ export interface FileRoutesByTo {
   '/orders/order-details': typeof AuthenticatedOrdersOrderDetailsRoute
   '/restaurants/restaurant-details': typeof AuthenticatedRestaurantsRestaurantDetailsRoute
   '/restaurants/restaurant-management': typeof AuthenticatedRestaurantsRestaurantManagementRoute
+  '/restaurants/restaurant-registration': typeof AuthenticatedRestaurantsRestaurantRegistrationRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
@@ -637,6 +657,7 @@ export interface FileRoutesById {
   '/_authenticated/orders/order-details': typeof AuthenticatedOrdersOrderDetailsRoute
   '/_authenticated/restaurants/restaurant-details': typeof AuthenticatedRestaurantsRestaurantDetailsRoute
   '/_authenticated/restaurants/restaurant-management': typeof AuthenticatedRestaurantsRestaurantManagementRoute
+  '/_authenticated/restaurants/restaurant-registration': typeof AuthenticatedRestaurantsRestaurantRegistrationRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
@@ -674,6 +695,7 @@ export interface FileRouteTypes {
     | '/orders/order-details'
     | '/restaurants/restaurant-details'
     | '/restaurants/restaurant-management'
+    | '/restaurants/restaurant-registration'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
@@ -706,6 +728,7 @@ export interface FileRouteTypes {
     | '/orders/order-details'
     | '/restaurants/restaurant-details'
     | '/restaurants/restaurant-management'
+    | '/restaurants/restaurant-registration'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
@@ -740,6 +763,7 @@ export interface FileRouteTypes {
     | '/_authenticated/orders/order-details'
     | '/_authenticated/restaurants/restaurant-details'
     | '/_authenticated/restaurants/restaurant-management'
+    | '/_authenticated/restaurants/restaurant-registration'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
@@ -820,6 +844,7 @@ export const routeTree = rootRoute
         "/_authenticated/orders/order-details",
         "/_authenticated/restaurants/restaurant-details",
         "/_authenticated/restaurants/restaurant-management",
+        "/_authenticated/restaurants/restaurant-registration",
         "/_authenticated/apps/",
         "/_authenticated/cart/",
         "/_authenticated/chats/",
@@ -890,6 +915,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/restaurants/restaurant-management": {
       "filePath": "_authenticated/restaurants/restaurant-management.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/restaurants/restaurant-registration": {
+      "filePath": "_authenticated/restaurants/restaurant-registration.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/settings/account": {
