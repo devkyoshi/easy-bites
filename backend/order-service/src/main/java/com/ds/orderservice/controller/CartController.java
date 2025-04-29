@@ -158,6 +158,7 @@ public class CartController {
     public OrderResponse updatePaymentStatus(
             @PathVariable("orderId") Long orderId,
             @Valid @RequestBody UpdatePaymentStatusRequest request) throws CustomException {
+        communicationService.sendEmail("sudarakatharindu2001@gmail.com", "Order Status Update", "Your order status has been updated to " + request.getPaymentStatus());
         return orderServiceImpl.updatePaymentStatus(orderId, request.getPaymentStatus());
     }
 
