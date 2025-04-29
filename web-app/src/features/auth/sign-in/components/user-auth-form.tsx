@@ -3,7 +3,6 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { IconBrandFacebook, IconBrandGithub } from '@tabler/icons-react'
 import { LoginRequest } from '@/services/auth-service.ts'
 import { toast } from 'sonner'
 import { useAuth } from '@/stores/auth-context.tsx'
@@ -60,7 +59,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         duration: 2000,
         position: 'top-center',
       })
-      await navigate({ to: '/' })
+      navigate({ to: '/' }).then()
     } catch (err: any) {
       toast.error(
         formatBackendMessage(err.message as string) || 'Login failed',
@@ -78,7 +77,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className={cn('grid gap-3', className)}
+        className={cn('space-y-6', className)}
         {...props}
       >
         <FormField
@@ -86,11 +85,15 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           name='username'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel className='text-gray-700'>Username</FormLabel>
               <FormControl>
-                <Input placeholder='your_username' {...field} />
+                <Input
+                  placeholder='your_username'
+                  {...field}
+                  className='focus:ring-primary focus:border-primary'
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className='text-xs' />
             </FormItem>
           )}
         />
@@ -100,14 +103,18 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           name='password'
           render={({ field }) => (
             <FormItem className='relative'>
-              <FormLabel>Password</FormLabel>
+              <FormLabel className='text-gray-700'>Password</FormLabel>
               <FormControl>
-                <PasswordInput placeholder='********' {...field} />
+                <PasswordInput
+                  placeholder='********'
+                  {...field}
+                  className='focus:ring-primary focus:border-primary'
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className='text-xs' />
               <Link
                 to='/forgot-password'
-                className='text-muted-foreground absolute -top-0.5 right-0 text-sm font-medium hover:opacity-75'
+                className='text-primary absolute -top-0.5 right-0 text-sm font-medium hover:underline'
               >
                 Forgot password?
               </Link>
@@ -115,28 +122,18 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           )}
         />
 
-        <Button type='submit' className='mt-2' disabled={isLoading}>
+        <Button
+          type='submit'
+          className='bg-primary hover:bg-primary-dark w-full font-semibold'
+          disabled={isLoading}
+        >
           {isLoading ? 'Logging in…' : 'Login'}
         </Button>
 
-        <div className='relative my-2'>
+        <div className='relative my-4'>
           <div className='absolute inset-0 flex items-center'>
             <span className='w-full border-t' />
           </div>
-          <div className='relative flex justify-center text-xs uppercase'>
-            <span className='bg-background text-muted-foreground px-2'>
-              Or continue with
-            </span>
-          </div>
-        </div>
-
-        <div className='grid grid-cols-2 gap-2'>
-          <Button variant='outline' type='button' disabled={isLoading}>
-            <IconBrandGithub className='h-4 w-4' /> GitHub
-          </Button>
-          <Button variant='outline' type='button' disabled={isLoading}>
-            <IconBrandFacebook className='h-4 w-4' /> Facebook
-          </Button>
         </div>
       </form>
     </Form>

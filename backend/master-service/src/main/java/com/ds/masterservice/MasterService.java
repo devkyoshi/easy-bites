@@ -1,5 +1,7 @@
 package com.ds.masterservice;
 
+import com.ds.commons.dto.request.RegisterUserRequest;
+import com.ds.commons.dto.response.RegisterResponse;
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
 import com.ds.masterservice.dao.RestaurantManager;
@@ -48,5 +50,7 @@ public interface MasterService {
     ApiResponse<MenuCategoryResponse> updateMenuCategory(Long restaurantId, Long menuCategoryId, MenuCategoryCreateRequest request) throws CustomException;
 
     ApiResponse<Void> deleteMenuCategory(Long restaurantId, Long menuCategoryId) throws CustomException;
+
+    ApiResponse<RegisterResponse> registerRestaurantManager(RegisterUserRequest restaurantManager) throws CustomException;
 
 }

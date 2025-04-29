@@ -18,11 +18,12 @@ public class StripeService {
 
     /**
      * Creates a Stripe checkout session for the given order
-     * @param orderId The ID of the order
-     * @param amount The amount to charge in dollars
+     *
+     * @param orderId     The ID of the order
+     * @param amount      The amount to charge in dollars
      * @param description The description of the order
-     * @param successUrl The URL to redirect to on successful payment
-     * @param cancelUrl The URL to redirect to on cancelled payment
+     * @param successUrl  The URL to redirect to on successful payment
+     * @param cancelUrl   The URL to redirect to on cancelled payment
      * @return The Stripe checkout session URL
      * @throws CustomException if there's an error creating the session
      */
