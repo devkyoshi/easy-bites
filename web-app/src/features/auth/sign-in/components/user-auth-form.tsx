@@ -60,7 +60,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         duration: 2000,
         position: 'top-center',
       })
-      await navigate({ to: '/' })
+      navigate({ to: '/' }).then()
     } catch (err: any) {
       toast.error(
         formatBackendMessage(err.message as string) || 'Login failed',

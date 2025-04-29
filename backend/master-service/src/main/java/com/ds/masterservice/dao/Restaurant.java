@@ -59,4 +59,5 @@ public class Restaurant {
     @OneToOne
     @JoinColumn(name = "manager_id")
     private RestaurantManager manager;
+
 }

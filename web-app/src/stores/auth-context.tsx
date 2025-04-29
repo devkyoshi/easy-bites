@@ -110,7 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('auth_user')
     localStorage.removeItem('access_token')
     router.invalidate().then()
-    router.navigate({ to: '/sign-in' })
   }
 
   const value: AuthContextType = { currentUser, accessToken, signIn, logout }

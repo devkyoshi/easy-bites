@@ -12,4 +12,5 @@ import lombok.Setter;
 public class RestaurantManager extends User {
     private String restaurantName;
     private String restaurantLocation;
+    private String licenseNumber;
 }

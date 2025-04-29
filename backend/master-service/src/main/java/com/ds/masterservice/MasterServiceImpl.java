@@ -1,5 +1,7 @@
 package com.ds.masterservice;
 
+import com.ds.commons.dto.request.RegisterUserRequest;
+import com.ds.commons.dto.response.RegisterResponse;
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
 import com.ds.masterservice.dao.RestaurantManager;
@@ -107,5 +109,10 @@ public class MasterServiceImpl implements MasterService {
     @Override
     public ApiResponse<Void> deleteMenuCategory(Long restaurantId, Long menuCategoryId) throws CustomException {
         return restaurantService.deleteMenuCategory(restaurantId, menuCategoryId);
+    }
+
+    @Override
+    public ApiResponse<RegisterResponse> registerRestaurantManager(RegisterUserRequest restaurantManager) throws CustomException {
+        return userService.registerRestaurantManager(restaurantManager);
     }
 }

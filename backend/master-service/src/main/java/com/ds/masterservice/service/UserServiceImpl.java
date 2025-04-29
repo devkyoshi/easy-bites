@@ -13,6 +13,7 @@ import com.ds.commons.template.ApiResponse;
 
 import com.ds.masterservice.dao.*;
 import com.ds.masterservice.repository.RoleRepository;
+import com.ds.masterservice.repository.StaffRegistrationRepository;
 import com.ds.masterservice.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import com.ds.commons.enums.UserType;
@@ -37,11 +38,15 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
+
+    private final  StaffRegistrationRepository staffRegistrationRepository;
+
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, StaffRegistrationRepository staffRegistrationRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.staffRegistrationRepository = staffRegistrationRepository;
     }
 
     @Override
@@ -58,7 +63,6 @@ public class UserServiceImpl implements UserService {
                     registerRequest.getPassword() == null ||
                     registerRequest.getEmail() == null ||
                     registerRequest.getFirstName() == null ||
-                    registerRequest.getUserType() == null ||
                     registerRequest.getLastName() == null) {
                 log.error("Request for registration received with missing required fields");
                 throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
@@ -70,7 +74,7 @@ public class UserServiceImpl implements UserService {
                  throw new CustomException(ExceptionCode.USER_ALREADY_EXISTS);
             }
 
-            UserType userType = registerRequest.getUserType();
+            UserType userType = registerRequest.getUserType() == null ? UserType.CUSTOMER : registerRequest.getUserType();
             Role role = roleRepository.findByName("ROLE_" + userType.name())
                     .orElseThrow(() -> new CustomException(ExceptionCode.ROLE_NOT_FOUND));
 
@@ -171,6 +175,64 @@ public class UserServiceImpl implements UserService {
                 throw (CustomException) e;
             } else {
                 log.error("An error occurred while fetching the restaurant manager: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
+    @Override
+    public ApiResponse<RegisterResponse> registerRestaurantManager(RegisterUserRequest restaurantManager) throws CustomException {
+
+        try {
+            // Check if required fields are present
+            if (restaurantManager.getUsername() == null ||
+                    restaurantManager.getPassword() == null ||
+                    restaurantManager.getEmail() == null ||
+                    restaurantManager.getFirstName() == null ||
+                    restaurantManager.getUserType() == null ||
+                    restaurantManager.getLastName() == null) {
+                log.error("Request for registration received with missing required fields");
+                throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
+            }
+
+            // Check if the user already exists
+            if (userRepository.findUserByUsername(restaurantManager.getUsername()).isPresent()) {
+                log.error("User with username {} already exists", restaurantManager.getUsername());
+                throw new CustomException(ExceptionCode.USER_ALREADY_EXISTS);
+            }
+
+            // Create a new Restaurant Manager
+            RestaurantManager user = new RestaurantManager();
+            user.setFirstName(restaurantManager.getFirstName());
+            user.setLastName(restaurantManager.getLastName());
+            user.setUsername(restaurantManager.getUsername());
+            user.setPassword(passwordEncoder.encode(restaurantManager.getPassword()));
+            user.setEmail(restaurantManager.getEmail());
+            user.setRoles(List.of(roleRepository.findByName("ROLE_RESTAURANT_MANAGER")
+                    .orElseThrow(() -> new CustomException(ExceptionCode.ROLE_NOT_FOUND))));
+
+            if(restaurantManager.getLicenseNumber() != null) {
+                user.setLicenseNumber(restaurantManager.getLicenseNumber());
+            }
+
+            // Save the user to the database
+            User savedUser = userRepository.save(user);
+
+            StaffRegistration staffRegistration = new StaffRegistration();
+            staffRegistration.setUser(savedUser);
+            staffRegistration.setCreatedAt( user.getCreatedAt());
+            staffRegistration.setIsApproved(false);
+
+            staffRegistrationRepository.save(staffRegistration);
+            log.info("Restaurant Manager {} registered successfully", restaurantManager.getUsername());
+
+            // Return the response
+            return ApiResponse.createdSuccessResponse("Restaurant Manager Registered Successfully", getRegisterResponse(user));
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("An error occurred during registration: {}", e.getMessage());
                 throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
             }
         }

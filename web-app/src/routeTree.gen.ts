@@ -18,6 +18,7 @@ import { Route as errors500Import } from './routes/(errors)/500'
 import { Route as errors404Import } from './routes/(errors)/404'
 import { Route as errors403Import } from './routes/(errors)/403'
 import { Route as errors401Import } from './routes/(errors)/401'
+import { Route as authStaffSignupImport } from './routes/(auth)/staff-signup'
 import { Route as authSignUpImport } from './routes/(auth)/sign-up'
 import { Route as authSignIn2Import } from './routes/(auth)/sign-in-2'
 import { Route as authSignInImport } from './routes/(auth)/sign-in'
@@ -83,6 +84,12 @@ const errors403Route = errors403Import.update({
 const errors401Route = errors401Import.update({
   id: '/(errors)/401',
   path: '/401',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const authStaffSignupRoute = authStaffSignupImport.update({
+  id: '/(auth)/staff-signup',
+  path: '/staff-signup',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -296,6 +303,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-up'
       fullPath: '/sign-up'
       preLoaderRoute: typeof authSignUpImport
+      parentRoute: typeof rootRoute
+    }
+    '/(auth)/staff-signup': {
+      id: '/(auth)/staff-signup'
+      path: '/staff-signup'
+      fullPath: '/staff-signup'
+      preLoaderRoute: typeof authStaffSignupImport
       parentRoute: typeof rootRoute
     }
     '/(errors)/401': {
@@ -544,6 +558,7 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof authSignInRoute
   '/sign-in-2': typeof authSignIn2Route
   '/sign-up': typeof authSignUpRoute
+  '/staff-signup': typeof authStaffSignupRoute
   '/401': typeof errors401Route
   '/403': typeof errors403Route
   '/404': typeof errors404Route
@@ -576,6 +591,7 @@ export interface FileRoutesByTo {
   '/sign-in': typeof authSignInRoute
   '/sign-in-2': typeof authSignIn2Route
   '/sign-up': typeof authSignUpRoute
+  '/staff-signup': typeof authStaffSignupRoute
   '/401': typeof errors401Route
   '/403': typeof errors403Route
   '/404': typeof errors404Route
@@ -611,6 +627,7 @@ export interface FileRoutesById {
   '/(auth)/sign-in': typeof authSignInRoute
   '/(auth)/sign-in-2': typeof authSignIn2Route
   '/(auth)/sign-up': typeof authSignUpRoute
+  '/(auth)/staff-signup': typeof authStaffSignupRoute
   '/(errors)/401': typeof errors401Route
   '/(errors)/403': typeof errors403Route
   '/(errors)/404': typeof errors404Route
@@ -647,6 +664,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-in-2'
     | '/sign-up'
+    | '/staff-signup'
     | '/401'
     | '/403'
     | '/404'
@@ -678,6 +696,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-in-2'
     | '/sign-up'
+    | '/staff-signup'
     | '/401'
     | '/403'
     | '/404'
@@ -711,6 +730,7 @@ export interface FileRouteTypes {
     | '/(auth)/sign-in'
     | '/(auth)/sign-in-2'
     | '/(auth)/sign-up'
+    | '/(auth)/staff-signup'
     | '/(errors)/401'
     | '/(errors)/403'
     | '/(errors)/404'
@@ -745,6 +765,7 @@ export interface RootRouteChildren {
   authSignInRoute: typeof authSignInRoute
   authSignIn2Route: typeof authSignIn2Route
   authSignUpRoute: typeof authSignUpRoute
+  authStaffSignupRoute: typeof authStaffSignupRoute
   errors401Route: typeof errors401Route
   errors403Route: typeof errors403Route
   errors404Route: typeof errors404Route
@@ -759,6 +780,7 @@ const rootRouteChildren: RootRouteChildren = {
   authSignInRoute: authSignInRoute,
   authSignIn2Route: authSignIn2Route,
   authSignUpRoute: authSignUpRoute,
+  authStaffSignupRoute: authStaffSignupRoute,
   errors401Route: errors401Route,
   errors403Route: errors403Route,
   errors404Route: errors404Route,
@@ -782,6 +804,7 @@ export const routeTree = rootRoute
         "/(auth)/sign-in",
         "/(auth)/sign-in-2",
         "/(auth)/sign-up",
+        "/(auth)/staff-signup",
         "/(errors)/401",
         "/(errors)/403",
         "/(errors)/404",
@@ -834,6 +857,9 @@ export const routeTree = rootRoute
     },
     "/(auth)/sign-up": {
       "filePath": "(auth)/sign-up.tsx"
+    },
+    "/(auth)/staff-signup": {
+      "filePath": "(auth)/staff-signup.tsx"
     },
     "/(errors)/401": {
       "filePath": "(errors)/401.tsx"

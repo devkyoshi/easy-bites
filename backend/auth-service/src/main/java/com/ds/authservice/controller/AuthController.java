@@ -37,7 +37,6 @@ public class AuthController {
 
     @PostMapping("/register")
     public ApiResponse<RegisterResponse> register(@RequestBody RegisterUserRequest registerRequest) throws CustomException {
-
         log.info("Attempting to register user with username: {}", registerRequest.getUsername());
         return masterService.getUserService().registerUser(registerRequest);
     }
@@ -56,6 +55,13 @@ public class AuthController {
         }
 
         return response;
+    }
+
+    //Restaurant User Registration
+    @PostMapping("/register-restaurant-manager")
+    public ApiResponse<RegisterResponse> registerRestaurant(@RequestBody RegisterUserRequest registerRequest) throws CustomException {
+        log.info("Attempting to register restaurant user with username: {}", registerRequest.getUsername());
+        return masterService.registerRestaurantManager(registerRequest);
     }
 
 
