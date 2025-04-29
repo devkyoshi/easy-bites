@@ -44,7 +44,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ApiResponse<RegisterResponse> register(@RequestBody Map<String, Object> requestMap) throws CustomException {
-        UserType userType = UserType.valueOf((String) requestMap.get("userType"));
+        UserType userType = UserType.CUSTOMER;
 
         if (userType == UserType.DELIVERY_PERSON) {
             DriverRegistrationRequest request = objectMapper.convertValue(requestMap, DriverRegistrationRequest.class);
