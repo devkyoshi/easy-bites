@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (tok) setAccessToken(tok)
 
     // Set up the expiration checker
-    const interval = setInterval(checkAuthState, 30000) // Check every 30 seconds
+    const interval = setInterval(checkAuthState, 300000) // Check every 30 seconds
     checkAuthState() // Initial check
 
     return () => clearInterval(interval)

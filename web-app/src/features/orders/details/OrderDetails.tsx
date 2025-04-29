@@ -371,7 +371,7 @@ export default function OrdersList() {
                                     </Button>
 
 
-                                    {order.status === "PENDING" && (
+                                    {order.status === "PENDING" && order.paymentStatus != "PAID" && (
                                         <Button
                                             variant="destructive"
                                             size="sm"
