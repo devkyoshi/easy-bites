@@ -28,4 +28,5 @@ public interface DeliveryService {
     ApiResponse<List<WeeklyStatsResponse>> getWeeklyStats(Long driverId) throws CustomException;
     ApiResponse<List<RatingDistributionResponse>> getRatingDistribution(Long driverId) throws CustomException;
     ApiResponse<Double> getAverageRating(Long driverId) throws CustomException;
+    ApiResponse<DeliveryResponse> getByOrderId(Long orderId) throws CustomException;
 }

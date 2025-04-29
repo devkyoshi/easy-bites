@@ -50,4 +50,6 @@ public interface DeliveryRepository extends JpaRepository<Deliveries, Long> {
 
     @Query("SELECT COALESCE(AVG(d.rating), 0) FROM Deliveries d WHERE d.driver.id = :driverId")
     Double findAverageRatingByDriver(@Param("driverId") Long driverId);
+
+    Deliveries findByOrder(Order order);
 }

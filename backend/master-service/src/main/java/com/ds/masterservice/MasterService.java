@@ -98,4 +98,6 @@ public interface MasterService {
 
     ApiResponse<Void> deleteMenuCategory(Long restaurantId, Long menuCategoryId) throws CustomException;
 
+    ApiResponse<DeliveryResponse> getByOrderId(Long orderId) throws CustomException;
+
 }

@@ -476,6 +476,18 @@ public class DeliveryServiceImpl implements DeliveryService {
         return ApiResponse.successResponse("Average rating fetched", average);
     }
 
+    @Override
+    public ApiResponse<DeliveryResponse> getByOrderId(Long orderId) throws CustomException {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> {
+            log.warn("Order with ID {} not found", orderId);
+            return new NotFoundException(ExceptionCode.ORDER_NOT_FOUND);
+        });
+        Deliveries delivery = deliveryRepository.findByOrder(order);
+
+        DeliveryResponse response = convertToResponse(delivery);
+        return ApiResponse.successResponse("Delivery fetched", response);
+    }
+
     private void sendEmailWithFallback(String to, String subject, String message) throws CustomException {
         try {
             if (emailUtil.isEmpty()) {

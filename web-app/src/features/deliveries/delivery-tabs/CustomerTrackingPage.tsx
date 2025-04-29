@@ -7,11 +7,11 @@ import { DeliveryRating } from "../components/DeliveryRating";
 import { IconUser, IconCar, IconMapPin } from "@tabler/icons-react";
 import {IDeliveryResponse, IDriverResponse, ILocation} from "@/services/types/delivery.type.ts";
 import {api} from "@/config/axios.ts";
-type LocationState = { deliveryId: number }
+type LocationState = { orderId: number }
 
 export function CustomerTrackingPage() {
     const location = useLocation();
-    const { deliveryId } = location.state as unknown as LocationState;
+    const { orderId } = location.state as unknown as LocationState;
     const { getDelivery, refreshDriverLocation } = useDelivery();
     const [delivery, setDelivery] = useState<IDeliveryResponse | null>(null);
     const [driver, setDriver] = useState<IDriverResponse | null>(null);
@@ -22,7 +22,12 @@ export function CustomerTrackingPage() {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const deliveryData = getDelivery(deliveryId);
+                const orderResponse = await api.get(
+                    `/delivery/delivery/by-order`,
+                    { params: { orderId } }
+                );
+                const deliveryResult   = orderResponse.data.result;
+                const deliveryData = getDelivery(deliveryResult.deliveryId);
                 if (!deliveryData) throw new Error("Delivery not found");
 
                 setDelivery(deliveryData);
@@ -61,7 +66,7 @@ export function CustomerTrackingPage() {
 
     return (
         <div className="container mx-auto p-4 max-w-6xl">
-            <h1 className="text-2xl font-bold mb-6">Track Your Delivery #{delivery.deliveryId}</h1>
+            <h1 className="text-2xl font-bold mb-6">Track Your Delivery #{delivery.id}</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
@@ -127,7 +132,7 @@ export function CustomerTrackingPage() {
                     {delivery.status === 'DELIVERED' && !delivery.rating && (
                         <Card className="p-6">
                             <h2 className="text-xl font-semibold mb-4">Rate Your Delivery</h2>
-                            <DeliveryRating deliveryId={delivery.deliveryId} />
+                            <DeliveryRating deliveryId={delivery.id} />
                         </Card>
                     )}
                 </div>

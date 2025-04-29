@@ -125,6 +125,11 @@ public class MasterServiceImpl implements MasterService {
     }
 
     @Override
+    public ApiResponse<DeliveryResponse> getByOrderId(Long orderId) throws CustomException {
+        return deliveryService.getByOrderId(orderId);
+    }
+
+    @Override
     public ApiResponse<List<DriverResponse>> getAllDrivers() throws CustomException {
         return deliveryDriverService.getAllDrivers();
     }

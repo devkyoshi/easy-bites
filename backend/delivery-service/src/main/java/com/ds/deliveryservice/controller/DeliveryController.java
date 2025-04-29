@@ -84,9 +84,15 @@ public class DeliveryController {
     }
 
     @GetMapping("/delivery/{deliveryId}")
-    public ApiResponse<DeliveryResponse> getDelivery(@PathVariable Long deliveryId) throws CustomException {
+    public ApiResponse<DeliveryResponse> getDelivery(@PathVariable("deliveryId") Long deliveryId) throws CustomException {
         log.info("Fetching delivery for delivery ID: {}", deliveryId);
         return masterService.getDelivery(deliveryId);
+    }
+
+    @GetMapping("/delivery/by-order")
+    public ApiResponse<DeliveryResponse> getDeliveryByOrderId(@RequestParam("orderId") Long orderId) throws CustomException {
+        log.info("Fetching delivery by order ID: {}", orderId);
+        return masterService.getByOrderId(orderId);
     }
 
     @GetMapping("/delivery/active")

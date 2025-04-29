@@ -85,6 +85,18 @@ export const AnalyticsDashboard = ({ driverId }: AnalyticsDashboardProps) => {
 
                         <Card className="p-4 flex-1 min-w-[200px]">
                             <div className="flex items-center gap-4 h-full">
+                                <div className="p-2 rounded-full bg-blue-100">
+                                    <IconClock className="h-6 w-6 text-blue-600"/>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm text-muted-foreground">AVG. TIME</p>
+                                    <p className="text-2xl font-bold">N/A</p>
+                                </div>
+                            </div>
+                        </Card>
+
+                        <Card className="p-4 flex-1 min-w-[200px]">
+                            <div className="flex items-center gap-4 h-full">
                                 <div className="p-2 rounded-full bg-amber-100">
                                     <IconStar className="h-6 w-6 text-amber-600"/>
                                 </div>
