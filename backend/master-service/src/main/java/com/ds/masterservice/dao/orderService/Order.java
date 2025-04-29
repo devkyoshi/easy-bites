@@ -19,6 +19,9 @@ public class Order {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items;
 
+    private Long restaurantId;
+    private String restaurantName;
+
     private double totalAmount;
 
     @Enumerated(EnumType.STRING)

@@ -36,6 +36,13 @@ export default function OrdersList() {
         }
     };
 
+    const handleNavigateToDelivery =(orderId: number) => {
+        navigate({
+            to: `/deliveries/customer-delivery-tracking`,
+            state: { number: orderId } as unknown as undefined,
+        }).then();
+    }
+
     const handleViewDetails = (id: number) => {
         navigate({
             to: `/orders/order-details`,
@@ -380,11 +387,11 @@ export default function OrdersList() {
                                         <Button
                                             variant="default"
                                             size="sm"
-                                            // onClick={() => {
-                                            //    console.log(order.id);
-                                            // }}
+                                            onClick={() => {
+                                               handleNavigateToDelivery(order.id);
+                                            }}
                                         >
-                                            Track Order
+                                            Track Delivery
                                         </Button>
                                     )}
 

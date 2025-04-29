@@ -1,5 +1,6 @@
 package com.ds.masterservice.dto.response.orderService;
 
+import com.ds.masterservice.dao.orderService.OrderStatus;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +18,7 @@ public class OrderResponse {
 //    private  restaurantName;
     private List<OrderItemResponse> items;
     private double totalAmount;
-    private String status;
+    private OrderStatus status;
     private String paymentStatus;
     private String deliveryAddress;
     private LocalDateTime createdAt;

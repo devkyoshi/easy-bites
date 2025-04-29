@@ -1,14 +1,19 @@
 package com.ds.commons.dto.response;
 
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Builder
-@Data
+@Getter
+@Setter
+@SuperBuilder
+@ToString
+@EqualsAndHashCode
+@NoArgsConstructor
+@AllArgsConstructor
 public class RegisterResponse {
     private String firstName;
     private String lastName;

@@ -5,15 +5,20 @@ import com.ds.commons.dto.request.LoginRequest;
 import com.ds.commons.dto.request.RegisterUserRequest;
 import com.ds.commons.dto.response.LoginResponse;
 import com.ds.commons.dto.response.RegisterResponse;
+import com.ds.commons.enums.UserType;
 import com.ds.commons.exception.CustomException;
 
 import com.ds.commons.template.ApiResponse;
 
 import com.ds.masterservice.MasterService;
+import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -22,12 +27,14 @@ public class AuthController {
 
     private final MasterService masterService;
     private final JwtService jwtService;
+    private final ObjectMapper objectMapper;
 
 
     @Autowired
-    public AuthController(MasterService masterService, JwtService jwtService) {
+    public AuthController(MasterService masterService, JwtService jwtService, ObjectMapper objectMapper) {
         this.masterService = masterService;
         this.jwtService = jwtService;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping("/health")
@@ -36,9 +43,18 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ApiResponse<RegisterResponse> register(@RequestBody RegisterUserRequest registerRequest) throws CustomException {
-        log.info("Attempting to register user with username: {}", registerRequest.getUsername());
-        return masterService.getUserService().registerUser(registerRequest);
+    public ApiResponse<RegisterResponse> register(@RequestBody Map<String, Object> requestMap) throws CustomException {
+        UserType userType = UserType.valueOf((String) requestMap.get("userType"));
+
+        if (userType == UserType.DELIVERY_PERSON) {
+            DriverRegistrationRequest request = objectMapper.convertValue(requestMap, DriverRegistrationRequest.class);
+            log.info("Attempting to register delivery person: {}", request.getUsername());
+            return masterService.getUserService().registerUser(request);
+        } else {
+            RegisterUserRequest request = objectMapper.convertValue(requestMap, RegisterUserRequest.class);
+            log.info("Attempting to register user: {}", request.getUsername());
+            return masterService.getUserService().registerUser(request);
+        }
     }
 
     @PostMapping("/login")

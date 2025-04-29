@@ -224,7 +224,7 @@ public class OrderServiceImpl implements OrderService {
         response.setId(order.getId());
         response.setUserId(order.getUserId());
         response.setTotalAmount(order.getTotalAmount());
-        response.setStatus(order.getStatus().toString());
+        response.setStatus(order.getStatus());
         response.setPaymentStatus(order.getPaymentStatus().toString());
         response.setDeliveryAddress(order.getDeliveryAddress());
         response.setCreatedAt(order.getCreatedAt());
