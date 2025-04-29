@@ -18,6 +18,7 @@
         <module>restaurant-service</module>
         <module>commons</module>
         <module>delivery-service</module>
+        <module>communication-service</module>
     </modules>
 
     <properties>
