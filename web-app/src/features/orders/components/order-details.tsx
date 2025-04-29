@@ -205,7 +205,41 @@ export function OrderDetails() {
               {orderDetails.status}
             </div>
           </Badge>
+          {orderDetails.paymentStatus === 'PAID' && (
+              <Badge className='bg-green-100 px-3 py-1.5 text-sm font-medium text-green-800'>
+                <div className='flex items-center gap-1'>
+                  <IconCheck className='h-5 w-5' />
+                  Paid
+                </div>
+              </Badge>
+          )}
+          {/* Pay button at the top if not paid */}
+          {orderDetails.paymentStatus === 'NOT_PAID' && orderDetails.status !== 'CANCELLED' && (
+              <div>
+                <Button
+                    onClick={() => handleStripePayment(orderDetails)}
+                    className='bg-blue-600 text-white transition hover:bg-blue-700'
+                >
+                  Pay Now
+                </Button>
+              </div>
+          )}
         </div>
+
+        {/* Payment status messages */}
+        {orderDetails.paymentStatus === 'NOT_PAID' &&
+            orderDetails.status !== 'CANCELLED' && (
+                <div className='rounded-md bg-yellow-50 p-3 text-sm text-yellow-800'>
+                  <p>Complete your payment to speed up order processing.</p>
+                </div>
+            )}
+        {orderDetails.paymentStatus === 'PAID' && (
+            <div className='rounded-md bg-green-50 p-3 text-sm text-green-800'>
+              <p>Your payment has been received. Your order is being processed.</p>
+            </div>
+        )}
+
+
 
         {/* Order Summary */}
         <Card>
@@ -344,7 +378,7 @@ export function OrderDetails() {
               <div>
                 <p className='font-medium'>Payment Method</p>
                 <p className='text-muted-foreground'>
-                  {orderDetails.paymentMethod}
+                  We accept credit cards, debit cards, and net banking. Also cash on delivery.
                 </p>
               </div>
             </div>
@@ -405,19 +439,7 @@ export function OrderDetails() {
           </Button>
         )}
 
-        {/* Actions */}
-        {(orderDetails.status === 'PENDING' ||
-          orderDetails.paymentStatus === 'NOT_PAID') && (
-          <div className='mt-4 flex justify-end gap-3'>
-            {orderDetails.paymentStatus === 'NOT_PAID' && (
-              <Button onClick={() => handleStripePayment(orderDetails)}
-                className='bg-blue-600 text-white transition hover:bg-blue-700'
-              >
-                Pay
-              </Button>
-            )}
-          </div>
-        )}
+
       </div>
     </div>
   )

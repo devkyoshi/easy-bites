@@ -179,7 +179,9 @@ const statusIcons = {
     RESTAURANT_ACCEPTED: <Check className="w-4 h-4 mr-2" />,
     DRIVER_ASSIGNED: <Truck className="w-4 h-4 mr-2" />,
     DELIVERED: <CheckCircle className="w-4 h-4 mr-2" />,
-    DELIVERY_FAILED: <XCircle className="w-4 h-4 mr-2" />
+    DELIVERY_FAILED: <XCircle className="w-4 h-4 mr-2" />,
+    PAID: <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+
 };
 
 type OrderTab = 'all' | 'pending' | 'restaurant_accepted' | 'driver_assigned' | 'completed' | 'cancelled';
@@ -187,7 +189,7 @@ type OrderTab = 'all' | 'pending' | 'restaurant_accepted' | 'driver_assigned' | 
 export default function OrdersList() {
     const { orders, loading, error, cancelOrder, refreshOrders } = useOrderContext();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<OrderTab>('all');
+    const [activeTab, setActiveTab] = useState<OrderTab>('pending');
 
     const handleCancel = async (orderId: number) => {
         try {
@@ -436,7 +438,11 @@ export default function OrdersList() {
                         {filteredOrders.map((order) => (
                             <Card
                                 key={order.id}
-                                className="p-6 space-y-4 hover:shadow-md transition-shadow cursor-pointer"
+                                className={`p-6 space-y-4 hover:shadow-md transition-shadow cursor-pointer ${
+                                    order.paymentStatus === 'PAID' ? 'bg-green-50 border-green-200' :
+                                        order.paymentStatus === 'FAIL' ? 'bg-red-50 border-red-700' :
+                                            order.paymentStatus === 'NOT_PAID' ? 'bg-red-50 border-red-400' : ''
+                                }`}
                                 onClick={() => handleViewDetails(order.id)}
                             >
                                 <div className="flex justify-between items-center">
@@ -452,17 +458,35 @@ export default function OrdersList() {
                                             </div>
                                         )}
                                     </div>
-                                    <Badge variant={
-                                        order.status === "DELIVERY_FAILED" ? "destructive" :
-                                            order.status === "CANCELLED" ? "destructive" :
-                                                order.status === "DELIVERED" ? "default" :
-                                                order.status === "PENDING" ? "secondary" :
-                                                    order.status === "RESTAURANT_ACCEPTED" ? "outline" :
-                                                        "default"
-                                    }>
-                                        {order.status.replace(/_/g, ' ').toLowerCase()}
-                                    </Badge>
+                                    <div className="flex items-center gap-2">
+                                        {order.paymentStatus === 'PAID' && (
+                                            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+                                                PAID
+                                            </Badge>
+                                        )}
+                                        {order.paymentStatus === 'NOT_PAID' && (
+                                            <Badge variant="outline" className="bg-red-100 text-red-400 border-red-200">
+                                                NOT PAID
+                                            </Badge>
+                                        )}
+                                        {order.paymentStatus === 'FAIL' && (
+                                            <Badge variant="outline" className="bg-red-100 text-red-800 border-red-900">
+                                                PAYMENT FAILED
+                                            </Badge>
+                                        )}
+                                        <Badge variant={
+                                            order.status === "DELIVERY_FAILED" ? "destructive" :
+                                                order.status === "CANCELLED" ? "destructive" :
+                                                    order.status === "DELIVERED" ? "default" :
+                                                        order.status === "PENDING" ? "secondary" :
+                                                            order.status === "RESTAURANT_ACCEPTED" ? "outline" :
+                                                                "default"
+                                        }>
+                                            {order.status.replace(/_/g, ' ').toLowerCase()}
+                                        </Badge>
+                                    </div>
                                 </div>
+
 
                                 <ul className="space-y-2">
                                     {order.items.slice(0, 2).map((item) => (
@@ -503,14 +527,7 @@ export default function OrdersList() {
                                     >
                                         View Details
                                     </Button>
-                                    {order.status !== "CANCELLED" && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                        >
-                                            Pay
-                                        </Button>
-                                    )}
+
 
                                     {order.status === "PENDING" && (
                                         <Button

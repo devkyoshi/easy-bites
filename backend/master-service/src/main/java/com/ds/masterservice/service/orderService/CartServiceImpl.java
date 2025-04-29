@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
+
+    // Adds items to an existing active cart or creates a new one if not present
     @Transactional
     public CartResponse addOrCreateCart(AddOrCreateCartRequest request) {
         Optional<Cart> existingCart = cartRepository.findByUserIdAndStatus(
@@ -49,7 +51,7 @@ public class CartServiceImpl implements CartService {
         }
     }
 
-    // Add these helper methods
+    // Adds new items to cart or updates quantity if item already exists
     private void addItemsToCart(Cart cart, List<CartItemRequest> items) {
         for (CartItemRequest itemRequest : items) {
             // Check if item already exists
@@ -78,7 +80,7 @@ public class CartServiceImpl implements CartService {
             }
         }
     }
-
+    // Converts a list of item requests into cart item entities
     private List<CartItem> createCartItems(List<CartItemRequest> itemRequests) {
         return itemRequests.stream()
                 .map(item -> {
@@ -96,6 +98,7 @@ public class CartServiceImpl implements CartService {
                 .collect(Collectors.toList());
     }
 
+    // Creates a new cart from scratch with given items
     @Transactional
     public CartResponse createCart(CreateCartRequest request) {
 
@@ -127,18 +130,21 @@ public class CartServiceImpl implements CartService {
         return mapToCartResponse(savedCart);
     }
 
+    // Retrieves cart by ID
     public CartResponse getCart(Long cartId) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.CART_NOT_FOUND));
         return mapToCartResponse(cart);
     }
 
+    // Retrieves active cart for a given user
     public CartResponse getUserActiveCart(Long userId) throws CustomException {
         Cart cart = cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
         return mapToCartResponse(cart);
     }
 
+    // Updates cart with new items
     @Transactional
     public CartResponse updateCart(Long cartId, UpdateCartRequest request) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
@@ -175,6 +181,7 @@ public class CartServiceImpl implements CartService {
         return mapToCartResponse(updatedCart);
     }
 
+    // Deletes a cart if it's active
     @Transactional
     public void deleteCart(Long cartId) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
@@ -187,6 +194,7 @@ public class CartServiceImpl implements CartService {
         cartRepository.delete(cart);
     }
 
+    // Checks out a cart (sets status to CHECKED_OUT)
     @Transactional
     public CartResponse checkoutCart(Long cartId) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
@@ -201,6 +209,7 @@ public class CartServiceImpl implements CartService {
         return mapToCartResponse(savedCart);
     }
 
+    // Recalculates the total amount for the cart
     private void updateTotalAmount(Cart cart) {
         double totalAmount = cart.getItems().stream()
                 .mapToDouble(CartItem::getTotalPrice)
@@ -208,6 +217,7 @@ public class CartServiceImpl implements CartService {
         cart.setTotalAmount(totalAmount);
     }
 
+    // Adds a single item to an active cart
     @Transactional
     public CartResponse addItemToCart(Long cartId, AddCartItemRequest request) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
@@ -243,6 +253,7 @@ public class CartServiceImpl implements CartService {
         return mapToCartResponse(cartRepository.save(cart));
     }
 
+    // Removes an item from the cart
     @Transactional
     public CartResponse removeItemFromCart(Long cartId, RemoveCartItemRequest request) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
@@ -256,6 +267,8 @@ public class CartServiceImpl implements CartService {
         updateTotalAmount(cart);
         return mapToCartResponse(cartRepository.save(cart));
     }
+
+    // Updates quantity for an existing item in the cart
     @Transactional
     public CartResponse updateItemQuantity(Long cartId, UpdateCartItemRequest request) {
         Cart cart = cartRepository.findById(cartId)
@@ -276,6 +289,8 @@ public class CartServiceImpl implements CartService {
         updateTotalAmount(cart);
         return mapToCartResponse(cartRepository.save(cart));
     }
+
+    // Removes or decrements item quantity by 1
     @Transactional
     public CartResponse removeOrDecrementItem(Long cartId, RemoveOrDecrementItemRequest request) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
@@ -300,6 +315,8 @@ public class CartServiceImpl implements CartService {
         updateTotalAmount(cart);
         return mapToCartResponse(cartRepository.save(cart));
     }
+
+    // Clears all items from the cart
     @Transactional
     public CartResponse clearCart(Long cartId) throws CustomException {
         Cart cart = cartRepository.findById(cartId)
@@ -314,6 +331,7 @@ public class CartServiceImpl implements CartService {
         return mapToCartResponse(cartRepository.save(cart));
     }
 
+    // Maps Cart entity to CartResponse DTO
     private CartResponse mapToCartResponse(Cart cart) {
         CartResponse response = new CartResponse();
         response.setId(cart.getId());

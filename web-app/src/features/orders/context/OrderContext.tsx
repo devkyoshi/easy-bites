@@ -23,6 +23,8 @@ export interface IOrder {
     status: string;
     createdAt: string;
     deliveryAddress?: string;
+    paymentStatus: string;
+
 }
 
 interface OrderContextType {

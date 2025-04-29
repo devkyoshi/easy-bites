@@ -30,12 +30,13 @@ public class OrderServiceImpl implements OrderService {
     private final CartServiceImpl cartServiceImpl;
 
 
+    // Creates an order from a checked-out cart
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) throws CustomException {
         Logger logger = LoggerFactory.getLogger(getClass());
         logger.debug("Starting createOrder for cartId: {}", request.getCartId());
 
-        // Get the checked out cart
+        // Fetch cart by ID
         Cart cart = cartRepository.findById(request.getCartId())
                 .orElseThrow(() -> {
                     logger.error("Cart not found with id: {}", request.getCartId());
@@ -45,18 +46,19 @@ public class OrderServiceImpl implements OrderService {
         logger.debug("Cart retrieved: id={}, status={}, userId={}",
                 cart.getId(), cart.getStatus(), cart.getUserId());
 
+        // Ensure the cart is already checked out
         if (cart.getStatus() != CartStatus.CHECKED_OUT) {
             logger.error("Attempted to create order from cart with status: {}", cart.getStatus());
             throw new IllegalStateException("Cannot create order from a cart that is not checked out");
         }
 
-        // Convert cart to order
+        // Convert cart to order entity
         Order order = new Order();
         order.setUserId(cart.getUserId());
         order.setDeliveryAddress(request.getDeliveryAddress());
         order.setTotalAmount(cart.getTotalAmount());
 
-        // Convert cart items to order items
+        // Convert cart items into order items
         List<OrderItem> orderItems = cart.getItems().stream()
                 .map(cartItem -> {
                     OrderItem orderItem = new OrderItem();
@@ -79,17 +81,21 @@ public class OrderServiceImpl implements OrderService {
 
         order.setItems(orderItems);
 
+        // Save order and return response
         Order savedOrder = orderRepository.save(order);
         logger.debug("Order saved successfully with id: {}", savedOrder.getId());
 
         return mapToOrderResponse(savedOrder);
     }
+
+    // Retrieves a specific order by ID
     public OrderResponse getOrder(Long orderId) throws CustomException {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_NOT_FOUND));
         return mapToOrderResponse(order);
     }
 
+    // Retrieves all orders placed by a user, sorted by newest first
     public List<OrderResponse> getUserOrders(Long userId) {
         return orderRepository.findByUserId(userId).stream()
                 .sorted((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()))
@@ -97,18 +103,15 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList());
     }
 
+    // Retrieves only delivered orders for a user
     public List<OrderResponse> getUserDeliveredOrders(Long userId) {
         return orderRepository.findByUserIdAndStatus(userId, OrderStatus.DELIVERED).stream()
                 .map(this::mapToOrderResponse)
                 .collect(Collectors.toList());
     }
 
-//    public List<OrderResponse> getRestaurantOrders(Long restaurantId) {
-//        return orderRepository.findByRestaurantId(restaurantId).stream()
-//                .map(this::mapToOrderResponse)
-//                .collect(Collectors.toList());
-//    }
 
+    // Updates the status of an existing order
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId, UpdateOrderStatusRequest request) throws CustomException {
         Order order = orderRepository.findById(orderId)
@@ -124,18 +127,22 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    // Deletes an order by ID
     @Transactional
     public void deleteOrder(Long orderId) throws CustomException {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_NOT_FOUND));
         orderRepository.delete(order);
     }
+
+    // Retrieves bills for all paid orders of a user
     public List<BillResponse> getUserPaidBills(Long userId) {
         return orderRepository.findByUserIdAndPaymentStatus(userId, PaymentStatus.PAID).stream()
                 .map(this::mapToBillResponse)
                 .collect(Collectors.toList());
     }
 
+    // Updates the payment status of an order
     @Transactional
     public OrderResponse updatePaymentStatus(Long orderId, PaymentStatus paymentStatus) throws CustomException {
         Order order = orderRepository.findById(orderId)
@@ -146,6 +153,7 @@ public class OrderServiceImpl implements OrderService {
         return mapToOrderResponse(orderRepository.save(order));
     }
 
+    // Cancels an order if its status is still PENDING
     @Transactional
     public OrderResponse cancelOrderIfPending(Long orderId) throws CustomException {
         Logger logger = LoggerFactory.getLogger(getClass());
@@ -169,6 +177,7 @@ public class OrderServiceImpl implements OrderService {
         return mapToOrderResponse(orderRepository.save(order));
     }
 
+    // Scheduled task: removes cancelled orders older than one hour
     @Scheduled(fixedRate = 60 * 60 * 1000) // Every hour
     @Transactional
     public void removeOldCancelledOrders() {
@@ -180,6 +189,7 @@ public class OrderServiceImpl implements OrderService {
         });
     }
 
+    // Converts an Order to a BillResponse DTO
     private BillResponse mapToBillResponse(Order order) {
         BillResponse response = new BillResponse();
         response.setOrderId(order.getId());
@@ -188,7 +198,6 @@ public class OrderServiceImpl implements OrderService {
         response.setPaymentStatus(order.getPaymentStatus().toString());
         response.setCreatedAt(order.getCreatedAt());
         response.setBillingAddress(order.getDeliveryAddress());
-        // response.setPaymentMethod("Credit Card");
 
         List<OrderItemResponse> itemResponses = order.getItems().stream()
                 .map(item -> {
@@ -208,6 +217,8 @@ public class OrderServiceImpl implements OrderService {
         response.setItems(itemResponses);
         return response;
     }
+
+    // Converts an Order entity to OrderResponse DTO
     private OrderResponse mapToOrderResponse(Order order) {
         OrderResponse response = new OrderResponse();
         response.setId(order.getId());
