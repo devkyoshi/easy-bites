@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { DeliveryLayout } from "../layouts/DeliveryLayout";
 import { DeliveryCompletion } from "../components/DeliveryCompletion";
 import { DeliveryRating } from "../components/DeliveryRating";
-import { useDelivery } from "../context/delivery-context";
+import {DeliveryProvider, useDelivery} from "../context/delivery-context";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "../components/StatusBadge";
 import { format } from "date-fns";
@@ -27,13 +27,17 @@ export function DeliveryDetails() {
     const navigate = useNavigate();
     const location = useLocation()
     const { deliveryId } = location.state as unknown as LocationState
-    const { getDelivery, error } = useDelivery();
+    const { getDelivery, error, currentLocation } = useDelivery();
     const delivery = getDelivery(Number(deliveryId));
     const [order, setOrder] = useState<IOrder | null>(null);
     const [loading, setLoading] = useState(true);
+    const [locationError, setLocationError] = useState<string | null>(null);
     const isValidStatus = (status: string): status is Status => {
         return ['PENDING', 'RESTAURANT_ACCEPTED', 'DRIVER_ASSIGNED', 'DELIVERED', 'DELIVERY_FAILED'].includes(status);
     };
+
+    const showCompletion = delivery &&
+        ['DRIVER_ASSIGNED', 'RESTAURANT_ACCEPTED'].includes(delivery.status);
 
     const handleBackClick = () => {
         navigate({ to: '/deliveries' });
@@ -53,7 +57,10 @@ export function DeliveryDetails() {
     };
 
     useEffect(() => {
-        if (!delivery) return;
+        if (!delivery) {
+            console.error("Cannot fetch order details: delivery is not provided");
+            return;
+        }
 
         const fetchData = async () => {
             try {
@@ -70,13 +77,34 @@ export function DeliveryDetails() {
         fetchData();
     }, [delivery]);
 
+    useEffect(() => {
+        if (currentLocation === null) {
+            setLocationError("Could not determine your current location");
+        } else {
+            setLocationError(null);
+        }
+    }, [currentLocation]);
+
     return (
+        <DeliveryProvider>
         <DeliveryLayout
             title="Delivery Details"
             description={`Details for delivery #${deliveryId}`}
             showBackButton
             onBackClick={handleBackClick}
         >
+            {locationError && (
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                    <div className="flex">
+                        <div className="ml-3">
+                            <p className="text-sm text-yellow-700">
+                                {locationError} - Map may not show accurate location
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {loading ? (
                 <DeliverySkeleton context="details" />
             ) : error ? (
@@ -150,7 +178,7 @@ export function DeliveryDetails() {
                             </div>
                         </div>
                     </Card>
-                    {delivery.status === 'DRIVER_ASSIGNED' && (
+                    {showCompletion && (
                         <DeliveryCompletion deliveryId={delivery.deliveryId} />
                     )}
 
@@ -160,5 +188,6 @@ export function DeliveryDetails() {
                 </>
             )}
         </DeliveryLayout>
+        </DeliveryProvider>
     );
 }

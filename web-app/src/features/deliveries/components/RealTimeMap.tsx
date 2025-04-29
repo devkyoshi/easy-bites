@@ -27,6 +27,7 @@ interface RealTimeMapProps {
     orders: IOrder[];
     activeDelivery: IDeliveryResponse | null;
     className?: string;
+    isStatic?: boolean;
 }
 
 const MapUpdater = ({ center, zoom }: { center: [number, number]; zoom?: number }) => {
@@ -40,7 +41,8 @@ const MapUpdater = ({ center, zoom }: { center: [number, number]; zoom?: number 
 export const RealTimeMap = ({
                                 driverLocation,
                                 activeDelivery,
-                                className = 'h-[500px] w-full rounded-xl border'
+                                className = 'h-[500px] w-full rounded-xl border',
+                                isStatic = false
                             }: RealTimeMapProps) => {
     const [orderDetails, setOrderDetails] = useState<IOrder | null>(null);
     const [loading, setLoading] = useState(false);
@@ -85,7 +87,9 @@ export const RealTimeMap = ({
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
 
-                <MapUpdater center={center} zoom={zoom} />
+                {!isStatic && (
+                    <MapUpdater center={center} zoom={zoom} />
+                )}
 
                 {/* Driver Marker */}
                 <Marker position={center}>

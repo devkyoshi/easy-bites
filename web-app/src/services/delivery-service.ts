@@ -1,6 +1,5 @@
 import { api } from "@/config/axios";
 import {
-    RestaurantDetails,
     IWeeklyStatsResponse,
     IRatingDistributionResponse,
     IDeliveryAnalytics,
@@ -10,17 +9,17 @@ import {
 
 export const fetchWeeklyStats = async (driverId: number): Promise<IWeeklyStatsResponse[]> => {
     const response = await api.get(`/api/delivery/analytics/weekly?driverId=${driverId}`);
-    return response.data.data;
+    return response.data.result as IWeeklyStatsResponse[];
 };
 
 export const fetchRatingDistribution = async (driverId: number): Promise<IRatingDistributionResponse[]> => {
     const response = await api.get(`/api/delivery/analytics/ratings?driverId=${driverId}`);
-    return response.data.data;
+    return response.data.result as IRatingDistributionResponse[];
 };
 
 export const fetchAverageRating = async (driverId: number): Promise<number> => {
     const response = await api.get(`/api/delivery/analytics/average-rating?driverId=${driverId}`);
-    return response.data.data;
+    return response.data.result;
 };
 
 export const submitDeliveryRating = async (deliveryId: number, data: IDeliveryRatingRequest): Promise<void> => {
@@ -43,17 +42,12 @@ export const fetchDeliveryAnalytics = async (driverId: number): Promise<IDeliver
 
 export const fetchOrderDetails = async (orderId: number): Promise<IOrder> => {
     const response = await api.get(`/api/order/order/${orderId}`);
-    return response.data;
-};
-
-export const fetchRestaurantDetails = async (restaurantId: number): Promise<RestaurantDetails> => {
-    const response = await api.get(`/api/restaurants/${restaurantId}`);
-    return response.data.data;
+    return response.data as IOrder;
 };
 
 export const fetchDriverProfile = async (driverId: number): Promise<IDriverResponse> => {
     const response = await api.get(`/api/delivery/drivers/${driverId}`);
-    return response.data.data;
+    return response.data.result as IDriverResponse;
 };
 
 export const updateDriverProfile = async (
@@ -61,5 +55,5 @@ export const updateDriverProfile = async (
     profileData: IDriverProfile
 ): Promise<IDriverResponse> => {
     const response = await api.put(`/api/delivery/drivers/${driverId}`, profileData);
-    return response.data.data;
+    return response.data.result as IDriverResponse;
 };

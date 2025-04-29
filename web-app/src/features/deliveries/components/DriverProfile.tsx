@@ -31,12 +31,13 @@ export function DriverProfile({ driverId }: { driverId: number }) {
         try {
             setLoading(true);
             const response = await fetchDriverProfile(driverId);
-            // Ensure the response has the expected structure
-            if (response && typeof response === 'object') {
+            // Adjust this to match your actual API response structure
+            if (response) {
+                const profileData = response;
                 setProfile({
-                    vehicleType: response.vehicleType || "",
-                    vehicleNumber: response.vehicleNumber || "",
-                    licenseNumber: response.licenseNumber || ""
+                    vehicleType: profileData.vehicleType || "",
+                    vehicleNumber: profileData.vehicleNumber || "",
+                    licenseNumber: profileData.licenseNumber || ""
                 });
                 setError(null);
             } else {
@@ -144,8 +145,8 @@ export function DriverProfile({ driverId }: { driverId: number }) {
                             <SelectContent>
                                 <SelectItem value="BIKE">Bike</SelectItem>
                                 <SelectItem value="CAR">Car</SelectItem>
-                                <SelectItem value="VAN">Scooter</SelectItem>
-                                <SelectItem value="THREE_WHEELER">Truck</SelectItem>
+                                <SelectItem value="VAN">VAN</SelectItem>
+                                <SelectItem value="THREE_WHEELER">THREE WHEELER</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

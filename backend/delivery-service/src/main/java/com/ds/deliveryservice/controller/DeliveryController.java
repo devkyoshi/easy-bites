@@ -12,6 +12,7 @@ import com.ds.masterservice.dto.response.*;
 import com.ds.masterservice.dto.response.deliveryService.DeliveryHistoryResponse;
 import com.ds.masterservice.dto.response.deliveryService.DeliveryResponse;
 import com.ds.masterservice.dto.response.deliveryService.DriverResponse;
+import com.ds.masterservice.dto.response.deliveryService.LocationUpdateResponse;
 import com.ds.masterservice.dto.response.orderService.OrderResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -149,7 +150,7 @@ public class DeliveryController {
     }
 
     @PutMapping("/drivers/{driverId}/location")
-    public ApiResponse<String> updateLocation(
+    public ApiResponse<LocationUpdateResponse> updateLocation(
             @PathVariable("driverId") Long driverId,
             @RequestParam BigDecimal lat,
             @RequestParam BigDecimal lng

@@ -16,6 +16,8 @@ export interface IDeliveryRatingRequest {
 }
 
 export interface IDeliveryResponse {
+    deliveryAddress: string;
+    restaurantName: string;
     deliveryId: number;
     orderId: number;
     driverId: number;
@@ -53,6 +55,8 @@ export interface IDriverResponse {
     vehicleType: string;
     vehicleNumber: string;
     isAvailable: boolean;
+    currentLat: number;
+    currentLng: number;
 }
 
 export interface IRatingDistributionResponse {
@@ -92,12 +96,6 @@ export interface ILocation {
     lng: number;
     timestamp?: number;
     accuracy?: number;
-}
-
-export interface RestaurantDetails {
-    restaurantId: number;
-    name: string;
-    address: string;
 }
 
 export interface IDeliveryAnalytics {

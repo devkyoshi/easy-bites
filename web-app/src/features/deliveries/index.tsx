@@ -10,25 +10,19 @@ export default function DeliveryTab() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!currentUser) {
-            toast.error("User not authenticated.");
-            navigate({ to: '/' });
-        } else if (currentUser.role !== 'ROLE_DELIVERY_PERSON') {
-            toast.error("Access restricted to delivery personnel only.");
-            navigate({ to: '/' });
-        } else if (!currentUser.userId) {
-            toast.error("Invalid user data. Please sign in again.");
+        if (!currentUser || !currentUser.userId) {
+            toast.error("Please sign in to access this page");
             navigate({ to: '/' });
         }
     }, [currentUser, navigate]);
 
-    if (!currentUser || currentUser.role !== 'ROLE_DELIVERY_PERSON' || !currentUser.userId) {
+    if (!currentUser || !currentUser.userId) {
         return null;
     }
 
     return (
         <DeliveryProvider>
-            <DeliveryContent driverId={currentUser.userId} />
+            <DeliveryContent driverId={currentUser.userId} role={currentUser.role} />
         </DeliveryProvider>
     );
 }

@@ -1,6 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
 import { DeliveryLayout } from "../layouts/DeliveryLayout";
-import { DashboardOverview } from "../components/DashboardOverview";
 import { ActiveDeliveries } from "../components/ActiveDelivery";
 import { DeliveryHistory } from "../components/DeliveryHistory";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { EmptyDriverState } from "../components/EmptyDriverState";
 import {useEffect} from "react";
 import {DriverProfile} from "@/features/deliveries/components/DriverProfile.tsx";
 import axios from "axios";
+import {NearbyDeliveries} from "@/features/deliveries/components/NearbyDeliveries.tsx";
 
 interface DriverDashboardProps {
     driverId: number;
@@ -25,9 +25,9 @@ export function DriverDashboard({ driverId }: DriverDashboardProps) {
         error,
         loading,
         deliveryHistory,
-        analytics,
         initializeDriver,
         fetchDeliveryHistory,
+        refreshData, // Add this
     } = useDelivery();
 
     useEffect(() => {
@@ -41,9 +41,13 @@ export function DriverDashboard({ driverId }: DriverDashboardProps) {
                 });
 
                 if (mounted) {
-                    await fetchDeliveryHistory(driverId, {
-                        signal: abortController.signal
-                    });
+                    // Fetch all data in parallel
+                    await Promise.all([
+                        fetchDeliveryHistory(driverId, {
+                            signal: abortController.signal
+                        }),
+                        refreshData(), // This will fetch active delivery and analytics
+                    ]);
                 }
             } catch (error) {
                 if (!axios.isCancel(error) && mounted) {
@@ -83,34 +87,10 @@ export function DriverDashboard({ driverId }: DriverDashboardProps) {
                 </Alert>
             ) : (
                 <>
-                    {/*<div className="flex justify-end mb-6">*/}
-                    {/*    <Button*/}
-                    {/*        variant="outline"*/}
-                    {/*        onClick={handleNavigateToAnalyticPage}*/}
-                    {/*        className="gap-2"*/}
-                    {/*    >*/}
-                    {/*        <span>View Analytics</span>*/}
-                    {/*        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">*/}
-                    {/*            <path d="M3 3v18h18" />*/}
-                    {/*            <path d="m19 9-5 5-4-4-3 3" />*/}
-                    {/*        </svg>*/}
-                    {/*    </Button>*/}
-                    {/*</div>*/}
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="md:col-span-2">
                             <DriverProfile driverId={driverId} />
                         </div>
-
-                        {analytics ? (
-                            <DashboardOverview driverId={driverId} />
-                        ) : (
-                            <EmptyDriverState
-                                title="No Statistics Available"
-                                description="We couldn't find any delivery statistics for your account"
-                                icon="chart"
-                            />
-                        )}
 
                         {activeDelivery ? (
                             <ActiveDeliveries driverId={driverId} />
@@ -126,6 +106,8 @@ export function DriverDashboard({ driverId }: DriverDashboardProps) {
                                 }
                             />
                         )}
+
+                        <NearbyDeliveries />
 
                         {deliveryHistory && deliveryHistory.length > 0 ? (
                             <DeliveryHistory driverId={driverId} />

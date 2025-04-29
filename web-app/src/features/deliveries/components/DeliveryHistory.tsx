@@ -28,7 +28,7 @@ export const DeliveryHistory = ({ driverId }: { driverId: number }) => {
     const handleNavigateToDeliveryDetail = (delivery: IDeliveryResponse) => {
         navigate({
             to: '/deliveries/delivery-details',
-            state: { deliveryId: delivery.deliveryId }
+            state: { deliveryId: delivery.deliveryId } as never
         }).then();
     };
 
@@ -45,7 +45,6 @@ export const DeliveryHistory = ({ driverId }: { driverId: number }) => {
                     try {
                         const order: IOrder = await fetchOrderDetails(delivery.orderId);
 
-                        // Get unique restaurant names from order items
                         const restaurantNames = Array.from(
                             new Set(order.items.map(item => item.restaurantName))
                         );
@@ -55,7 +54,7 @@ export const DeliveryHistory = ({ driverId }: { driverId: number }) => {
                             status: delivery.status,
                             createdAt: delivery.createdAt,
                             order: {
-                                restaurantNames,  // Now using the array of names
+                                restaurantNames,
                                 totalAmount: order.totalAmount,
                                 deliveryAddress: order.deliveryAddress,
                             }
@@ -93,7 +92,7 @@ export const DeliveryHistory = ({ driverId }: { driverId: number }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {enrichedDeliveries.map((delivery) => (
                     <DeliveryCard
-                        key={delivery.id}
+                        key={`${delivery.id}-${delivery.createdAt}`}
                         delivery={delivery}
                         onViewDetails={() => handleNavigateToDeliveryDetail({
                             deliveryId: delivery.id,

@@ -9,6 +9,7 @@ import { DeliverySkeleton } from "../components/DeliverySkeleton";
 import { EmptyDeliveryState } from "../components/EmptyDeliveryState";
 import {useEffect} from "react";
 import axios from "axios";
+import {useAuth} from "@/stores/auth-context.tsx";
 
 interface AnalyticsDashboardProps {
     driverId?: number;
@@ -16,14 +17,12 @@ interface AnalyticsDashboardProps {
 
 export const AnalyticsDashboard = ({ driverId }: AnalyticsDashboardProps) => {
     const navigate = useNavigate();
-    const { analytics, loading, error, fetchAnalyticsData, driver } = useDelivery();
+    const { analytics, loading, error, fetchAnalyticsData } = useDelivery();
+    const {currentUser} = useAuth();
 
     useEffect(() => {
-        const id = driverId || driver?.driverId;
-        if (!id) {
-            console.error("No driver ID available for analytics");
-            return;
-        }
+        const id = currentUser?.userId;
+        if (!id) return; // Don't log the error—just wait for driver data to load
 
         const controller = new AbortController();
         fetchAnalyticsData(id, { signal: controller.signal }).catch(e => {
@@ -33,7 +32,7 @@ export const AnalyticsDashboard = ({ driverId }: AnalyticsDashboardProps) => {
         });
 
         return () => controller.abort();
-    }, [driverId, driver?.driverId, fetchAnalyticsData]);
+    }, [currentUser?.userId]);
 
     const handleBackClick = () => {
         navigate({ to: '/deliveries' });
@@ -57,11 +56,13 @@ export const AnalyticsDashboard = ({ driverId }: AnalyticsDashboardProps) => {
                 <EmptyDeliveryState context="analytics" />
             ) : (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <Card className="p-4">
-                            <div className="flex items-center gap-4">
-                                <IconCheck className="h-8 w-8 text-green-500"/>
-                                <div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full mb-8">
+                        <Card className="p-4 flex-1 min-w-[200px]">
+                            <div className="flex items-center gap-4 h-full">
+                                <div className="p-2 rounded-full bg-green-100">
+                                    <IconCheck className="h-6 w-6 text-green-600"/>
+                                </div>
+                                <div className="flex-1">
                                     <p className="text-sm text-muted-foreground">Completed</p>
                                     <p className="text-2xl font-bold">
                                         {completedDeliveries}
@@ -70,30 +71,24 @@ export const AnalyticsDashboard = ({ driverId }: AnalyticsDashboardProps) => {
                             </div>
                         </Card>
 
-                        <Card className="p-4">
-                            <div className="flex items-center gap-4">
-                                <IconCoin className="h-8 w-8 text-yellow-500"/>
-                                <div>
+                        <Card className="p-4 flex-1 min-w-[200px]">
+                            <div className="flex items-center gap-4 h-full">
+                                <div className="p-2 rounded-full bg-yellow-100">
+                                    <IconCoin className="h-6 w-6 text-yellow-600"/>
+                                </div>
+                                <div className="flex-1">
                                     <p className="text-sm text-muted-foreground">Earnings</p>
                                     <p className="text-2xl font-bold">LKR {totalEarnings.toFixed(2)}</p>
                                 </div>
                             </div>
                         </Card>
 
-                        <Card className="p-4">
-                            <div className="flex items-center gap-4">
-                                <IconClock className="h-8 w-8 text-blue-500"/>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Avg. Time</p>
-                                    <p className="text-2xl font-bold">N/A</p>
+                        <Card className="p-4 flex-1 min-w-[200px]">
+                            <div className="flex items-center gap-4 h-full">
+                                <div className="p-2 rounded-full bg-amber-100">
+                                    <IconStar className="h-6 w-6 text-amber-600"/>
                                 </div>
-                            </div>
-                        </Card>
-
-                        <Card className="p-4">
-                            <div className="flex items-center gap-4">
-                                <IconStar className="h-8 w-8 text-amber-500"/>
-                                <div>
+                                <div className="flex-1">
                                     <p className="text-sm text-muted-foreground">Rating</p>
                                     <p className="text-2xl font-bold">{analytics.averageRating.toFixed(1)}/5</p>
                                 </div>

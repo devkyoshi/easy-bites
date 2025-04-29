@@ -2,7 +2,6 @@ package com.ds.masterservice;
 
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
-import com.ds.masterservice.dao.deliveryService.Deliveries;
 import com.ds.masterservice.dao.RestaurantManager;
 import com.ds.masterservice.dto.request.deliveryService.DeliveryAcceptanceRequest;
 import com.ds.masterservice.dto.request.deliveryService.DeliveryCompletionRequest;
@@ -15,6 +14,7 @@ import com.ds.masterservice.dto.response.*;
 import com.ds.masterservice.dto.response.deliveryService.DeliveryHistoryResponse;
 import com.ds.masterservice.dto.response.deliveryService.DeliveryResponse;
 import com.ds.masterservice.dto.response.deliveryService.DriverResponse;
+import com.ds.masterservice.dto.response.deliveryService.LocationUpdateResponse;
 import com.ds.masterservice.dto.response.food.FoodItemResponse;
 import com.ds.masterservice.dto.response.menu.MenuCategoryResponse;
 import com.ds.masterservice.dto.response.orderService.OrderResponse;
@@ -58,7 +58,7 @@ public interface MasterService {
 
     ApiResponse<String> deleteDriver(Long driverId) throws CustomException;
 
-    ApiResponse<String> updateLocation(Long driverId, BigDecimal lat, BigDecimal lng) throws CustomException;
+    ApiResponse<LocationUpdateResponse> updateLocation(Long driverId, BigDecimal lat, BigDecimal lng) throws CustomException;
 
     ApiResponse<String> setDriverAvailability(Long driverId, boolean isAvailable) throws CustomException;
 

@@ -9,12 +9,14 @@ import com.ds.commons.template.ApiResponse;
 import com.ds.masterservice.dao.deliveryService.DeliveryPerson;
 import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
 import com.ds.masterservice.dto.response.deliveryService.DriverResponse;
+import com.ds.masterservice.dto.response.deliveryService.LocationUpdateResponse;
 import com.ds.masterservice.repository.deliveryService.DeliveryDriverRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -66,16 +68,6 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
             throw new CustomException(ExceptionCode.INVALID_VEHICLE_TYPE);
         }
 
-        if (deliveryDriverRepository.existsByLicenseNumber(updateDTO.getLicenseNumber())) {
-            log.warn("License number {} already exists", updateDTO.getLicenseNumber());
-            throw new CustomException(ExceptionCode.LICENSE_ALREADY_EXISTS);
-        }
-
-        if (deliveryDriverRepository.existsByVehicleNumber(updateDTO.getVehicleNumber())) {
-            log.warn("Vehicle number {} already exists", updateDTO.getVehicleNumber());
-            throw new CustomException(ExceptionCode.VEHICLE_NUMBER_ALREADY_EXISTS);
-        }
-
         driver.setLicenseNumber(updateDTO.getLicenseNumber());
         driver.setVehicleNumber(updateDTO.getVehicleNumber());
 
@@ -99,7 +91,7 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
     }
 
     @Override
-    public ApiResponse<String> updateLocation(Long driverId, BigDecimal lat, BigDecimal lng) throws CustomException {
+    public ApiResponse<LocationUpdateResponse> updateLocation(Long driverId, BigDecimal lat, BigDecimal lng) throws CustomException {
         log.info("Updating location for driver ID: {}", driverId);
         DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
                 .orElseThrow(() -> {
@@ -111,8 +103,15 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         driver.setCurrentLng(lng);
         deliveryDriverRepository.save(driver);
 
+        LocationUpdateResponse response = new LocationUpdateResponse();
+        response.setDriverId(driverId);
+        response.setLatitude(lat);
+        response.setLongitude(lng);
+        response.setMessage("Driver location updated successfully");
+        response.setTimestamp(LocalDateTime.now());
+
         log.debug("Driver {} location updated to lat: {}, lng: {}", driverId, lat, lng);
-        return ApiResponse.successResponse("Driver location updated successfully", null);
+        return ApiResponse.successResponse("Location updated", response);
     }
 
     @Override
@@ -161,6 +160,8 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
                 .vehicleNumber(driver.getVehicleNumber())
                 .vehicleType(String.valueOf(driver.getVehicleType()))
                 .isAvailable(driver.getIsAvailable())
+                .currentLat(driver.getCurrentLat())
+                .currentLng(driver.getCurrentLng())
                 .build();
     }
 }

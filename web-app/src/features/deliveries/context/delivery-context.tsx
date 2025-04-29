@@ -7,7 +7,6 @@ import {
     IOrder,
     IDeliveryResponse,
     IDeliveryAcceptanceRequest,
-    IDeliveryCompletionRequest,
     IRatingDistributionResponse,
     IWeeklyStatsResponse, IDeliveryAnalytics
 } from "@/services/types/delivery.type";
@@ -16,6 +15,7 @@ import {fetchDeliveryAnalytics} from "@/services/delivery-service.ts";
 import axios from "axios";
 
 interface IDeliveryContext {
+    deliveries: IDeliveryResponse[];
     driver: IDriverResponse | null;
     currentLocation: ILocation | null;
     nearbyOrders: IOrder[];
@@ -25,19 +25,29 @@ interface IDeliveryContext {
         ratingDistribution: IRatingDistributionResponse[];
         averageRating: number;
     } | null;
+    fetchNearbyOrders: (driverId: number, lat: number, lng: number) => Promise<IOrder[]>;
     loading: boolean;
     error: string | null;
     socketConnected: boolean;
     socketCleanup?: () => void;
     initializeDriver: (driverId: number, initialLocation?: ILocation, options?: { signal?: AbortSignal }) => Promise<void>;
-    updateLocation: (location: ILocation) => Promise<void>;
+    updateLocation: (lat: number, lng: number) => Promise<void>;
+    refreshDriverLocation: (driverId: number) => Promise<ILocation | null>;
     acceptOrder: (request: IDeliveryAcceptanceRequest) => Promise<IDeliveryResponse | null>;
-    completeDelivery: (deliveryId: number, data: IDeliveryCompletionRequest) => Promise<IDeliveryResponse | null>;
-    refreshData: () => Promise<void>;
+    completeDelivery: (
+        id: number,
+        data: { isCompleted: boolean; notes?: string; proofImage?: string }
+    ) => Promise<IDeliveryResponse>;    refreshData: () => Promise<void>;
     deliveryHistory: IDeliveryResponse[];
-    getDelivery: (deliveryId: number) => IDeliveryResponse | undefined;
+    getDelivery: (id: number) => IDeliveryResponse | undefined;
     fetchDeliveryHistory: (driverId: number, options?: { signal?: AbortSignal }) => Promise<void>;
     fetchAnalyticsData: (driverId: number, options?: { signal?: AbortSignal }) => Promise<IDeliveryAnalytics>;
+}
+
+interface IApiResponse<T> {
+    message: string;
+    success: boolean;
+    result: T;
 }
 
 const DeliveryContext = createContext<IDeliveryContext | undefined>(undefined);
@@ -45,7 +55,7 @@ const DeliveryContext = createContext<IDeliveryContext | undefined>(undefined);
 export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
     const [state, setState] = useState<Omit<IDeliveryContext,
         'initializeDriver' | 'updateLocation' | 'acceptOrder' | 'completeDelivery' | 'refreshData' |
-        'getDelivery' | 'fetchDeliveryHistory' | 'fetchAnalyticsData'
+        'getDelivery' | 'fetchDeliveryHistory' | 'fetchAnalyticsData' | 'fetchNearbyOrders' | 'refreshDriverLocation'
     >>({
         driver: null,
         currentLocation: null,
@@ -56,17 +66,76 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         loading: true,
         error: null,
         socketConnected: false,
-        socketCleanup: undefined
+        socketCleanup: undefined,
+        deliveries: []
     });
 
     const [socket, setSocket] = useState<Socket | null>(null);
+
+    useEffect(() => {
+        if (navigator.geolocation) {
+            const watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    setState(prev => ({
+                        ...prev,
+                        currentLocation: {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            accuracy: position.coords.accuracy,
+                            timestamp: position.timestamp
+                        }
+                    }));
+                },
+                (error) => console.error('Geolocation error:', error),
+                { enableHighAccuracy: true, maximumAge: 10000 }
+            );
+            return () => navigator.geolocation.clearWatch(watchId);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!state.activeDelivery?.driverId || !state.currentLocation?.lat || !state.currentLocation?.lng) {
+            return;
+        }
+
+        const interval = setInterval(async () => {
+            try {
+                await api.put(`/drivers/${state.activeDelivery!.driverId}/location`, {
+                    lat: state.currentLocation!.lat,
+                    lng: state.currentLocation!.lng
+                });
+            } catch (error) {
+                console.error('Failed to update location:', error);
+            }
+        }, 15000);
+
+        return () => clearInterval(interval);
+    }, [state.activeDelivery?.driverId, state.currentLocation?.lat, state.currentLocation?.lng]);
+
+    const refreshDriverLocation = async (driverId: number): Promise<ILocation> => {
+        try {
+            const response = await api.get<IApiResponse<IDriverResponse>>(`/drivers/${driverId}`);
+            if (!response.data.result.currentLat || !response.data.result.currentLng) {
+                throw new Error('Driver location not available');
+            }
+            return {
+                lat: Number(response.data.result.currentLat),
+                lng: Number(response.data.result.currentLng),
+                timestamp: Date.now()
+            };
+        } catch (error) {
+            console.error('Failed to fetch driver location:', error);
+            throw error; // Re-throw to let calling code handle it
+        }
+    };
+
 
     const fetchDriver = async (driverId: number, options?: { signal?: AbortSignal }) => {
         try {
             const response = await api.get(`/api/delivery/drivers/${driverId}`, {
                 signal: options?.signal
             });
-            return response.data.data;
+            return response.data.result;
         } catch (error) {
             if (axios.isCancel(error)) {
                 console.log('Request canceled:', error.message);
@@ -82,7 +151,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
             const response = await api.get(`/api/delivery/orders/nearby`, {  // Changed to proper endpoint format
                 params: { driverId, lat, lng },
             });
-            return response.data.data;
+            return response.data.result;
         } catch (error) {
             console.error("Failed to fetch nearby orders", error);
             return [];
@@ -98,7 +167,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
                 params: { driverId },
                 signal: options?.signal
             });
-            return response.data.data;
+            return response.data.result;
         } catch (error) {
             if (axios.isCancel(error)) {
                 console.log('Request canceled:', error.message);
@@ -128,13 +197,15 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         }
     };
 
-    const updateLocation = async (location: ILocation) => {
+    const updateLocation = async (lat: number, lng: number) => {
         if (!state.driver) return;
+
+        const location = { lat, lng, timestamp: Date.now() };
 
         try {
             await api.put(`/api/delivery/drivers/${state.driver.driverId}/location`, {
-                lat: location.lat,
-                lng: location.lng
+                lat,
+                lng
             });
 
             setState(prev => ({
@@ -148,8 +219,8 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
 
             const nearbyOrders = await fetchNearbyOrders(
                 state.driver.driverId,
-                location.lat,
-                location.lng
+                lat,
+                lng
             );
             setState(prev => ({ ...prev, nearbyOrders }));
         } catch (error) {
@@ -297,7 +368,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
             if (!options?.signal?.aborted) {
                 setState(prev => ({
                     ...prev,
-                    deliveryHistory: response.data.data,
+                    deliveryHistory: response.data.result,
                     loading: false,
                     error: null  // Explicitly clear error on success
                 }));
@@ -329,8 +400,8 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
 
         setState(prev => ({ ...prev, loading: true }));
         try {
-            const response = await api.post<{ data: IDeliveryResponse }>(
-                `/api/delivery/orders/accept`,
+            const response = await api.post<IApiResponse<IDeliveryResponse>>(
+                `/api/delivery/orders/accept/?driverId=${state.driver.driverId}`,
                 {
                     ...request,
                     currentLat: state.currentLocation.lat,
@@ -338,7 +409,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
                 },
             );
 
-            const delivery = response.data.data;
+            const delivery = response.data.result;
             setState(prev => ({
                 ...prev,
                 activeDelivery: delivery,
@@ -354,22 +425,28 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         }
     };
 
-    const completeDelivery = async (deliveryId: number, data: IDeliveryCompletionRequest) => {
+    const completeDelivery = async (
+        id: number,
+        data: { isCompleted: boolean; notes?: string; proofImage?: string }
+    ): Promise<IDeliveryResponse> => {  // Now returns the delivery response
         setState(prev => ({ ...prev, loading: true }));
         try {
-            const response = await api.post<{ data: IDeliveryResponse }>(
+            const response = await api.post<IApiResponse<IDeliveryResponse>>(
                 `/api/delivery/delivery/complete`,
-                data,
                 {
-                    params: { deliveryId }
-                }
+                    ...data,
+                    notes: data.notes || '', // Default empty string if undefined
+                },
+                { params: { deliveryId: id } }
             );
 
-            const delivery = response.data.data;
+            const delivery = response.data.result;
+
             setState(prev => ({
                 ...prev,
                 activeDelivery: null,
-                loading: false
+                loading: false,
+                driver: prev.driver ? { ...prev.driver, isAvailable: true } : null
             }));
 
             if (state.driver) {
@@ -377,7 +454,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
                 setState(prev => ({ ...prev, analytics }));
             }
 
-            return delivery;
+            return delivery; // Return the completed delivery
         } catch (error) {
             console.error("Failed to complete delivery", error);
             setState(prev => ({ ...prev, loading: false }));
@@ -452,6 +529,9 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
     return (
         <DeliveryContext.Provider value={{
             ...state,
+            deliveries: state.deliveries,
+            currentLocation: state.currentLocation,
+            fetchNearbyOrders,
             initializeDriver,
             updateLocation,
             acceptOrder,
@@ -459,7 +539,9 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
             refreshData,
             getDelivery,
             fetchDeliveryHistory,
-            fetchAnalyticsData
+            fetchAnalyticsData,
+            refreshDriverLocation,
+            activeDelivery: state.activeDelivery,
         }}>
             {children}
         </DeliveryContext.Provider>

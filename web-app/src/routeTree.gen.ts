@@ -43,6 +43,7 @@ import { Route as AuthenticatedRestaurantsRestaurantDetailsImport } from './rout
 import { Route as AuthenticatedOrdersOrderDetailsImport } from './routes/_authenticated/orders/order-details'
 import { Route as AuthenticatedDeliveriesDriverAnalyticsImport } from './routes/_authenticated/deliveries/driver-analytics'
 import { Route as AuthenticatedDeliveriesDeliveryDetailsImport } from './routes/_authenticated/deliveries/delivery-details'
+import { Route as AuthenticatedDeliveriesCustomerDeliveryTrackingImport } from './routes/_authenticated/deliveries/customer-delivery-tracking'
 
 // Create/Update Routes
 
@@ -253,6 +254,13 @@ const AuthenticatedDeliveriesDeliveryDetailsRoute =
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
+const AuthenticatedDeliveriesCustomerDeliveryTrackingRoute =
+  AuthenticatedDeliveriesCustomerDeliveryTrackingImport.update({
+    id: '/deliveries/customer-delivery-tracking',
+    path: '/deliveries/customer-delivery-tracking',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -346,6 +354,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/deliveries/customer-delivery-tracking': {
+      id: '/_authenticated/deliveries/customer-delivery-tracking'
+      path: '/deliveries/customer-delivery-tracking'
+      fullPath: '/deliveries/customer-delivery-tracking'
+      preLoaderRoute: typeof AuthenticatedDeliveriesCustomerDeliveryTrackingImport
       parentRoute: typeof AuthenticatedRouteImport
     }
     '/_authenticated/deliveries/delivery-details': {
@@ -512,6 +527,7 @@ const AuthenticatedSettingsRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedDeliveriesCustomerDeliveryTrackingRoute: typeof AuthenticatedDeliveriesCustomerDeliveryTrackingRoute
   AuthenticatedDeliveriesDeliveryDetailsRoute: typeof AuthenticatedDeliveriesDeliveryDetailsRoute
   AuthenticatedDeliveriesDriverAnalyticsRoute: typeof AuthenticatedDeliveriesDriverAnalyticsRoute
   AuthenticatedOrdersOrderDetailsRoute: typeof AuthenticatedOrdersOrderDetailsRoute
@@ -531,6 +547,8 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedDeliveriesCustomerDeliveryTrackingRoute:
+    AuthenticatedDeliveriesCustomerDeliveryTrackingRoute,
   AuthenticatedDeliveriesDeliveryDetailsRoute:
     AuthenticatedDeliveriesDeliveryDetailsRoute,
   AuthenticatedDeliveriesDriverAnalyticsRoute:
@@ -568,6 +586,7 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/deliveries/customer-delivery-tracking': typeof AuthenticatedDeliveriesCustomerDeliveryTrackingRoute
   '/deliveries/delivery-details': typeof AuthenticatedDeliveriesDeliveryDetailsRoute
   '/deliveries/driver-analytics': typeof AuthenticatedDeliveriesDriverAnalyticsRoute
   '/orders/order-details': typeof AuthenticatedOrdersOrderDetailsRoute
@@ -601,6 +620,7 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/deliveries/customer-delivery-tracking': typeof AuthenticatedDeliveriesCustomerDeliveryTrackingRoute
   '/deliveries/delivery-details': typeof AuthenticatedDeliveriesDeliveryDetailsRoute
   '/deliveries/driver-analytics': typeof AuthenticatedDeliveriesDriverAnalyticsRoute
   '/orders/order-details': typeof AuthenticatedOrdersOrderDetailsRoute
@@ -637,6 +657,7 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/deliveries/customer-delivery-tracking': typeof AuthenticatedDeliveriesCustomerDeliveryTrackingRoute
   '/_authenticated/deliveries/delivery-details': typeof AuthenticatedDeliveriesDeliveryDetailsRoute
   '/_authenticated/deliveries/driver-analytics': typeof AuthenticatedDeliveriesDriverAnalyticsRoute
   '/_authenticated/orders/order-details': typeof AuthenticatedOrdersOrderDetailsRoute
@@ -674,6 +695,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/deliveries/customer-delivery-tracking'
     | '/deliveries/delivery-details'
     | '/deliveries/driver-analytics'
     | '/orders/order-details'
@@ -706,6 +728,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/deliveries/customer-delivery-tracking'
     | '/deliveries/delivery-details'
     | '/deliveries/driver-analytics'
     | '/orders/order-details'
@@ -740,6 +763,7 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/'
+    | '/_authenticated/deliveries/customer-delivery-tracking'
     | '/_authenticated/deliveries/delivery-details'
     | '/_authenticated/deliveries/driver-analytics'
     | '/_authenticated/orders/order-details'
@@ -818,6 +842,7 @@ export const routeTree = rootRoute
       "children": [
         "/_authenticated/settings",
         "/_authenticated/",
+        "/_authenticated/deliveries/customer-delivery-tracking",
         "/_authenticated/deliveries/delivery-details",
         "/_authenticated/deliveries/driver-analytics",
         "/_authenticated/orders/order-details",
@@ -877,6 +902,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/": {
       "filePath": "_authenticated/index.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/deliveries/customer-delivery-tracking": {
+      "filePath": "_authenticated/deliveries/customer-delivery-tracking.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/deliveries/delivery-details": {
