@@ -11,6 +11,7 @@ import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { EmptyDriverState } from "../components/EmptyDriverState";
 import {useEffect} from "react";
 import {DriverProfile} from "@/features/deliveries/components/DriverProfile.tsx";
+import axios from "axios";
 
 interface DriverDashboardProps {
     driverId: number;
@@ -20,28 +21,45 @@ export function DriverDashboard({ driverId }: DriverDashboardProps) {
     const navigate = useNavigate();
     const {
         activeDelivery,
+        socketCleanup,
         error,
         loading,
         deliveryHistory,
         analytics,
         initializeDriver,
-        fetchDeliveryHistory
+        fetchDeliveryHistory,
     } = useDelivery();
 
     useEffect(() => {
-        const controller = new AbortController();
+        const abortController = new AbortController();
+        let mounted = true;
 
         const init = async () => {
-            await initializeDriver(driverId, undefined, { signal: controller.signal });
-            await fetchDeliveryHistory(driverId, { signal: controller.signal });
+            try {
+                await initializeDriver(driverId, undefined, {
+                    signal: abortController.signal
+                });
+
+                if (mounted) {
+                    await fetchDeliveryHistory(driverId, {
+                        signal: abortController.signal
+                    });
+                }
+            } catch (error) {
+                if (!axios.isCancel(error) && mounted) {
+                    console.error("Initialization failed:", error);
+                }
+            }
         };
 
         init();
 
         return () => {
-            controller.abort();
+            mounted = false;
+            abortController.abort();
+            socketCleanup?.();
         };
-    }, [driverId, initializeDriver, fetchDeliveryHistory]);
+    }, [driverId]);
 
     const handleNavigateToAnalyticPage = () => {
         navigate({ to: '/deliveries/driver-analytics' });
@@ -65,19 +83,19 @@ export function DriverDashboard({ driverId }: DriverDashboardProps) {
                 </Alert>
             ) : (
                 <>
-                    <div className="flex justify-end mb-6">
-                        <Button
-                            variant="outline"
-                            onClick={handleNavigateToAnalyticPage}
-                            className="gap-2"
-                        >
-                            <span>View Analytics</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M3 3v18h18" />
-                                <path d="m19 9-5 5-4-4-3 3" />
-                            </svg>
-                        </Button>
-                    </div>
+                    {/*<div className="flex justify-end mb-6">*/}
+                    {/*    <Button*/}
+                    {/*        variant="outline"*/}
+                    {/*        onClick={handleNavigateToAnalyticPage}*/}
+                    {/*        className="gap-2"*/}
+                    {/*    >*/}
+                    {/*        <span>View Analytics</span>*/}
+                    {/*        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">*/}
+                    {/*            <path d="M3 3v18h18" />*/}
+                    {/*            <path d="m19 9-5 5-4-4-3 3" />*/}
+                    {/*        </svg>*/}
+                    {/*    </Button>*/}
+                    {/*</div>*/}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="md:col-span-2">

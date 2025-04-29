@@ -69,16 +69,20 @@ export interface IWeeklyStatsResponse {
 export interface IOrder {
     id: number;
     userId: number;
-    restaurantId: number;
-    status: 'PENDING' | 'RESTAURANT_ACCEPTED' | 'DRIVER_ASSIGNED' | 'DELIVERED' | 'DELIVERY_FAILED';
-    deliveryAddress: string;
     items: {
         itemId: number;
-        name: string;
+        itemName: string;
+        itemImage: string;
+        restaurantId: number;
+        restaurantName: string;
         quantity: number;
-        price: number;
+        unitPrice: number;
+        totalPrice: number;
     }[];
     totalAmount: number;
+    status: 'PENDING' | 'RESTAURANT_ACCEPTED' | 'DRIVER_ASSIGNED' | 'DELIVERED' | 'DELIVERY_FAILED';
+    paymentStatus: string;
+    deliveryAddress: string;
     createdAt: string;
     updatedAt: string;
 }

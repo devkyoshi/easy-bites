@@ -3,17 +3,17 @@ import { Card } from "@/components/ui/card";
 import { useDelivery } from "@/features/deliveries/context/delivery-context";
 import { DeliveryCard } from "../components/DeliveryCard";
 import { useNavigate } from "@tanstack/react-router";
-import { IDeliveryResponse, IOrder, RestaurantDetails } from "@/services/types/delivery.type.ts";
+import { IDeliveryResponse, IOrder } from "@/services/types/delivery.type.ts";
 import { DeliverySkeleton } from "@/features/deliveries/components/DeliverySkeleton.tsx";
 import { EmptyDeliveryState } from "@/features/deliveries/components/EmptyDeliveryState.tsx";
-import { fetchOrderDetails, fetchRestaurantDetails } from "@/services/delivery-service";
+import { fetchOrderDetails } from "@/services/delivery-service";
 
 type EnrichedDelivery = {
     id: number;
     status: string;
     createdAt: string;
     order: {
-        restaurantName: string;
+        restaurantNames: string[];
         totalAmount: number;
         deliveryAddress: string;
     };
@@ -44,14 +44,18 @@ export const DeliveryHistory = ({ driverId }: { driverId: number }) => {
                 const enriched = await Promise.all(deliveryHistory.map(async (delivery) => {
                     try {
                         const order: IOrder = await fetchOrderDetails(delivery.orderId);
-                        const restaurant: RestaurantDetails = await fetchRestaurantDetails(order.restaurantId);
+
+                        // Get unique restaurant names from order items
+                        const restaurantNames = Array.from(
+                            new Set(order.items.map(item => item.restaurantName))
+                        );
 
                         return {
                             id: delivery.deliveryId,
                             status: delivery.status,
                             createdAt: delivery.createdAt,
                             order: {
-                                restaurantName: restaurant.name,
+                                restaurantNames,  // Now using the array of names
                                 totalAmount: order.totalAmount,
                                 deliveryAddress: order.deliveryAddress,
                             }

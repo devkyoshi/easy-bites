@@ -3,8 +3,8 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useState } from 'react';
-import { IOrder, IDeliveryResponse, RestaurantDetails } from '@/services/types/delivery.type';
-import { fetchOrderDetails, fetchRestaurantDetails } from '@/services/delivery-service.ts';
+import { IOrder, IDeliveryResponse } from '@/services/types/delivery.type';
+import { fetchOrderDetails } from '@/services/delivery-service.ts';
 
 // Fix default marker icons
 const iconRetinaUrl = '/images/markers/marker-icon-2x.png';
@@ -42,7 +42,6 @@ export const RealTimeMap = ({
                                 activeDelivery,
                                 className = 'h-[500px] w-full rounded-xl border'
                             }: RealTimeMapProps) => {
-    const [restaurant, setRestaurant] = useState<RestaurantDetails | null>(null);
     const [orderDetails, setOrderDetails] = useState<IOrder | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -51,7 +50,6 @@ export const RealTimeMap = ({
 
     useEffect(() => {
         if (!activeDelivery) {
-            setRestaurant(null);
             setOrderDetails(null);
             return;
         }
@@ -61,9 +59,6 @@ export const RealTimeMap = ({
                 setLoading(true);
                 const orderData = await fetchOrderDetails(activeDelivery.orderId);
                 setOrderDetails(orderData);
-
-                const restaurantData = await fetchRestaurantDetails(orderData.restaurantId);
-                setRestaurant(restaurantData);
             } catch (error) {
                 console.error('Failed to fetch map data:', error);
             } finally {
@@ -73,6 +68,9 @@ export const RealTimeMap = ({
 
         fetchData();
     }, [activeDelivery]);
+
+    // Get restaurant name from order items (first item's restaurant)
+    const restaurantName = orderDetails?.items[0]?.restaurantName || 'Restaurant';
 
     return (
         <div className={className}>
@@ -119,7 +117,7 @@ export const RealTimeMap = ({
                             <Popup>
                                 <div className="font-sans space-y-1">
                                     <h4 className="font-bold text-green-600">Pickup Location</h4>
-                                    <p className="text-sm">{restaurant?.name || 'Restaurant'}</p>
+                                    <p className="text-sm">{restaurantName}</p>
                                 </div>
                             </Popup>
                         </Marker>

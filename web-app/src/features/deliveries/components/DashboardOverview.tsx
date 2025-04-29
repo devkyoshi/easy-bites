@@ -4,9 +4,9 @@ import { useDelivery } from "@/features/deliveries/context/delivery-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const DashboardOverview = ({ driverId }: { driverId: number }) => {
-    const { analytics, loading } = useDelivery();
+    const { analytics, loading, error } = useDelivery();
 
-    if (loading || !analytics) {
+    if (loading) {
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[...Array(4)].map((_, i) => (
@@ -24,6 +24,18 @@ export const DashboardOverview = ({ driverId }: { driverId: number }) => {
         );
     }
 
+    if (error || !analytics) {
+        return (
+            <div className="text-red-500">
+                {error || "Failed to load analytics data"}
+            </div>
+        );
+    }
+
+    const completedDeliveries = analytics.ratingDistribution?.reduce((acc, curr) => acc + (curr.count || 0), 0) || 0;
+    const totalEarnings = analytics.weeklyStats?.reduce((acc, curr) => acc + (curr.totalEarnings || 0), 0) || 0;
+    const averageRating = analytics.averageRating || 0;
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="p-6 hover:shadow-md transition-shadow">
@@ -34,7 +46,7 @@ export const DashboardOverview = ({ driverId }: { driverId: number }) => {
                     <div>
                         <p className="text-sm text-muted-foreground">Completed</p>
                         <p className="text-2xl font-bold">
-                            {analytics.weeklyStats.reduce((acc, curr) => acc + curr.deliveryCount, 0)}
+                            {completedDeliveries}
                         </p>
                     </div>
                 </div>
@@ -48,7 +60,7 @@ export const DashboardOverview = ({ driverId }: { driverId: number }) => {
                     <div>
                         <p className="text-sm text-muted-foreground">Earnings</p>
                         <p className="text-2xl font-bold">
-                            LKR {analytics.weeklyStats.reduce((acc, curr) => acc + curr.totalEarnings, 0).toFixed(2)}
+                            LKR {totalEarnings.toFixed(2)}
                         </p>
                     </div>
                 </div>
@@ -74,7 +86,7 @@ export const DashboardOverview = ({ driverId }: { driverId: number }) => {
                     <div>
                         <p className="text-sm text-muted-foreground">Rating</p>
                         <p className="text-2xl font-bold">
-                            {analytics.averageRating?.toFixed(1) || '--'}/5
+                            {averageRating.toFixed(1)}/5
                         </p>
                     </div>
                 </div>

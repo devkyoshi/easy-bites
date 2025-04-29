@@ -10,8 +10,8 @@ import { format } from "date-fns";
 import { IconMapPin, IconCoin } from "@tabler/icons-react";
 import { RealTimeMap } from "../components/RealTimeMap";
 import { useEffect, useState } from "react";
-import { fetchOrderDetails, fetchRestaurantDetails } from "@/services/delivery-service";
-import { IOrder, RestaurantDetails } from "@/services/types/delivery.type";
+import { fetchOrderDetails } from "@/services/delivery-service";
+import { IOrder } from "@/services/types/delivery.type";
 import { DeliverySkeleton } from "../components/DeliverySkeleton";
 import { EmptyDeliveryState } from "../components/EmptyDeliveryState";
 
@@ -30,7 +30,6 @@ export function DeliveryDetails() {
     const { getDelivery, error } = useDelivery();
     const delivery = getDelivery(Number(deliveryId));
     const [order, setOrder] = useState<IOrder | null>(null);
-    const [restaurant, setRestaurant] = useState<RestaurantDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const isValidStatus = (status: string): status is Status => {
         return ['PENDING', 'RESTAURANT_ACCEPTED', 'DRIVER_ASSIGNED', 'DELIVERED', 'DELIVERY_FAILED'].includes(status);
@@ -38,6 +37,19 @@ export function DeliveryDetails() {
 
     const handleBackClick = () => {
         navigate({ to: '/deliveries' });
+    };
+
+    const getUniqueRestaurants = (items: IOrder['items']) => {
+        const restaurantMap = new Map<number, { id: number, name: string }>();
+        items.forEach(item => {
+            if (!restaurantMap.has(item.restaurantId)) {
+                restaurantMap.set(item.restaurantId, {
+                    id: item.restaurantId,
+                    name: item.restaurantName
+                });
+            }
+        });
+        return Array.from(restaurantMap.values());
     };
 
     useEffect(() => {
@@ -48,9 +60,6 @@ export function DeliveryDetails() {
                 setLoading(true);
                 const orderData = await fetchOrderDetails(delivery.orderId);
                 setOrder(orderData);
-
-                const restaurantData = await fetchRestaurantDetails(orderData.restaurantId);
-                setRestaurant(restaurantData);
             } catch (error) {
                 console.error("Failed to fetch delivery details", error);
             } finally {
@@ -92,72 +101,41 @@ export function DeliveryDetails() {
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div className="space-y-6">
-                                <div>
-                                    <h3 className="font-medium text-lg mb-4">Order Details</h3>
-                                    <div className="space-y-4">
-                                        {restaurant && (
-                                            <div className="flex items-center">
-                                                <IconMapPin className="h-5 w-5 mr-3 text-blue-500" />
-                                                <div>
-                                                    <p className="font-medium">Restaurant</p>
-                                                    <p className="text-muted-foreground">
-                                                        {restaurant.name}
-                                                    </p>
-                                                </div>
+                            {order && (
+                                <div className="space-y-4">
+                                    <div className="flex items-center">
+                                        <IconMapPin className="h-5 w-5 mr-3 text-blue-500" />
+                                        <div>
+                                            <p className="font-medium">Restaurants</p>
+                                            <div className="text-muted-foreground">
+                                                {getUniqueRestaurants(order.items).map(restaurant => (
+                                                    <p key={restaurant.id}>{restaurant.name}</p>
+                                                ))}
                                             </div>
-                                        )}
+                                        </div>
+                                    </div>
 
-                                        {order && (
-                                            <div className="flex items-center">
-                                                <IconMapPin className="h-5 w-5 mr-3 text-green-500" />
-                                                <div>
-                                                    <p className="font-medium">Delivery Address</p>
-                                                    <p className="text-muted-foreground">
-                                                        {order.deliveryAddress}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )}
+                                    <div className="flex items-center">
+                                        <IconMapPin className="h-5 w-5 mr-3 text-green-500" />
+                                        <div>
+                                            <p className="font-medium">Delivery Address</p>
+                                            <p className="text-muted-foreground">
+                                                {order.deliveryAddress}
+                                            </p>
+                                        </div>
+                                    </div>
 
-                                        {order && (
-                                            <div className="flex items-center">
-                                                <IconCoin className="h-5 w-5 mr-3 text-yellow-500" />
-                                                <div>
-                                                    <p className="font-medium">Total Amount</p>
-                                                    <p className="text-muted-foreground">
-                                                        LKR {order.totalAmount.toFixed(2)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )}
+                                    <div className="flex items-center">
+                                        <IconCoin className="h-5 w-5 mr-3 text-yellow-500" />
+                                        <div>
+                                            <p className="font-medium">Total Amount</p>
+                                            <p className="text-muted-foreground">
+                                                LKR {order.totalAmount.toFixed(2)}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-
-                                {delivery.status === 'DELIVERED' && delivery.rating && (
-                                    <div>
-                                        <h3 className="font-medium text-lg mb-2">Your Rating</h3>
-                                        <div className="flex items-center">
-                                            {[...Array(5)].map((_, i) => (
-                                                <span
-                                                    key={i}
-                                                    className={`text-2xl ${i < delivery.rating ? 'text-amber-400' : 'text-gray-300'}`}
-                                                >
-                                            ★
-                                        </span>
-                                            ))}
-                                            <span className="ml-2 text-muted-foreground">
-                                        ({delivery.rating}/5)
-                                    </span>
-                                        </div>
-                                        {delivery.ratingComment && (
-                                            <p className="mt-2 text-muted-foreground">
-                                                "{delivery.ratingComment}"
-                                            </p>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
+                            )}
 
                             <div>
                                 <RealTimeMap

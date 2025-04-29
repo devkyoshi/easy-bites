@@ -28,6 +28,7 @@ interface IDeliveryContext {
     loading: boolean;
     error: string | null;
     socketConnected: boolean;
+    socketCleanup?: () => void;
     initializeDriver: (driverId: number, initialLocation?: ILocation, options?: { signal?: AbortSignal }) => Promise<void>;
     updateLocation: (location: ILocation) => Promise<void>;
     acceptOrder: (request: IDeliveryAcceptanceRequest) => Promise<IDeliveryResponse | null>;
@@ -54,15 +55,13 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         analytics: null,
         loading: true,
         error: null,
-        socketConnected: false
+        socketConnected: false,
+        socketCleanup: undefined
     });
 
     const [socket, setSocket] = useState<Socket | null>(null);
 
-    const fetchDriver = async (
-        driverId: number,
-        options?: { signal?: AbortSignal }
-    ): Promise<IDriverResponse> => {
+    const fetchDriver = async (driverId: number, options?: { signal?: AbortSignal }) => {
         try {
             const response = await api.get(`/api/delivery/drivers/${driverId}`, {
                 signal: options?.signal
@@ -73,7 +72,8 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
                 console.log('Request canceled:', error.message);
                 throw error;
             }
-            throw new Error(`Failed to fetch driver: ${error instanceof Error ? error.message : String(error)}`);
+            console.error("Failed to fetch driver:", error);
+            throw new Error("Failed to load driver profile");
         }
     };
 
@@ -158,7 +158,11 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         }
     };
 
-    const initializeDriver = async (driverId: number, initialLocation?: ILocation, options?: { signal?: AbortSignal }): Promise<void> => {
+    const initializeDriver = async (
+        driverId: number,
+        initialLocation?: ILocation,
+        options?: { signal?: AbortSignal }
+    ): Promise<void> => {
         if (state.loading) return;
 
         setState(prev => ({ ...prev, loading: true, error: null }));
@@ -209,23 +213,49 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
                 sock.on('orderAccepted', handleOrderAccepted);
                 sock.on('orderCompleted', handleOrderCompleted);
 
-                // Cleanup listeners when the component unmounts or socket disconnects
-                return () => {
-                    sock.off('connect', handleConnect);
-                    sock.off('disconnect', handleDisconnect);
-                    sock.off('newOrder', handleNewOrder);
-                    sock.off('orderAccepted', handleOrderAccepted);
-                    sock.off('orderCompleted', handleOrderCompleted);
-                };
+                // Store cleanup function in state
+                setState(prev => ({
+                    ...prev,
+                    socketCleanup: () => {
+                        sock.off('connect', handleConnect);
+                        sock.off('disconnect', handleDisconnect);
+                        sock.off('newOrder', handleNewOrder);
+                        sock.off('orderAccepted', handleOrderAccepted);
+                        sock.off('orderCompleted', handleOrderCompleted);
+                    }
+                }));
+
+                await new Promise<void>((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('Socket connection timeout'));
+                    }, 5000);
+
+                    const onConnect = () => {
+                        clearTimeout(timeout);
+                        resolve();
+                    };
+
+                    sock.on('connect', onConnect);
+                    sock.on('connect_error', reject);
+                });
             }
 
             const [driver, activeDelivery] = await Promise.all([
-                fetchDriver(driverId, options),
-                fetchActiveDelivery(driverId, options),
+                fetchDriver(driverId, options).catch(error => {
+                    console.error("Failed to fetch driver:", error);
+                    throw new Error("Failed to load driver information");
+                }),
+                fetchActiveDelivery(driverId, options).catch(error => {
+                    console.error("Failed to fetch active delivery:", error);
+                    return null;
+                }),
             ]);
 
             const nearbyOrders = initialLocation
-                ? await fetchNearbyOrders(driverId, initialLocation.lat, initialLocation.lng)
+                ? await fetchNearbyOrders(driverId, initialLocation.lat, initialLocation.lng).catch(error => {
+                    console.error("Failed to fetch nearby orders:", error);
+                    return [];
+                })
                 : [];
 
             setState(prev => ({
@@ -234,18 +264,24 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
                 currentLocation: initialLocation || null,
                 activeDelivery,
                 nearbyOrders,
-                loading: false
+                loading: false,
+                error: null
             }));
         } catch (error) {
             if (!options?.signal?.aborted) {
+                const errorMessage = error instanceof Error ? error.message : "Failed to initialize driver data";
                 setState(prev => ({
                     ...prev,
                     loading: false,
-                    error: "Failed to initialize driver data"
+                    error: errorMessage
                 }));
+            } else {
+                console.log("Initialization canceled:", error);
             }
-            console.error("Error initializing driver:", error);
-            // Optionally, rethrow or handle errors in a more user-friendly manner.
+            // Don't rethrow aborted errors
+            if (!axios.isCancel(error)) {
+                throw error;
+            }
         }
     };
 
@@ -256,22 +292,31 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
                 params: { driverId },
                 signal: options?.signal
             });
-            setState(prev => ({
-                ...prev,
-                deliveryHistory: response.data.data,
-                loading: false
-            }));
-        } catch (error) {
-            if (error instanceof Error) {
-                console.error("Failed to fetch delivery history", error.message);
-            } else {
-                console.error("An unknown error occurred", error);
+
+            // Only update state if not aborted
+            if (!options?.signal?.aborted) {
+                setState(prev => ({
+                    ...prev,
+                    deliveryHistory: response.data.data,
+                    loading: false,
+                    error: null  // Explicitly clear error on success
+                }));
             }
-            setState(prev => ({
-                ...prev,
-                loading: false,
-                error: "Failed to load delivery history"
-            }));
+        } catch (error) {
+            // Don't set error state for aborted requests
+            if (axios.isCancel(error)) {
+                console.log("Request was canceled:", error.message);
+                return;
+            }
+
+            console.error("Failed to fetch delivery history", error);
+            if (!options?.signal?.aborted) {
+                setState(prev => ({
+                    ...prev,
+                    loading: false,
+                    error: "Failed to load delivery history"
+                }));
+            }
         }
     };
 
@@ -399,6 +444,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         return () => {
             if (socket) {
                 disconnectSocket();
+                state.socketCleanup?.();
             }
         };
     }, [socket]);

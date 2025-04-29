@@ -42,17 +42,17 @@ export const fetchDeliveryAnalytics = async (driverId: number): Promise<IDeliver
 };
 
 export const fetchOrderDetails = async (orderId: number): Promise<IOrder> => {
-    const response = await api.get(`/orders/${orderId}`);
+    const response = await api.get(`/api/order/order/${orderId}`);
     return response.data;
 };
 
 export const fetchRestaurantDetails = async (restaurantId: number): Promise<RestaurantDetails> => {
-    const response = await api.get(`/restaurants/${restaurantId}`);
+    const response = await api.get(`/api/restaurants/${restaurantId}`);
     return response.data.data;
 };
 
 export const fetchDriverProfile = async (driverId: number): Promise<IDriverResponse> => {
-    const response = await api.get(`/delivery/drivers/${driverId}`);
+    const response = await api.get(`/api/delivery/drivers/${driverId}`);
     return response.data.data;
 };
 
@@ -60,6 +60,6 @@ export const updateDriverProfile = async (
     driverId: number,
     profileData: IDriverProfile
 ): Promise<IDriverResponse> => {
-    const response = await api.put(`/delivery/drivers/${driverId}`, profileData);
+    const response = await api.put(`/api/delivery/drivers/${driverId}`, profileData);
     return response.data.data;
 };

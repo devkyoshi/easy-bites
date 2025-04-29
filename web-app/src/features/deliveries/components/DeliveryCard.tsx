@@ -9,7 +9,7 @@ interface DeliveryCardProps {
         status: string;
         createdAt: string;
         order: {
-            restaurantName: string;
+            restaurantNames: string[];  // Changed to array
             totalAmount: number;
             deliveryAddress: string;
         };
@@ -33,7 +33,15 @@ export const DeliveryCard = ({ delivery, onViewDetails }: DeliveryCardProps) => 
         <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start">
                 <div>
-                    <h3 className="font-medium text-lg">{delivery.order.restaurantName}</h3>
+                    <h3 className="font-medium text-lg">
+                        {/* Display first restaurant name with +X more if multiple */}
+                        {delivery.order.restaurantNames[0]}
+                        {delivery.order.restaurantNames.length > 1 && (
+                            <span className="text-sm text-gray-500 ml-1">
+                                (+{delivery.order.restaurantNames.length - 1} more)
+                            </span>
+                        )}
+                    </h3>
                     <p className="text-sm text-gray-500">
                         {format(new Date(delivery.createdAt), 'MMM dd, yyyy hh:mm a')}
                     </p>

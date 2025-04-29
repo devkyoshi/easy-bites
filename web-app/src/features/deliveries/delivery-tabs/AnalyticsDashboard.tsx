@@ -8,6 +8,7 @@ import { AnalyticsCharts } from "../components/AnalyticsCharts";
 import { DeliverySkeleton } from "../components/DeliverySkeleton";
 import { EmptyDeliveryState } from "../components/EmptyDeliveryState";
 import {useEffect} from "react";
+import axios from "axios";
 
 interface AnalyticsDashboardProps {
     driverId?: number;
@@ -15,16 +16,24 @@ interface AnalyticsDashboardProps {
 
 export const AnalyticsDashboard = ({ driverId }: AnalyticsDashboardProps) => {
     const navigate = useNavigate();
-    const { analytics, loading, error, fetchAnalyticsData } = useDelivery();
+    const { analytics, loading, error, fetchAnalyticsData, driver } = useDelivery();
 
     useEffect(() => {
-        if (!driverId) return;
+        const id = driverId || driver?.driverId;
+        if (!id) {
+            console.error("No driver ID available for analytics");
+            return;
+        }
 
         const controller = new AbortController();
-        fetchAnalyticsData(driverId, { signal: controller.signal });
+        fetchAnalyticsData(id, { signal: controller.signal }).catch(e => {
+            if (!axios.isCancel(e)) {
+                console.error("Failed to fetch analytics", e);
+            }
+        });
 
         return () => controller.abort();
-    }, [driverId, fetchAnalyticsData]);
+    }, [driverId, driver?.driverId, fetchAnalyticsData]);
 
     const handleBackClick = () => {
         navigate({ to: '/deliveries' });

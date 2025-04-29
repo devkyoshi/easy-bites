@@ -11,11 +11,17 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchDriverProfile, updateDriverProfile } from "@/services/delivery-service";
 
+interface DriverProfileData {
+    vehicleType: string;
+    vehicleNumber: string;
+    licenseNumber: string;
+}
+
 export function DriverProfile({ driverId }: { driverId: number }) {
     const [editMode, setEditMode] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [profile, setProfile] = useState({
+    const [profile, setProfile] = useState<DriverProfileData>({
         vehicleType: "",
         vehicleNumber: "",
         licenseNumber: ""
@@ -24,16 +30,21 @@ export function DriverProfile({ driverId }: { driverId: number }) {
     const fetchProfile = async () => {
         try {
             setLoading(true);
-            const data = await fetchDriverProfile(driverId);
-            setProfile({
-                vehicleType: data.vehicleType,
-                vehicleNumber: data.vehicleNumber,
-                licenseNumber: data.licenseNumber
-            });
-            setError(null);
+            const response = await fetchDriverProfile(driverId);
+            // Ensure the response has the expected structure
+            if (response && typeof response === 'object') {
+                setProfile({
+                    vehicleType: response.vehicleType || "",
+                    vehicleNumber: response.vehicleNumber || "",
+                    licenseNumber: response.licenseNumber || ""
+                });
+                setError(null);
+            } else {
+                throw new Error("Invalid profile data format");
+            }
         } catch (err) {
             setError("Failed to load driver profile");
-            console.error(err);
+            console.error("Fetch profile error:", err);
         } finally {
             setLoading(false);
         }
@@ -49,9 +60,11 @@ export function DriverProfile({ driverId }: { driverId: number }) {
             });
             setEditMode(false);
             setError(null);
+            // Refresh the profile after update
+            await fetchProfile();
         } catch (err) {
             setError("Failed to update profile");
-            console.error(err);
+            console.error("Update profile error:", err);
         } finally {
             setLoading(false);
         }
@@ -73,9 +86,14 @@ export function DriverProfile({ driverId }: { driverId: number }) {
 
     if (error) {
         return (
-            <div className="text-red-500">
+            <div className="text-red-500 flex items-center">
                 {error}
-                <Button variant="outline" onClick={fetchProfile} className="ml-4">
+                <Button
+                    variant="outline"
+                    onClick={fetchProfile}
+                    className="ml-4"
+                    size="sm"
+                >
                     Retry
                 </Button>
             </div>
@@ -126,8 +144,8 @@ export function DriverProfile({ driverId }: { driverId: number }) {
                             <SelectContent>
                                 <SelectItem value="BIKE">Bike</SelectItem>
                                 <SelectItem value="CAR">Car</SelectItem>
-                                <SelectItem value="SCOOTER">Scooter</SelectItem>
-                                <SelectItem value="TRUCK">Truck</SelectItem>
+                                <SelectItem value="VAN">Scooter</SelectItem>
+                                <SelectItem value="THREE_WHEELER">Truck</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -150,15 +168,15 @@ export function DriverProfile({ driverId }: { driverId: number }) {
                 <div className="space-y-2">
                     <div>
                         <span className="text-sm text-gray-500">Vehicle Type:</span>
-                        <p className="font-medium">{profile.vehicleType}</p>
+                        <p className="font-medium">{profile.vehicleType || "Not specified"}</p>
                     </div>
                     <div>
                         <span className="text-sm text-gray-500">Vehicle Number:</span>
-                        <p className="font-medium">{profile.vehicleNumber}</p>
+                        <p className="font-medium">{profile.vehicleNumber || "Not specified"}</p>
                     </div>
                     <div>
                         <span className="text-sm text-gray-500">License Number:</span>
-                        <p className="font-medium">{profile.licenseNumber}</p>
+                        <p className="font-medium">{profile.licenseNumber || "Not specified"}</p>
                     </div>
                 </div>
             )}
