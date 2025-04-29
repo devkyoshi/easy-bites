@@ -195,3 +195,43 @@ export const addMenuCategory = async (
     )
   }
 }
+
+export interface IRestaurantCreateDetails {
+  name: string
+  description: string
+  address: string
+  phone: string
+  email: string
+  logoUrl: string
+  isOpen: boolean
+  openingHour: string
+  closingHour: string
+  daysOpen: string[]
+  managerId: number
+}
+
+export const createRestaurant = async (
+  restaurant: IRestaurantCreateDetails
+) => {
+  try {
+    const response = await api.post(`/api/restaurants/create`, restaurant)
+
+    if (response.data.success) {
+      toast.success('Restaurant created successfully', {
+        duration: 5000,
+        position: 'top-center',
+      })
+    }
+
+    return response.data
+  } catch (e) {
+    toast.error(
+      (e as any).response.data.message ||
+        'Error creating restaurant. Please try again later.',
+      {
+        duration: 5000,
+        position: 'top-center',
+      }
+    )
+  }
+}
