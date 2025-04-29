@@ -21,6 +21,7 @@ import {
 } from '@/services/types/restaurant.type.ts'
 import { SettingsIcon } from 'lucide-react'
 import { useAuth } from '@/stores/auth-context.tsx'
+import { router } from '@/lib/router.ts'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -57,6 +58,12 @@ export const RestaurantManagementTab = () => {
       if (!currentUser) return
       try {
         const data = await getRestaurantAdminDetails(currentUser.userId)
+
+        if (!data?.restaurantId) {
+          router.navigate({
+            to: '/restaurants/restaurant-registration',
+          })
+        }
         setRestaurantDetails(data || null)
       } finally {
         setIsLoading(false)
