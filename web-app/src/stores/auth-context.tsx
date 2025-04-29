@@ -7,7 +7,6 @@ import {
   useCallback,
 } from 'react'
 import { loginUser, LoginRequest } from '@/services/auth-service.ts'
-import { toast } from 'sonner'
 import { router } from '@/lib/router'
 import { isTokenExpired } from '@/utils/jwt-util-functions.ts'
 
@@ -49,10 +48,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkAuthState = useCallback(() => {
     const token = localStorage.getItem('access_token')
     if (!token || isTokenExpired(token)) {
-      toast.error('Your session has expired. Please sign in again.', {
-        duration: 5000,
-        position: 'top-center',
-      })
       logout()
     }
   }, [])

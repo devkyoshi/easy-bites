@@ -39,7 +39,7 @@ export async function loginUser(
   }
 }
 
-interface IUserRegistration {
+export interface IUserRegistration {
   firstName: string
   lastName: string
   username: string
