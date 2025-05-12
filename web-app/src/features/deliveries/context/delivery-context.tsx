@@ -71,6 +71,8 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
     });
 
     const [socket, setSocket] = useState<Socket | null>(null);
+    // const POLLING_INTERVAL = 10000;
+    // let pollingInterval: NodeJS.Timeout | null = null;
 
     useEffect(() => {
         if (navigator.geolocation) {
@@ -151,9 +153,17 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
             const response = await api.get(`/api/delivery/orders/nearby`, {  // Changed to proper endpoint format
                 params: { driverId, lat, lng },
             });
+            setState(prev => ({
+                ...prev,
+                nearbyOrders: response.data.result
+            }));
             return response.data.result;
         } catch (error) {
             console.error("Failed to fetch nearby orders", error);
+            setState(prev => ({
+                ...prev,
+                nearbyOrders: [] // Clear nearby orders on error
+            }));
             return [];
         }
     };
@@ -234,11 +244,29 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         initialLocation?: ILocation,
         options?: { signal?: AbortSignal }
     ): Promise<void> => {
-        if (state.loading) return;
+        if (state.loading ) return;
 
         setState(prev => ({ ...prev, loading: true, error: null }));
 
         try {
+            const [driver, activeDelivery] = await Promise.all([
+                fetchDriver(driverId, options).catch(error => {
+                    console.error("Failed to fetch driver:", error);
+                    throw new Error("Failed to load driver information");
+                }),
+                fetchActiveDelivery(driverId, options).catch(error => {
+                    console.error("Failed to fetch active delivery:", error);
+                    return null;
+                }),
+            ]);
+
+            setState(prev => ({
+                ...prev,
+                driver,
+                loading: false,
+                error: null
+            }));
+
             if (!socket) {
                 const sock = initializeSocket(driverId);
                 setSocket(sock);
@@ -311,17 +339,6 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
                 });
             }
 
-            const [driver, activeDelivery] = await Promise.all([
-                fetchDriver(driverId, options).catch(error => {
-                    console.error("Failed to fetch driver:", error);
-                    throw new Error("Failed to load driver information");
-                }),
-                fetchActiveDelivery(driverId, options).catch(error => {
-                    console.error("Failed to fetch active delivery:", error);
-                    return null;
-                }),
-            ]);
-
             const nearbyOrders = initialLocation
                 ? await fetchNearbyOrders(driverId, initialLocation.lat, initialLocation.lng).catch(error => {
                     console.error("Failed to fetch nearby orders:", error);
@@ -331,12 +348,9 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
 
             setState(prev => ({
                 ...prev,
-                driver,
                 currentLocation: initialLocation || null,
                 activeDelivery,
                 nearbyOrders,
-                loading: false,
-                error: null
             }));
         } catch (error) {
             if (!options?.signal?.aborted) {
@@ -355,6 +369,151 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
             }
         }
     };
+
+//     const initializeDriver = async (
+//         driverId: number,
+//         initialLocation?: ILocation,
+//         options?: { signal?: AbortSignal }
+//     ): Promise<void> => {
+//         if (state.loading && state.driver) return;
+//
+//         setState(prev => ({ ...prev, loading: true, error: null }));
+//
+//         try {
+//             // 1. Fetch initial driver data
+//             const [driver, activeDelivery] = await Promise.all([
+//                 fetchDriver(driverId, options).catch(error => {
+//                     console.error("Failed to fetch driver:", error);
+//                     throw new Error("Failed to load driver information");
+//                 }),
+//                 fetchActiveDelivery(driverId, options).catch(error => {
+//                     console.error("Failed to fetch active delivery:", error);
+//                     return null;
+//                 }),
+//             ]);
+//
+//             // 2. Set initial state
+//             setState(prev => ({
+//                 ...prev,
+//                 driver,
+//                 activeDelivery,
+//                 loading: false,
+//                 error: null
+//             }));
+//
+//             // 3. Start polling for updates
+//             startPolling(driverId, initialLocation);
+//
+//             // 4. Fetch nearby orders
+//             const nearbyOrders = initialLocation
+//                 ? await fetchNearbyOrders(driverId, initialLocation.lat, initialLocation.lng).catch(error => {
+//                     console.error("Failed to fetch nearby orders:", error);
+//                     return [];
+//                 })
+//                 : [];
+//
+//             setState(prev => ({
+//                 ...prev,
+//                 currentLocation: initialLocation || prev.currentLocation,
+//                 nearbyOrders,
+//             }));
+//
+//         } catch (error) {
+//             if (!options?.signal?.aborted) {
+//                 const errorMessage = error instanceof Error ? error.message : "Failed to initialize driver data";
+//                 setState(prev => ({
+//                     ...prev,
+//                     loading: false,
+//                     error: errorMessage
+//                 }));
+//             } else {
+//                 console.log("Initialization canceled:", error);
+//             }
+//         }
+//     };
+//
+//     const startPolling = (driverId: number, initialLocation?: ILocation) => {
+//         // Clear any existing polling
+//         stopPolling();
+//
+//         // Immediate first poll
+//         pollForUpdates(driverId, initialLocation);
+//
+//         // Set up regular polling
+//         pollingInterval = setInterval(() => {
+//             pollForUpdates(driverId, initialLocation);
+//         }, POLLING_INTERVAL);
+//     };
+//
+//     const stopPolling = () => {
+//         if (pollingInterval) {
+//             clearInterval(pollingInterval);
+//             pollingInterval = null;
+//         }
+//     };
+//
+//     const pollForUpdates = async (driverId: number, initialLocation?: ILocation) => {
+//         try {
+//             // Fetch all updates in parallel
+//             const [activeDelivery, nearbyOrders] = await Promise.all([
+//                 fetchActiveDelivery(driverId).catch(() => null),
+//                 initialLocation
+//                     ? fetchNearbyOrders(driverId, initialLocation.lat, initialLocation.lng).catch(() => [])
+//                     : Promise.resolve([])
+//             ]);
+//
+//             setState(prev => {
+//                 // Detect orders accepted by others (removed from nearby orders)
+//                 const removedOrderIds = prev.nearbyOrders
+//                     .filter(prevOrder => !nearbyOrders.some(newOrder => newOrder.id === prevOrder.id))
+//                     .map(order => order.id);
+//
+//                 // Detect new orders available
+//                 const newOrders = nearbyOrders.filter(newOrder =>
+//                     !prev.nearbyOrders.some(prevOrder => prevOrder.id === newOrder.id)
+//                 );
+//
+//                 // Show notifications for new orders
+//                 if (newOrders.length > 0) {
+//                     newOrders.forEach(order => {
+//                         const restaurantName = order.items[0]?.restaurantName || 'a restaurant';
+//                         toast.info(`New order available from ${restaurantName}`);
+//                     });
+//                 }
+//
+//                 // Show notifications for orders taken by others
+//                 if (removedOrderIds.length > 0 && prev.nearbyOrders.length > 0) {
+//                     toast.warning(`${removedOrderIds.length} order(s) taken by other drivers`);
+//                 }
+//
+//                 // Update active delivery if changed
+//                 const updatedActiveDelivery = activeDelivery !== null
+//                     ? activeDelivery
+//                     : prev.activeDelivery;
+//
+//                 // Update driver availability based on active delivery
+//                 const updatedDriver = prev.driver ? {
+//                     ...prev.driver,
+//                     isAvailable: updatedActiveDelivery === null
+//                 } : null;
+//
+//                 return {
+//                     ...prev,
+//                     activeDelivery: updatedActiveDelivery,
+//                     nearbyOrders: nearbyOrders,
+//                     driver: updatedDriver,
+//                 };
+//             });
+//
+//         } catch (error) {
+//             console.error("Polling error:", error);
+//         }
+//     };
+//
+// // Add this to your context cleanup
+//     const cleanup = () => {
+//         stopPolling();
+//     };
 
     const fetchDeliveryHistory = async (driverId: number, options?: { signal?: AbortSignal }) => {
         setState(prev => ({ ...prev, loading: true }));
@@ -396,10 +555,18 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
     };
 
     const acceptOrder = async (request: IDeliveryAcceptanceRequest) => {
-        if (!state.driver || !state.currentLocation) return null;
+        console.log('acceptOrder called with request:', request);
+        if (!state.driver || !state.currentLocation) {
+            console.warn('Cannot accept order: driver or location not available', {
+                driver: state.driver,
+                location: state.currentLocation
+            });
+            return null;
+        }
 
         setState(prev => ({ ...prev, loading: true }));
         try {
+            console.log('Making API call to accept order');
             const response = await api.post<IApiResponse<IDeliveryResponse>>(
                 `/api/delivery/orders/accept/?driverId=${state.driver.driverId}`,
                 {
@@ -409,7 +576,9 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
                 },
             );
 
+            console.log('API response:', response);
             const delivery = response.data.result;
+
             setState(prev => ({
                 ...prev,
                 activeDelivery: delivery,
@@ -417,6 +586,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
                 loading: false
             }));
 
+            console.log('Order accepted, updated state');
             return delivery;
         } catch (error) {
             console.error("Failed to accept order", error);
@@ -555,3 +725,593 @@ export const useDelivery = (): IDeliveryContext => {
     }
     return context;
 };
+
+// import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+// import { api } from "@/config/axios";
+// import {
+//     IDriverResponse,
+//     ILocation,
+//     IOrder,
+//     IDeliveryResponse,
+//     IDeliveryAcceptanceRequest,
+//     IRatingDistributionResponse,
+//     IWeeklyStatsResponse,
+//     IDeliveryAnalytics
+// } from "@/services/types/delivery.type";
+// import { fetchDeliveryAnalytics } from "@/services/delivery-service.ts";
+// import axios, { CancelTokenSource } from "axios";
+// import { toast } from "sonner";
+//
+// interface IDeliveryContext {
+//     deliveries: IDeliveryResponse[];
+//     driver: IDriverResponse | null;
+//     currentLocation: ILocation | null;
+//     nearbyOrders: IOrder[];
+//     activeDelivery: IDeliveryResponse | null;
+//     analytics: {
+//         weeklyStats: IWeeklyStatsResponse[];
+//         ratingDistribution: IRatingDistributionResponse[];
+//         averageRating: number;
+//     } | null;
+//     fetchNearbyOrders: (driverId: number, lat: number, lng: number) => Promise<IOrder[]>;
+//     loading: boolean;
+//     error: string | null;
+//     initializeDriver: (driverId: number, initialLocation?: ILocation, options?: { signal?: AbortSignal }) => Promise<void>;
+//     updateLocation: (lat: number, lng: number) => Promise<void>;
+//     refreshDriverLocation: (driverId: number) => Promise<ILocation | null>;
+//     acceptOrder: (request: IDeliveryAcceptanceRequest) => Promise<IDeliveryResponse | null>;
+//     completeDelivery: (
+//         id: number,
+//         data: { isCompleted: boolean; notes?: string; proofImage?: string }
+//     ) => Promise<IDeliveryResponse>;
+//     refreshData: () => Promise<void>;
+//     deliveryHistory: IDeliveryResponse[];
+//     getDelivery: (id: number) => IDeliveryResponse | undefined;
+//     fetchDeliveryHistory: (driverId: number, options?: { signal?: AbortSignal }) => Promise<void>;
+//     fetchAnalyticsData: (driverId: number, options?: { signal?: AbortSignal }) => Promise<IDeliveryAnalytics>;
+//     cleanupPolling: () => void;
+// }
+//
+// interface IApiResponse<T> {
+//     message: string;
+//     success: boolean;
+//     result: T;
+// }
+//
+// const DeliveryContext = createContext<IDeliveryContext | undefined>(undefined);
+//
+// export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
+//     const [state, setState] = useState<Omit<IDeliveryContext,
+//         'initializeDriver' | 'updateLocation' | 'acceptOrder' | 'completeDelivery' | 'refreshData' |
+//         'getDelivery' | 'fetchDeliveryHistory' | 'fetchAnalyticsData' | 'fetchNearbyOrders' |
+//         'refreshDriverLocation' | 'cleanupPolling'
+//     >>({
+//         driver: null,
+//         currentLocation: null,
+//         nearbyOrders: [],
+//         activeDelivery: null,
+//         deliveryHistory: [],
+//         analytics: null,
+//         loading: true,
+//         error: null,
+//         deliveries: []
+//     });
+//
+//     const POLLING_INTERVAL = 10000; // 10 seconds
+//     const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+//     const [cancelTokenSource, setCancelTokenSource] = useState<CancelTokenSource | null>(null);
+//
+//     // Cleanup all resources
+//     const cleanup = useCallback(() => {
+//         if (pollingInterval) {
+//             clearInterval(pollingInterval);
+//             setPollingInterval(null);
+//         }
+//         if (cancelTokenSource) {
+//             cancelTokenSource.cancel("Component unmounted");
+//         }
+//     }, [pollingInterval, cancelTokenSource]);
+//
+//     // Initialize geolocation tracking
+//     useEffect(() => {
+//         if (!navigator.geolocation) {
+//             console.error('Geolocation is not supported by this browser');
+//             return;
+//         }
+//
+//         const watchId = navigator.geolocation.watchPosition(
+//             (position) => {
+//                 setState(prev => ({
+//                     ...prev,
+//                     currentLocation: {
+//                         lat: position.coords.latitude,
+//                         lng: position.coords.longitude,
+//                         accuracy: position.coords.accuracy,
+//                         timestamp: position.timestamp
+//                     }
+//                 }));
+//             },
+//             (error) => {
+//                 console.error('Geolocation error:', error);
+//                 setState(prev => ({
+//                     ...prev,
+//                     error: 'Failed to get current location'
+//                 }));
+//             },
+//             { enableHighAccuracy: true, maximumAge: 10000 }
+//         );
+//
+//         return () => navigator.geolocation.clearWatch(watchId);
+//     }, []);
+//
+//     // Update driver location periodically when there's an active delivery
+//     useEffect(() => {
+//         if (!state.activeDelivery?.driverId || !state.currentLocation?.lat || !state.currentLocation?.lng) {
+//             return;
+//         }
+//
+//         const interval = setInterval(async () => {
+//             try {
+//                 await api.put(`/drivers/${state.activeDelivery!.driverId}/location`, {
+//                     lat: state.currentLocation!.lat,
+//                     lng: state.currentLocation!.lng
+//                 });
+//             } catch (error) {
+//                 if (!axios.isCancel(error)) {
+//                     console.error('Failed to update location:', error);
+//                 }
+//             }
+//         }, 15000);
+//
+//         return () => clearInterval(interval);
+//     }, [state.activeDelivery?.driverId, state.currentLocation?.lat, state.currentLocation?.lng]);
+//
+//     const refreshDriverLocation = async (driverId: number): Promise<ILocation> => {
+//         try {
+//             const source = axios.CancelToken.source();
+//             setCancelTokenSource(source);
+//
+//             const response = await api.get<IApiResponse<IDriverResponse>>(`/drivers/${driverId}`, {
+//                 cancelToken: source.token
+//             });
+//
+//             if (!response.data.result.currentLat || !response.data.result.currentLng) {
+//                 throw new Error('Driver location not available');
+//             }
+//
+//             return {
+//                 lat: Number(response.data.result.currentLat),
+//                 lng: Number(response.data.result.currentLng),
+//                 timestamp: Date.now()
+//             };
+//         } catch (error) {
+//             if (axios.isCancel(error)) {
+//                 throw new Error('Location request canceled');
+//             }
+//             console.error('Failed to fetch driver location:', error);
+//             throw error;
+//         }
+//     };
+//
+//     const fetchDriver = async (driverId: number, options?: { signal?: AbortSignal }) => {
+//         try {
+//             const response = await api.get(`/api/delivery/drivers/${driverId}`, {
+//                 signal: options?.signal
+//             });
+//             return response.data.result;
+//         } catch (error) {
+//             if (axios.isCancel(error)) {
+//                 console.log('Request canceled:', error.message);
+//                 throw error;
+//             }
+//             console.error("Failed to fetch driver:", error);
+//             throw new Error("Failed to load driver profile");
+//         }
+//     };
+//
+//     const fetchNearbyOrders = async (driverId: number, lat: number, lng: number): Promise<IOrder[]> => {
+//         try {
+//             const source = axios.CancelToken.source();
+//             setCancelTokenSource(source);
+//
+//             const response = await api.get(`/api/delivery/orders/nearby`, {
+//                 params: { driverId, lat, lng },
+//                 cancelToken: source.token
+//             });
+//
+//             setState(prev => ({
+//                 ...prev,
+//                 nearbyOrders: response.data.result
+//             }));
+//
+//             return response.data.result;
+//         } catch (error) {
+//             if (axios.isCancel(error)) {
+//                 return [];
+//             }
+//             console.error("Failed to fetch nearby orders", error);
+//             setState(prev => ({
+//                 ...prev,
+//                 nearbyOrders: []
+//             }));
+//             return [];
+//         }
+//     };
+//
+//     const fetchActiveDelivery = async (driverId: number, options?: { signal?: AbortSignal }): Promise<IDeliveryResponse | null> => {
+//         try {
+//             const response = await api.get(`/api/delivery/delivery/active`, {
+//                 params: { driverId },
+//                 signal: options?.signal
+//             });
+//             return response.data.result;
+//         } catch (error) {
+//             if (axios.isCancel(error)) {
+//                 console.log('Request canceled:', error.message);
+//                 throw error;
+//             }
+//             if (axios.isAxiosError(error) && error.response?.status === 404) {
+//                 return null;
+//             }
+//             console.error("Failed to fetch active delivery", error);
+//             throw error;
+//         }
+//     };
+//
+//     const fetchAnalytics = async (driverId: number, options?: { signal?: AbortSignal }) => {
+//         try {
+//             return await fetchDeliveryAnalytics(driverId);
+//         } catch (error) {
+//             if (axios.isCancel(error)) {
+//                 console.log('Analytics fetch canceled:', error.message);
+//                 throw error;
+//             }
+//             console.error("Failed to fetch analytics", error);
+//             throw error;
+//         }
+//     };
+//
+//     const updateLocation = async (lat: number, lng: number) => {
+//         if (!state.driver) return;
+//
+//         const location = { lat, lng, timestamp: Date.now() };
+//
+//         try {
+//             await api.put(`/api/delivery/drivers/${state.driver.driverId}/location`, {
+//                 lat,
+//                 lng
+//             });
+//
+//             setState(prev => ({
+//                 ...prev,
+//                 currentLocation: location
+//             }));
+//
+//             const nearbyOrders = await fetchNearbyOrders(
+//                 state.driver.driverId,
+//                 lat,
+//                 lng
+//             );
+//             setState(prev => ({ ...prev, nearbyOrders }));
+//         } catch (error) {
+//             if (!axios.isCancel(error)) {
+//                 console.error('Location update failed:', error);
+//                 throw error;
+//             }
+//         }
+//     };
+//
+//     const startPolling = useCallback((driverId: number, initialLocation?: ILocation) => {
+//         // Clear any existing polling
+//         if (pollingInterval) {
+//             clearInterval(pollingInterval);
+//         }
+//
+//         // Immediate first poll
+//         pollForUpdates(driverId, initialLocation);
+//
+//         // Set up regular polling
+//         const interval = setInterval(() => {
+//             pollForUpdates(driverId, initialLocation);
+//         }, POLLING_INTERVAL);
+//
+//         setPollingInterval(interval);
+//     }, [pollingInterval]);
+//
+//     const stopPolling = useCallback(() => {
+//         if (pollingInterval) {
+//             clearInterval(pollingInterval);
+//             setPollingInterval(null);
+//         }
+//     }, [pollingInterval]);
+//
+//     const pollForUpdates = async (driverId: number, initialLocation?: ILocation) => {
+//         const abortController = new AbortController();
+//
+//         try {
+//             const [activeDelivery, nearbyOrders] = await Promise.all([
+//                 fetchActiveDelivery(driverId, { signal: abortController.signal }).catch(() => null),
+//                 initialLocation
+//                     ? fetchNearbyOrders(driverId, initialLocation.lat, initialLocation.lng)
+//                     : Promise.resolve([])
+//             ]);
+//
+//             setState(prev => {
+//                 // Detect orders accepted by others
+//                 const removedOrderIds = prev.nearbyOrders
+//                     .filter(prevOrder => !nearbyOrders.some(newOrder => newOrder.id === prevOrder.id))
+//                     .map(order => order.id);
+//
+//                 // Detect new orders
+//                 const newOrders = nearbyOrders.filter(newOrder =>
+//                     !prev.nearbyOrders.some(prevOrder => prevOrder.id === newOrder.id)
+//                 );
+//
+//                 // Notifications
+//                 if (newOrders.length > 0) {
+//                     newOrders.forEach(order => {
+//                         const restaurantName = order.items[0]?.restaurantName || 'a restaurant';
+//                         toast.info(`New order available from ${restaurantName}`);
+//                     });
+//                 }
+//
+//                 if (removedOrderIds.length > 0 && prev.nearbyOrders.length > 0) {
+//                     toast.warning(`${removedOrderIds.length} order(s) taken by other drivers`);
+//                 }
+//
+//                 const updatedActiveDelivery = activeDelivery ?? prev.activeDelivery;
+//                 const updatedDriver = prev.driver ? {
+//                     ...prev.driver,
+//                     isAvailable: updatedActiveDelivery === null
+//                 } : null;
+//
+//                 return {
+//                     ...prev,
+//                     activeDelivery: updatedActiveDelivery,
+//                     nearbyOrders,
+//                     driver: updatedDriver
+//                 };
+//             });
+//         } catch (error) {
+//             if (!axios.isCancel(error)) {
+//                 console.error("Polling error:", error);
+//             }
+//         } finally {
+//             abortController.abort();
+//         }
+//     };
+//
+//     const initializeDriver = async (
+//         driverId: number,
+//         initialLocation?: ILocation,
+//         options?: { signal?: AbortSignal }
+//     ): Promise<void> => {
+//         if (state.loading && state.driver) return;
+//
+//         setState(prev => ({ ...prev, loading: true, error: null }));
+//
+//         try {
+//             const [driver, activeDelivery] = await Promise.all([
+//                 fetchDriver(driverId, options),
+//                 fetchActiveDelivery(driverId, options).catch(() => null)
+//             ]);
+//
+//             setState(prev => ({
+//                 ...prev,
+//                 driver,
+//                 activeDelivery,
+//                 loading: false,
+//                 error: null
+//             }));
+//
+//             // Start polling for updates
+//             startPolling(driverId, initialLocation);
+//
+//             // Fetch nearby orders
+//             const nearbyOrders = initialLocation
+//                 ? await fetchNearbyOrders(driverId, initialLocation.lat, initialLocation.lng)
+//                 : [];
+//
+//             setState(prev => ({
+//                 ...prev,
+//                 currentLocation: initialLocation || prev.currentLocation,
+//                 nearbyOrders
+//             }));
+//         } catch (error) {
+//             if (!options?.signal?.aborted) {
+//                 const errorMessage = error instanceof Error ? error.message : "Failed to initialize driver data";
+//                 setState(prev => ({
+//                     ...prev,
+//                     loading: false,
+//                     error: errorMessage
+//                 }));
+//             }
+//         }
+//     };
+//
+//     const fetchDeliveryHistory = async (driverId: number, options?: { signal?: AbortSignal }) => {
+//         setState(prev => ({ ...prev, loading: true }));
+//         try {
+//             const response = await api.get(`/api/delivery/delivery/history`, {
+//                 params: { driverId },
+//                 signal: options?.signal
+//             });
+//
+//             if (!options?.signal?.aborted) {
+//                 setState(prev => ({
+//                     ...prev,
+//                     deliveryHistory: response.data.result,
+//                     loading: false,
+//                     error: null
+//                 }));
+//             }
+//         } catch (error) {
+//             if (!axios.isCancel(error) && !options?.signal?.aborted) {
+//                 console.error("Failed to fetch delivery history", error);
+//                 setState(prev => ({
+//                     ...prev,
+//                     loading: false,
+//                     error: "Failed to load delivery history"
+//                 }));
+//             }
+//         }
+//     };
+//
+//     const getDelivery = (deliveryId: number): IDeliveryResponse | undefined => {
+//         return state.deliveryHistory.find(d => d.id === deliveryId);
+//     };
+//
+//     const acceptOrder = async (request: IDeliveryAcceptanceRequest) => {
+//         if (!state.driver || !state.currentLocation) {
+//             console.warn('Cannot accept order: driver or location not available');
+//             return null;
+//         }
+//
+//         setState(prev => ({ ...prev, loading: true }));
+//         try {
+//             const response = await api.post<IApiResponse<IDeliveryResponse>>(
+//                 `/api/delivery/orders/accept`,
+//                 {
+//                     ...request,
+//                     currentLat: state.currentLocation.lat,
+//                     currentLng: state.currentLocation.lng
+//                 },
+//                 { params: { driverId: state.driver.driverId } }
+//             );
+//
+//             const delivery = response.data.result;
+//             setState(prev => ({
+//                 ...prev,
+//                 activeDelivery: delivery,
+//                 nearbyOrders: prev.nearbyOrders.filter(o => o.id !== delivery.orderId),
+//                 loading: false
+//             }));
+//
+//             return delivery;
+//         } catch (error) {
+//             console.error("Failed to accept order", error);
+//             setState(prev => ({ ...prev, loading: false }));
+//             throw error;
+//         }
+//     };
+//
+//     const completeDelivery = async (
+//         id: number,
+//         data: { isCompleted: boolean; notes?: string; proofImage?: string }
+//     ): Promise<IDeliveryResponse> => {
+//         setState(prev => ({ ...prev, loading: true }));
+//         try {
+//             const response = await api.post<IApiResponse<IDeliveryResponse>>(
+//                 `/api/delivery/delivery/complete`,
+//                 data,
+//                 { params: { deliveryId: id } }
+//             );
+//
+//             const delivery = response.data.result;
+//             setState(prev => ({
+//                 ...prev,
+//                 activeDelivery: null,
+//                 loading: false,
+//                 driver: prev.driver ? { ...prev.driver, isAvailable: true } : null
+//             }));
+//
+//             if (state.driver) {
+//                 const analytics = await fetchAnalytics(state.driver.driverId);
+//                 setState(prev => ({ ...prev, analytics }));
+//             }
+//
+//             return delivery;
+//         } catch (error) {
+//             console.error("Failed to complete delivery", error);
+//             setState(prev => ({ ...prev, loading: false }));
+//             throw error;
+//         }
+//     };
+//
+//     const fetchAnalyticsData = async (driverId: number, options?: { signal?: AbortSignal }) => {
+//         setState(prev => ({ ...prev, loading: true }));
+//         try {
+//             const analytics = await fetchAnalytics(driverId, options);
+//             setState(prev => ({
+//                 ...prev,
+//                 analytics,
+//                 loading: false,
+//                 error: null
+//             }));
+//             return analytics;
+//         } catch (error) {
+//             if (!axios.isCancel(error) && !options?.signal?.aborted) {
+//                 console.error("Failed to fetch analytics", error);
+//                 setState(prev => ({
+//                     ...prev,
+//                     loading: false,
+//                     error: "Failed to load analytics"
+//                 }));
+//             }
+//             throw error;
+//         }
+//     };
+//
+//     const refreshData = async (options?: { signal?: AbortSignal }) => {
+//         if (!state.driver || !state.currentLocation) return;
+//
+//         setState(prev => ({ ...prev, loading: true }));
+//         try {
+//             const [activeDelivery, analytics, nearbyOrders] = await Promise.all([
+//                 fetchActiveDelivery(state.driver.driverId, options),
+//                 fetchAnalytics(state.driver.driverId, options),
+//                 fetchNearbyOrders(
+//                     state.driver.driverId,
+//                     state.currentLocation.lat,
+//                     state.currentLocation.lng
+//                 )
+//             ]);
+//
+//             setState(prev => ({
+//                 ...prev,
+//                 activeDelivery,
+//                 analytics,
+//                 nearbyOrders,
+//                 loading: false
+//             }));
+//         } catch (error) {
+//             console.error("Failed to refresh data", error);
+//             setState(prev => ({ ...prev, loading: false }));
+//             throw error;
+//         }
+//     };
+//
+//     // Cleanup on unmount
+//     useEffect(() => {
+//         return () => {
+//             cleanup();
+//         };
+//     }, [cleanup]);
+//
+//     return (
+//         <DeliveryContext.Provider value={{
+//             ...state,
+//             fetchNearbyOrders,
+//             initializeDriver,
+//             updateLocation,
+//             acceptOrder,
+//             completeDelivery,
+//             refreshData,
+//             getDelivery,
+//             fetchDeliveryHistory,
+//             fetchAnalyticsData,
+//             refreshDriverLocation,
+//             cleanupPolling: cleanup
+//         }}>
+//             {children}
+//         </DeliveryContext.Provider>
+//     );
+// };
+//
+// export const useDelivery = (): IDeliveryContext => {
+//     const context = useContext(DeliveryContext);
+//     if (!context) {
+//         throw new Error('useDelivery must be used within a DeliveryProvider');
+//     }
+//     return context;
+// };

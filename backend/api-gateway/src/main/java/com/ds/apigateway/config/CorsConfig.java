@@ -21,6 +21,9 @@ public class CorsConfig {
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setMaxAge(3600L); // 1 hour
 
+        corsConfiguration.addExposedHeader("Access-Control-Allow-Origin");
+        corsConfiguration.addExposedHeader("Access-Control-Allow-Credentials");
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
 

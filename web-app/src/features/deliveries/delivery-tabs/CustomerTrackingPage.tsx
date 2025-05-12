@@ -59,7 +59,7 @@ export function CustomerTrackingPage() {
         };
 
         fetchData();
-    }, [deliveryId]);
+    }, [orderId]);
 
     if (loading) return <div>Loading delivery information...</div>;
     if (!delivery) return <div>Delivery not found</div>;

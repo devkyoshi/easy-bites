@@ -6,11 +6,11 @@ import { IDeliveryAnalytics } from "@/services/types/delivery.type.ts";
 export const AnalyticsCharts = ({ analytics }: { analytics: IDeliveryAnalytics }) => {
     // Format data for LineChart (Weekly Deliveries)
     const lineChartData = {
-        labels: analytics.weeklyStats.map(item => item.day),
+        labels: analytics?.weeklyStats?.map(item => item.day),
         datasets: [
             {
                 label: 'Deliveries',
-                data: analytics.weeklyStats.map(item => item.deliveryCount),
+                data: analytics?.weeklyStats?.map(item => item.deliveryCount),
                 borderColor: 'rgb(59, 130, 246)',
                 backgroundColor: 'rgba(59, 130, 246, 0.5)',
             }

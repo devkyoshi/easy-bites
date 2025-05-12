@@ -19,9 +19,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Implementation of the DeliveryDriverService interface for managing delivery driver operations.
+ */
 @Slf4j
 @Service
 public class DeliveryDriverServiceImpl implements DeliveryDriverService {
+
     private final DeliveryDriverRepository deliveryDriverRepository;
 
     @Autowired
@@ -29,6 +33,12 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         this.deliveryDriverRepository = deliveryDriverRepository;
     }
 
+    /**
+     * Fetches all registered delivery drivers.
+     *
+     * @return ApiResponse containing a list of DriverResponse
+     * @throws CustomException if retrieval fails
+     */
     @Override
     public ApiResponse<List<DriverResponse>> getAllDrivers() throws CustomException {
         log.info("Fetching all drivers");
@@ -40,6 +50,13 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         return ApiResponse.successResponse("Drivers fetched successfully", drivers);
     }
 
+    /**
+     * Fetch a specific driver by ID.
+     *
+     * @param driverId the driver's ID
+     * @return ApiResponse containing the DriverResponse
+     * @throws CustomException if the driver is not found
+     */
     @Override
     public ApiResponse<DriverResponse> getDriver(Long driverId) throws CustomException {
         log.info("Fetching driver with ID: {}", driverId);
@@ -52,6 +69,14 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         return ApiResponse.successResponse("Driver fetched successfully", mapToDriverResponse(driver));
     }
 
+    /**
+     * Update driver profile with new details.
+     *
+     * @param driverId   the driver's ID
+     * @param updateDTO  updated registration information
+     * @return ApiResponse containing updated DriverResponse
+     * @throws CustomException if the driver is not found or update fails
+     */
     @Override
     public ApiResponse<DriverResponse> updateDriver(Long driverId, DriverRegistrationRequest updateDTO) throws CustomException {
         log.info("Updating driver with ID: {}", driverId);
@@ -76,6 +101,13 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         return ApiResponse.successResponse("Driver updated successfully", mapToDriverResponse(updated));
     }
 
+    /**
+     * Delete a driver by ID.
+     *
+     * @param driverId the driver's ID
+     * @return ApiResponse with confirmation message
+     * @throws CustomException if the driver is not found
+     */
     @Override
     public ApiResponse<String> deleteDriver(Long driverId) throws CustomException {
         log.info("Deleting driver with ID: {}", driverId);
@@ -90,6 +122,15 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         return ApiResponse.successResponse("Driver deleted successfully", null);
     }
 
+    /**
+     * Update a driver's current geographic location.
+     *
+     * @param driverId the driver's ID
+     * @param lat      latitude
+     * @param lng      longitude
+     * @return ApiResponse containing updated location data
+     * @throws CustomException if the driver is not found
+     */
     @Override
     public ApiResponse<LocationUpdateResponse> updateLocation(Long driverId, BigDecimal lat, BigDecimal lng) throws CustomException {
         log.info("Updating location for driver ID: {}", driverId);
@@ -114,6 +155,14 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         return ApiResponse.successResponse("Location updated", response);
     }
 
+    /**
+     * Set a driver's availability status.
+     *
+     * @param driverId     the driver's ID
+     * @param isAvailable  availability status (true = available)
+     * @return ApiResponse with confirmation message
+     * @throws CustomException if the driver is not found
+     */
     @Override
     public ApiResponse<String> setDriverAvailability(Long driverId, boolean isAvailable) throws CustomException {
         log.info("Setting availability for driver ID: {} to {}", driverId, isAvailable);
@@ -130,6 +179,12 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         return ApiResponse.successResponse("Driver availability updated", null);
     }
 
+    /**
+     * Fetch all available drivers.
+     *
+     * @return ApiResponse containing a list of available DriverResponse
+     * @throws CustomException if no drivers are available
+     */
     @Override
     public ApiResponse<List<DriverResponse>> getAvailableDrivers() throws CustomException {
         log.info("Fetching available drivers");
@@ -146,6 +201,12 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         return ApiResponse.successResponse("Available drivers fetched", availableDrivers);
     }
 
+    /**
+     * Helper method to convert a DeliveryPerson entity to a DriverResponse DTO.
+     *
+     * @param driver the DeliveryPerson entity
+     * @return DriverResponse DTO
+     */
     private DriverResponse mapToDriverResponse(DeliveryPerson driver) {
         return DriverResponse.builder()
                 .driverID((long) driver.getId())

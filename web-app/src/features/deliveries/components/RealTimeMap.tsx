@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { useEffect, useState } from 'react';
 import { IOrder, IDeliveryResponse } from '@/services/types/delivery.type';
 import { fetchOrderDetails } from '@/services/delivery-service.ts';
+import {fetchRouteCoordinates} from "@/services/routing-service.ts";
 
 // Fix default marker icons
 const iconRetinaUrl = '/images/markers/marker-icon-2x.png';
@@ -46,6 +47,7 @@ export const RealTimeMap = ({
                             }: RealTimeMapProps) => {
     const [orderDetails, setOrderDetails] = useState<IOrder | null>(null);
     const [loading, setLoading] = useState(false);
+    const [routeCoords, setRouteCoords] = useState<[number, number][]>([]);
 
     const center: [number, number] = [driverLocation.lat, driverLocation.lng];
     const zoom = activeDelivery ? 15 : 13;
@@ -61,6 +63,13 @@ export const RealTimeMap = ({
                 setLoading(true);
                 const orderData = await fetchOrderDetails(activeDelivery.orderId);
                 setOrderDetails(orderData);
+
+                const route = await fetchRouteCoordinates([
+                    [driverLocation.lat, driverLocation.lng],
+                    [activeDelivery.pickupLat, activeDelivery.pickupLng],
+                    [activeDelivery.deliveryLat, activeDelivery.deliveryLng]
+                ]);
+                setRouteCoords(route);
             } catch (error) {
                 console.error('Failed to fetch map data:', error);
             } finally {
@@ -68,7 +77,12 @@ export const RealTimeMap = ({
             }
         };
 
-        fetchData();
+        if (activeDelivery) {
+            fetchData();
+        } else {
+            setOrderDetails(null);
+            setRouteCoords([]);
+        }
     }, [activeDelivery]);
 
     // Get restaurant name from order items (first item's restaurant)
@@ -106,16 +120,14 @@ export const RealTimeMap = ({
                 {/* Active Delivery Route */}
                 {activeDelivery && !loading && (
                     <>
-                        <Polyline
-                            positions={[
-                                center,
-                                [activeDelivery.pickupLat, activeDelivery.pickupLng],
-                                [activeDelivery.deliveryLat, activeDelivery.deliveryLng]
-                            ]}
-                            color="#3b82f6"
-                            weight={4}
-                            dashArray="5, 5"
-                        />
+                        {routeCoords.length > 0 && (
+                            <Polyline
+                                positions={routeCoords}
+                                color="#3b82f6"
+                                weight={5}
+                                smoothFactor={1}
+                            />
+                        )}
                         {/* Pickup Marker (Restaurant) */}
                         <Marker position={[activeDelivery.pickupLat, activeDelivery.pickupLng]}>
                             <Popup>

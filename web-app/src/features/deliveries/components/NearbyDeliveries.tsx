@@ -22,16 +22,23 @@ export function NearbyDeliveries() {
             return;
         }
 
-        fetchNearbyOrders(currentUser.userId, currentLocation.lat, currentLocation.lng)
-            .then(orders => {
-                console.log("Nearby orders:", orders);
-                // Optionally handle orders here
-            })
-            .catch(err => console.error("Error fetching nearby orders", err));
-    }, [currentUser?.userId, currentLocation]);
+        const fetchData = async () => {
+            try {
+                await fetchNearbyOrders(currentUser.userId, currentLocation.lat, currentLocation.lng);
+            } catch (err) {
+                console.error("Error fetching nearby orders", err);
+            }
+        };
+
+        fetchData();
+    }, [currentUser?.userId, currentLocation?.lat, currentLocation?.lng]);
 
     const handleAcceptOrder = async (orderId: number) => {
-        if (!currentLocation) return;
+        console.log(orderId);
+        if (!currentLocation) {
+            console.warn("Cannot accept order: current location is not set");
+            return;
+        }
 
         try {
             await acceptOrder({
@@ -91,7 +98,7 @@ export function NearbyDeliveries() {
                                 <div>
                                     <h3 className="font-medium">Order #{order.id}</h3>
                                     <p className="text-sm text-muted-foreground">
-                                        {order.items.length} item{order.items.length > 1 ? 's' : ''}
+                                        {(order.items?.length || 0)} item{order.items?.length === 1 ? '' : 's'}
                                     </p>
                                 </div>
                             </div>
