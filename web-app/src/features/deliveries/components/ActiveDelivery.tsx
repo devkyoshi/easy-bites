@@ -36,7 +36,7 @@ export const ActiveDeliveries = (_: ActiveDeliveriesProps) => {
                         accuracy: position.coords.accuracy,
                     };
                     setDriverLocation(newLocation);
-                    updateLocation(newLocation); // Call context method to update
+                    updateLocation(newLocation.lat, newLocation.lng); // Call context method to update
                 }
             },
             (error) => {
@@ -55,7 +55,7 @@ export const ActiveDeliveries = (_: ActiveDeliveriesProps) => {
 
         navigate({
             to: '/deliveries/delivery-details',
-            state: { deliveryId: activeDelivery.deliveryId },
+            state: { deliveryId: activeDelivery.id },
         }).then();
     };
 

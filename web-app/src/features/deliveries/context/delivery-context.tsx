@@ -37,7 +37,8 @@ interface IDeliveryContext {
     completeDelivery: (
         id: number,
         data: { isCompleted: boolean; notes?: string; proofImage?: string }
-    ) => Promise<IDeliveryResponse>;    refreshData: () => Promise<void>;
+    ) => Promise<IDeliveryResponse>;
+    refreshData: () => Promise<void>;
     deliveryHistory: IDeliveryResponse[];
     getDelivery: (id: number) => IDeliveryResponse | undefined;
     fetchDeliveryHistory: (driverId: number, options?: { signal?: AbortSignal }) => Promise<void>;
@@ -213,7 +214,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         const location = { lat, lng, timestamp: Date.now() };
 
         try {
-            await api.put(`/api/delivery/drivers/${state.driver.driverId}/location`, {
+            await api.put(`/api/delivery/drivers/${state.driver.driverID}/location`, {
                 lat,
                 lng
             });
@@ -228,7 +229,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
             }
 
             const nearbyOrders = await fetchNearbyOrders(
-                state.driver.driverId,
+                state.driver.driverID,
                 lat,
                 lng
             );
@@ -244,27 +245,43 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         initialLocation?: ILocation,
         options?: { signal?: AbortSignal }
     ): Promise<void> => {
-        if (state.loading ) return;
+        if (state.loading && state.driver) return;
 
         setState(prev => ({ ...prev, loading: true, error: null }));
 
         try {
+            if (options?.signal?.aborted) {
+                console.log("Initialization aborted before start");
+                return;
+            }
+
             const [driver, activeDelivery] = await Promise.all([
                 fetchDriver(driverId, options).catch(error => {
-                    console.error("Failed to fetch driver:", error);
-                    throw new Error("Failed to load driver information");
+                    if (error.name !== 'CanceledError') {
+                        console.error("Failed to fetch driver:", error);
+                        throw new Error("Failed to load driver information");
+                    }
+                    return null;
                 }),
                 fetchActiveDelivery(driverId, options).catch(error => {
-                    console.error("Failed to fetch active delivery:", error);
+                    if (error.name !== 'CanceledError') {
+                        console.error("Failed to fetch active delivery:", error);
+                    }
                     return null;
                 }),
             ]);
+
+            if (options?.signal?.aborted) {
+                console.log("Initialization aborted during requests");
+                return;
+            }
 
             setState(prev => ({
                 ...prev,
                 driver,
                 loading: false,
-                error: null
+                error: null,
+                activeDelivery: activeDelivery || null
             }));
 
             if (!socket) {
@@ -345,6 +362,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
                     return [];
                 })
                 : [];
+            console.log("nearby orders", nearbyOrders);
 
             setState(prev => ({
                 ...prev,
@@ -568,7 +586,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         try {
             console.log('Making API call to accept order');
             const response = await api.post<IApiResponse<IDeliveryResponse>>(
-                `/api/delivery/orders/accept/?driverId=${state.driver.driverId}`,
+                `/api/delivery/orders/accept/?driverId=${state.driver.driverID}`,
                 {
                     ...request,
                     currentLat: state.currentLocation.lat,
@@ -620,7 +638,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
             }));
 
             if (state.driver) {
-                const analytics = await fetchAnalytics(state.driver.driverId);
+                const analytics = await fetchAnalytics(state.driver.driverID);
                 setState(prev => ({ ...prev, analytics }));
             }
 
@@ -659,7 +677,9 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
     const refreshData = async () => {
         if (!state.driver || !state.currentLocation) return; // Check for null first
 
-        const driverId = state.driver.driverId;
+        const driverId = state.driver.driverID;
+        console.log('refreshData', state.currentLocation);
+        console.log('driverId', state.driver);
 
         setState(prev => ({ ...prev, loading: true }));
         try {

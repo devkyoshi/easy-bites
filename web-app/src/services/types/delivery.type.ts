@@ -44,7 +44,7 @@ export interface IDriverProfile {
 
 export interface IDriverResponse {
     licenseNumber: string;
-    driverId: number;
+    driverID: number;
     firstName: string;
     lastName: string;
     email: string;

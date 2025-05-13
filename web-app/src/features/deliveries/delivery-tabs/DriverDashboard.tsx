@@ -29,29 +29,19 @@ export function DriverDashboard({ driverId }: DriverDashboardProps) {
         fetchDeliveryHistory,
         refreshData,
         driver,
+        currentLocation
     } = useDelivery();
 
     useEffect(() => {
-        const abortController = new AbortController();
         let mounted = true;
 
         const init = async () => {
             try {
-                console.log("Initializing Driver", driverId);
-                await initializeDriver(driverId, undefined, {
-                    signal: abortController.signal
-                });
-
-                console.log("initializing", driver);
+                await initializeDriver(driverId, undefined,);
 
                 if (mounted) {
-                    // Fetch all data in parallel
-                    await Promise.all([
-                        fetchDeliveryHistory(driverId, {
-                            signal: abortController.signal
-                        }),
-                        refreshData(), // This will fetch active delivery and analytics
-                    ]);
+                    await fetchDeliveryHistory(driverId,);
+                    await refreshData();
                 }
             } catch (error) {
                 if (!axios.isCancel(error) && mounted) {
@@ -60,14 +50,17 @@ export function DriverDashboard({ driverId }: DriverDashboardProps) {
             }
         };
 
-        init();
+        const initTimeout = setTimeout(() => {
+            init();
+        }, 100);
 
         return () => {
             mounted = false;
-            abortController.abort();
+            clearTimeout(initTimeout);
             socketCleanup?.();
         };
-    }, [driverId]);
+    }, [driverId, currentLocation]);
+
 
     const handleNavigateToAnalyticPage = () => {
         navigate({ to: '/deliveries/driver-analytics' });

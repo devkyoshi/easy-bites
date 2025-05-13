@@ -1,5 +1,7 @@
 import {
-  IconBrowserCheck, IconBuildingStore,
+  IconBrowserCheck,
+  IconBuildingStore,
+  IconTruckDelivery,
   IconChecklist,
   IconHelp,
   IconLayoutDashboard,
@@ -74,6 +76,17 @@ export const getSidebarData = (userRole?: string): SidebarData => ({
             title: 'Restaurant Management',
             url: '/restaurants/restaurant-management',
             icon: IconBuildingStore,
+          } as NavItem] : []),
+
+        ...(userRole === USER_TYPES.ROLE_DELIVERY_PERSON ? [{
+          title: 'Dashboard',
+          url: '/',
+          icon: IconLayoutDashboard,
+        },
+          {
+            title: 'Delivery Dashboard',
+            url: '/deliveries',
+            icon: IconTruckDelivery,
           } as NavItem] : []),
 
         // System Admin specific items

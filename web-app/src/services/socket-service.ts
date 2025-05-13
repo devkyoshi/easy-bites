@@ -2,7 +2,7 @@ import io from "socket.io-client";
 import type { IDeliveryResponse, IOrder } from "@/services/types/delivery.type";
 import { toast } from "sonner";
 
-const SOCKET_URL = import.meta.env.VITE_PUBLIC_SOCKET_URL || 'http://localhost:8084';
+const SOCKET_URL = import.meta.env.VITE_PUBLIC_SOCKET_URL || 'http://localhost:8085';
 
 let socket: SocketIOClient.Socket | null = null;
 let reconnectAttempts = 0;
@@ -16,7 +16,7 @@ export const initializeSocket = (driverId: number): SocketIOClient.Socket => {
 
     if (socket) disconnectSocket();
 
-    socket = io(SOCKET_URL, {
+    const socketOptions: SocketIOClient.ConnectOpts = {
         path: '/socket.io',
         query: { driverId: driverId.toString() },
         transports: ['websocket', 'polling'],
@@ -27,7 +27,11 @@ export const initializeSocket = (driverId: number): SocketIOClient.Socket => {
         timeout: 20000,
         autoConnect: true,
         forceNew: true,
-    });
+        secure: false, // Set to true if using HTTPS
+        rejectUnauthorized: false // Only for development with self-signed certs
+    };
+
+    socket = io(SOCKET_URL, socketOptions);
 
     // Connection events
     socket.on('connect', () => {

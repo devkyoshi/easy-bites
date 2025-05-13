@@ -97,6 +97,12 @@
             <artifactId>geohash</artifactId>
             <version>1.4.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.ds</groupId>
+            <artifactId>auth-service</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

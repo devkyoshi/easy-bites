@@ -1,8 +1,11 @@
 package com.ds.deliveryservice;
 
+import com.corundumstudio.socketio.SocketIOServer;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
@@ -16,4 +19,11 @@ public class DeliveryServiceApplication {
         SpringApplication.run(DeliveryServiceApplication.class, args);
     }
 
+    @Bean
+    public ApplicationRunner runner(SocketIOServer server) {
+        return args -> {
+            server.start();
+            System.out.println("Socket.IO server started on port: " + server.getConfiguration().getPort());
+        };
+    }
 }
