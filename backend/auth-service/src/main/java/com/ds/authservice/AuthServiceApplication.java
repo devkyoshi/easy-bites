@@ -1,6 +1,6 @@
 package com.ds.authservice;
 
-import com.ds.masterservice.dao.Role;
+import com.ds.masterservice.dao.authService.Role;
 import com.ds.masterservice.repository.RoleRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;

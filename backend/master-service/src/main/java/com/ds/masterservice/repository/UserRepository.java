@@ -1,7 +1,7 @@
 package com.ds.masterservice.repository;
 
-import com.ds.masterservice.dao.Customer;
-import com.ds.masterservice.dao.User;
+import com.ds.masterservice.dao.authService.Customer;
+import com.ds.masterservice.dao.authService.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

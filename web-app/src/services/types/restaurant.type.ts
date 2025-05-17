@@ -71,3 +71,29 @@ export interface AddFoodItemRequest {
   isAvailable: boolean
   categoryId: number
 }
+
+export interface RestaurantOrderItem {
+  itemId: number
+  itemName: string
+  totalPrice: number
+  unitPrice: number
+  itemImage: string
+  quantity: number
+}
+
+export interface RestaurantOrder {
+  orderId: number
+  orderItems: RestaurantOrderItem[]
+  orderStatus: string
+  paymentStatus: string
+  orderDate: string
+  deliveryAddress: string
+  totalAmount: number
+  customerName: string
+  customerPhone: string
+}
+
+export interface OrderAcceptance {
+  orderId: number
+  status: string
+}

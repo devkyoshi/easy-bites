@@ -8,7 +8,7 @@ import com.ds.commons.dto.response.LoginResponse;
 import com.ds.commons.dto.response.RegisterResponse;
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
-import com.ds.masterservice.dao.RestaurantManager;
+import com.ds.masterservice.dao.restaurantService.RestaurantManager;
 import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
 import com.ds.masterservice.dto.request.user.RestaurantManagerRequestDTO;
 import org.springframework.security.core.userdetails.UserDetails;
