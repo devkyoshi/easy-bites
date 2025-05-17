@@ -12,6 +12,7 @@ import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationReques
 import com.ds.masterservice.dto.request.food.FoodItemRequest;
 import com.ds.masterservice.dto.request.menu.MenuCategoryCreateRequest;
 import com.ds.masterservice.dto.request.restaurant.RestaurantCreateUpdateRequest;
+import com.ds.masterservice.dto.request.user.RestaurantManagerRequestDTO;
 import com.ds.masterservice.dto.response.*;
 import com.ds.masterservice.dto.response.deliveryService.DeliveryHistoryResponse;
 import com.ds.masterservice.dto.response.deliveryService.DeliveryResponse;
@@ -37,7 +38,6 @@ public interface MasterService {
     RestaurantManager getRestaurantManagerByUserId(Integer userId) throws CustomException;
 
     //Restaurant Service Methods
-
     ApiResponse<RestaurantResponse> getRestaurant(Long restaurantId) throws CustomException;
 
     ApiResponse<RestaurantInitResponse> createRestaurant(RestaurantCreateUpdateRequest request) throws CustomException;
@@ -102,6 +102,8 @@ public interface MasterService {
 
     ApiResponse<DeliveryResponse> getByOrderId(Long orderId) throws CustomException;
 
-    ApiResponse<RegisterResponse> registerRestaurantManager(RegisterUserRequest restaurantManager) throws CustomException;
+    ApiResponse<RegisterResponse> registerRestaurantManager(RestaurantManagerRequestDTO restaurantManager) throws CustomException;
+
+    ApiResponse<RegisterResponse> registerDriver(DriverRegistrationRequest driverRegistrationRequest) throws CustomException;
 
 }

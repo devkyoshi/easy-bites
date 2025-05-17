@@ -14,6 +14,7 @@ import com.ds.commons.template.ApiResponse;
 import com.ds.masterservice.dao.*;
 import com.ds.masterservice.dao.deliveryService.DeliveryPerson;
 import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
+import com.ds.masterservice.dto.request.user.RestaurantManagerRequestDTO;
 import com.ds.masterservice.dto.response.deliveryService.DriverResponse;
 import com.ds.masterservice.repository.deliveryService.DeliveryDriverRepository;
 import com.ds.masterservice.repository.RoleRepository;
@@ -111,8 +112,8 @@ public class UserServiceImpl implements UserService {
             user.setRoles(List.of(role));
 
             // Handle delivery person specific logic
-            if (user instanceof DeliveryPerson dp && registerRequest instanceof DriverRegistrationRequest driverRequest) {
-                // Validate required fields
+            if (user instanceof DeliveryPerson dp) {
+                DriverRegistrationRequest driverRequest = (DriverRegistrationRequest) registerRequest;// Validate required fields
                 if (driverRequest.getVehicleType() == null ||
                         driverRequest.getLicenseNumber() == null ||
                         driverRequest.getVehicleNumber() == null) {
@@ -210,7 +211,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ApiResponse<RegisterResponse> registerRestaurantManager(RegisterUserRequest restaurantManager) throws CustomException {
+    public ApiResponse<RegisterResponse> registerRestaurantManager(RestaurantManagerRequestDTO restaurantManager) throws CustomException {
 
         try {
             // Check if required fields are present
@@ -220,7 +221,7 @@ public class UserServiceImpl implements UserService {
                     restaurantManager.getFirstName() == null ||
                     restaurantManager.getUserType() == null ||
                     restaurantManager.getLastName() == null) {
-                log.error("Request for registration received with missing required fields");
+                log.error("Request for restaurant registration received with missing required fields");
                 throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
             }
 
@@ -239,6 +240,8 @@ public class UserServiceImpl implements UserService {
             user.setEmail(restaurantManager.getEmail());
             user.setRoles(List.of(roleRepository.findByName("ROLE_RESTAURANT_MANAGER")
                     .orElseThrow(() -> new CustomException(ExceptionCode.ROLE_NOT_FOUND))));
+
+            user.setLicenseNumber(restaurantManager.getLicenseNumber());
 
             // Save the user to the database
             User savedUser = userRepository.save(user);
@@ -261,6 +264,60 @@ public class UserServiceImpl implements UserService {
                 throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
             }
         }
+    }
+
+    @Override
+    public ApiResponse<RegisterResponse> registerDriver(DriverRegistrationRequest request) throws CustomException {
+       try{
+          if(request.getUsername() == null ||
+                  request.getPassword() == null ||
+                  request.getEmail() == null ||
+                  request.getFirstName() == null ||
+                  request.getLastName() == null) {
+              log.error("Request for driver registration received with missing required fields");
+              throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
+          }
+
+            // Check if the user already exists
+            if (userRepository.findUserByUsername(request.getUsername()).isPresent()) {
+                log.error("User with username {} already exists", request.getUsername());
+                throw new CustomException(ExceptionCode.USER_ALREADY_EXISTS);
+            }
+
+            DeliveryPerson deliveryPerson = new DeliveryPerson();
+            deliveryPerson.setUsername(request.getUsername());
+            deliveryPerson.setFirstName(request.getFirstName());
+            deliveryPerson.setLastName(request.getLastName());
+            deliveryPerson.setPassword(passwordEncoder.encode(request.getPassword()));
+            deliveryPerson.setEmail(request.getEmail());
+            deliveryPerson.setVehicleType(request.getVehicleType());
+            deliveryPerson.setLicenseNumber(request.getLicenseNumber());
+            deliveryPerson.setVehicleNumber(request.getVehicleNumber());
+
+            deliveryPerson.setRoles(List.of(roleRepository.findByName("ROLE_DELIVERY_PERSON")
+                   .orElseThrow(() -> new CustomException(ExceptionCode.ROLE_NOT_FOUND))));
+
+            User savedUser = userRepository.save(deliveryPerson);
+
+           StaffRegistration staffRegistration = new StaffRegistration();
+           staffRegistration.setUser(savedUser);
+           staffRegistration.setCreatedAt( savedUser.getCreatedAt());
+           staffRegistration.setIsApproved(false);
+
+           staffRegistrationRepository.save(staffRegistration);
+
+              log.info("Driver {} registered successfully", request.getUsername());
+
+              // Return the response
+                return ApiResponse.createdSuccessResponse("Driver Registered Successfully", getRegisterResponse(deliveryPerson));
+       }catch (Exception e) {
+           if (e instanceof CustomException) {
+               throw (CustomException) e;
+           } else {
+               log.error("An error occurred during driver registration: {}", e.getMessage());
+               throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+           }
+       }
     }
 
     private User getUserByUsername(String username) throws CustomException {

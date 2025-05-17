@@ -12,6 +12,7 @@ import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationReques
 import com.ds.masterservice.dto.request.food.FoodItemRequest;
 import com.ds.masterservice.dto.request.menu.MenuCategoryCreateRequest;
 import com.ds.masterservice.dto.request.restaurant.RestaurantCreateUpdateRequest;
+import com.ds.masterservice.dto.request.user.RestaurantManagerRequestDTO;
 import com.ds.masterservice.dto.response.*;
 import com.ds.masterservice.dto.response.deliveryService.DeliveryHistoryResponse;
 import com.ds.masterservice.dto.response.deliveryService.DeliveryResponse;
@@ -227,7 +228,12 @@ public class MasterServiceImpl implements MasterService {
     }
 
     @Override
-    public ApiResponse<RegisterResponse> registerRestaurantManager(RegisterUserRequest restaurantManager) throws CustomException {
+    public ApiResponse<RegisterResponse> registerRestaurantManager(RestaurantManagerRequestDTO restaurantManager) throws CustomException {
         return userService.registerRestaurantManager(restaurantManager);
+    }
+
+    @Override
+    public ApiResponse<RegisterResponse> registerDriver(DriverRegistrationRequest driverRegistrationRequest) throws CustomException {
+        return userService.registerDriver(driverRegistrationRequest);
     }
 }

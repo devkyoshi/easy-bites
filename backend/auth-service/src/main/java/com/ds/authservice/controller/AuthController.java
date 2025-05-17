@@ -12,6 +12,7 @@ import com.ds.commons.template.ApiResponse;
 
 import com.ds.masterservice.MasterService;
 import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
+import com.ds.masterservice.dto.request.user.RestaurantManagerRequestDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,17 +45,9 @@ public class AuthController {
 
     @PostMapping("/register")
     public ApiResponse<RegisterResponse> register(@RequestBody Map<String, Object> requestMap) throws CustomException {
-        UserType userType = UserType.CUSTOMER;
-
-        if (userType == UserType.DELIVERY_PERSON) {
-            DriverRegistrationRequest request = objectMapper.convertValue(requestMap, DriverRegistrationRequest.class);
-            log.info("Attempting to register delivery person: {}", request.getUsername());
-            return masterService.getUserService().registerUser(request);
-        } else {
-            RegisterUserRequest request = objectMapper.convertValue(requestMap, RegisterUserRequest.class);
-            log.info("Attempting to register user: {}", request.getUsername());
-            return masterService.getUserService().registerUser(request);
-        }
+        RegisterUserRequest request = objectMapper.convertValue(requestMap, RegisterUserRequest.class);
+        log.info("Attempting to register user: {}", request.getUsername());
+        return masterService.getUserService().registerUser(request);
     }
 
     @PostMapping("/login")
@@ -75,9 +68,17 @@ public class AuthController {
 
     //Restaurant User Registration
     @PostMapping("/register-restaurant-manager")
-    public ApiResponse<RegisterResponse> registerRestaurant(@RequestBody RegisterUserRequest registerRequest) throws CustomException {
+    public ApiResponse<RegisterResponse> registerRestaurant(@RequestBody RestaurantManagerRequestDTO registerRequest) throws CustomException {
         log.info("Attempting to register restaurant user with username: {}", registerRequest.getUsername());
         return masterService.registerRestaurantManager(registerRequest);
+    }
+
+
+    //Driver User Registration
+    @PostMapping("/register-driver")
+    public ApiResponse<RegisterResponse> registerDriver(@RequestBody DriverRegistrationRequest registerRequest) throws CustomException {
+        log.info("Attempting to register driver user with username: {}", registerRequest.getUsername());
+        return masterService.registerDriver(registerRequest);
     }
 
 

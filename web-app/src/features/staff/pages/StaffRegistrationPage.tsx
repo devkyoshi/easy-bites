@@ -3,7 +3,11 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
-import { registerRestaurantManager } from '@/services/staff-service.ts'
+import {
+  registerRestaurantManager,
+  registerDeliveryPerson,
+  getVehicleTypes,
+} from '@/services/staff-service.ts'
 import { Loader2, ChevronLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button.tsx'
@@ -36,6 +40,8 @@ const formSchema = z
       .regex(/[0-9]/, 'At least one number'),
     confirmPassword: z.string(),
     licenseNumber: z.string().optional(),
+    vehicleType: z.enum(['BIKE', 'CAR', 'VAN', 'THREE_WHEELER']).optional(),
+    vehicleNumber: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -43,14 +49,41 @@ const formSchema = z
   })
   .refine(
     (data) => {
-      if (data.role === 'RESTAURANT_MANAGER') {
+      if (
+        data.role === 'RESTAURANT_MANAGER' ||
+        data.role === 'DELIVERY_PERSON'
+      ) {
         return !!data.licenseNumber?.trim()
       }
       return true
     },
     {
-      message: 'License number is required for restaurant managers',
+      message: 'License number is required',
       path: ['licenseNumber'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.role === 'DELIVERY_PERSON') {
+        return !!data.vehicleType
+      }
+      return true
+    },
+    {
+      message: 'Vehicle type is required for delivery persons',
+      path: ['vehicleType'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.role === 'DELIVERY_PERSON') {
+        return !!data.vehicleNumber?.trim()
+      }
+      return true
+    },
+    {
+      message: 'Vehicle number is required for delivery persons',
+      path: ['vehicleNumber'],
     }
   )
 
@@ -70,6 +103,8 @@ export const StaffRegistrationPage = () => {
       password: '',
       confirmPassword: '',
       licenseNumber: '',
+      vehicleType: undefined,
+      vehicleNumber: '',
     },
   })
 
@@ -96,16 +131,31 @@ export const StaffRegistrationPage = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true)
     try {
-      await registerRestaurantManager({
-        firstName: values.firstName,
-        lastName: values.lastName,
-        email: values.email,
-        password: values.password,
-        username: values.username,
-        userType: 'RESTAURANT_MANAGER',
-        roles: ['ROLE_RESTAURANT_MANAGER'],
-        licenseNumber: values.licenseNumber || '',
-      })
+      if (values.role === 'RESTAURANT_MANAGER') {
+        await registerRestaurantManager({
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          password: values.password,
+          username: values.username,
+          userType: 'RESTAURANT_MANAGER',
+          roles: ['ROLE_RESTAURANT_MANAGER'],
+          licenseNumber: values.licenseNumber || '',
+        })
+      } else {
+        await registerDeliveryPerson({
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          password: values.password,
+          username: values.username,
+          userType: 'DELIVERY_PERSON',
+          roles: ['ROLE_DELIVERY_PERSON'],
+          vehicleType: values.vehicleType!,
+          vehicleNumber: values.vehicleNumber!,
+          licenseNumber: values.licenseNumber!,
+        })
+      }
       navigate({ to: '/sign-in' }).then()
     } catch (error) {
       toast.error('Registration failed. Please try again.')
@@ -135,7 +185,7 @@ export const StaffRegistrationPage = () => {
                 <h2 className='text-center text-2xl font-bold text-gray-900'>
                   Select Staff Role
                 </h2>
-                <div className='grid grid-cols-2 gap-4'>
+                <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                   <Button
                     type='button'
                     variant={
@@ -153,13 +203,17 @@ export const StaffRegistrationPage = () => {
                   </Button>
                   <Button
                     type='button'
-                    variant='outline'
+                    variant={
+                      form.watch('role') === 'DELIVERY_PERSON'
+                        ? 'default'
+                        : 'outline'
+                    }
                     className='h-24 flex-col gap-2 text-lg'
-                    disabled
+                    onClick={() => form.setValue('role', 'DELIVERY_PERSON')}
                   >
                     🚚 Delivery Person
-                    <span className='text-sm font-normal text-gray-400'>
-                      (Coming Soon)
+                    <span className='text-sm font-normal text-gray-600'>
+                      Handle food deliveries
                     </span>
                   </Button>
                 </div>
@@ -171,7 +225,7 @@ export const StaffRegistrationPage = () => {
                 <h2 className='text-center text-2xl font-bold text-gray-900'>
                   Staff Information
                 </h2>
-                <div className='grid grid-cols-2 gap-4'>
+                <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                   <FormField
                     control={form.control}
                     name='firstName'
@@ -207,7 +261,11 @@ export const StaffRegistrationPage = () => {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder='john@restaurant.com' />
+                        <Input
+                          {...field}
+                          placeholder='john@example.com'
+                          type='email'
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -221,7 +279,7 @@ export const StaffRegistrationPage = () => {
                     <FormItem>
                       <FormLabel>Username</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder='john_manager' />
+                        <Input {...field} placeholder='john_doe' />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -256,7 +314,72 @@ export const StaffRegistrationPage = () => {
                   />
                 )}
 
-                <div className='grid grid-cols-2 gap-4'>
+                {form.watch('role') === 'DELIVERY_PERSON' && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name='vehicleType'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Vehicle Type</FormLabel>
+                          <FormControl>
+                            <select
+                              {...field}
+                              className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
+                            >
+                              <option value=''>Select vehicle type</option>
+                              {getVehicleTypes().map((vehicle) => (
+                                <option
+                                  key={vehicle.value}
+                                  value={vehicle.value}
+                                >
+                                  {vehicle.label}
+                                </option>
+                              ))}
+                            </select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name='vehicleNumber'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Vehicle Number</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder='ABC-1234'
+                              className='font-mono'
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name='licenseNumber'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Driver's License Number</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder='DL-123456789'
+                              className='font-mono'
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
+
+                <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                   <FormField
                     control={form.control}
                     name='password'

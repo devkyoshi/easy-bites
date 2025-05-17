@@ -64,7 +64,6 @@ public class RestaurantController {
         return masterService.deleteFoodItem(restaurantId, foodItemId);
     }
 
-
     //Menu Categories
     @GetMapping("/{restaurantId}/categories")
     public ApiResponse<List<MenuCategoryResponse>> getMenuCategories(@PathVariable("restaurantId") Long restaurantId) throws CustomException {
@@ -107,6 +106,4 @@ public class RestaurantController {
         log.info("Attempting to get restaurant for admin");
         return masterService.getAdminRestaurantData(adminId);
     }
-
-
 }
