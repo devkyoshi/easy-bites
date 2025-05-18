@@ -455,7 +455,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
     };
 
     const getDelivery = (deliveryId: number): IDeliveryResponse | undefined => {
-        return state.deliveryHistory.find(d => d.driverId === deliveryId) || undefined;
+        return state.deliveryHistory.find(d => d.deliveryId === deliveryId) || undefined;
     };
 
     const acceptOrder = async (request: IDeliveryAcceptanceRequest) => {

@@ -52,10 +52,10 @@ export const ActiveDeliveries = (_: ActiveDeliveriesProps) => {
 
     const handleNavigateToDeliveryDetail = (delivery: IDeliveryResponse) => {
         if (!activeDelivery) return;
-
+        console.log("activeDelivery", delivery);
         navigate({
             to: '/deliveries/delivery-details',
-            state: { deliveryId: activeDelivery.id },
+            state: { deliveryId: delivery.deliveryId },
         }).then();
     };
 

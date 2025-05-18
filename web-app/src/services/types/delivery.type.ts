@@ -18,7 +18,7 @@ export interface IDeliveryRatingRequest {
 export interface IDeliveryResponse {
     deliveryAddress: string;
     restaurantName: string;
-    id: number;
+    deliveryId: number;
     orderId: number;
     driverId: number;
     status: string;

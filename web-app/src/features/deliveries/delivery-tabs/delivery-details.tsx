@@ -208,6 +208,7 @@ import { IOrder, IDeliveryResponse } from "@/services/types/delivery.type";
 import { DeliverySkeleton } from "../components/DeliverySkeleton";
 import { EmptyDeliveryState } from "../components/EmptyDeliveryState";
 import { api } from "@/config/axios";
+import {useAuth} from "@/stores/auth-context.tsx";
 
 type LocationState = { deliveryId: number }
 type Status =
@@ -228,13 +229,15 @@ export function DeliveryDetails() {
     const [error, setError] = useState<string | null>(null);
     const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
+    const { currentUser } = useAuth();
 
     const isValidStatus = (status: string): status is Status => {
         return ['PENDING', 'RESTAURANT_ACCEPTED', 'DRIVER_ASSIGNED', 'DELIVERED', 'DELIVERY_FAILED'].includes(status);
     };
 
-    const showCompletion = delivery &&
-        ['DRIVER_ASSIGNED', 'RESTAURANT_ACCEPTED'].includes(delivery.status);
+    const showCompletion = order &&
+        ['DRIVER_ASSIGNED', 'RESTAURANT_ACCEPTED'].includes(order.status)
+        && currentUser?.role === 'ROLE_DELIVERY_PERSON';
 
     const handleBackClick = () => {
         navigate({ to: '/deliveries' });
@@ -361,13 +364,13 @@ export function DeliveryDetails() {
             <Card className="p-6">
                 <div className="flex justify-between items-start mb-6">
                     <div>
-                        <h1 className="text-2xl font-bold">Delivery #{delivery.id}</h1>
+                        <h1 className="text-2xl font-bold">Delivery #{delivery.deliveryId}</h1>
                         <p className="text-muted-foreground">
                             {format(new Date(delivery.createdAt), 'MMMM do, yyyy hh:mm a')}
                         </p>
                     </div>
-                    {isValidStatus(delivery.status) ? (
-                        <StatusBadge status={delivery.status} />
+                    {isValidStatus(order?.status || '') ? (
+                        <StatusBadge status={order!.status} />
                     ) : (
                         <div className="text-red-500">Unknown Status</div>
                     )}
@@ -425,11 +428,12 @@ export function DeliveryDetails() {
             </Card>
 
             {showCompletion && (
-                <DeliveryCompletion deliveryId={delivery.id} />
+                <DeliveryCompletion deliveryId={delivery.deliveryId} />
             )}
 
-            {delivery.status === 'DELIVERED' && !delivery.rating && (
-                <DeliveryRating deliveryId={delivery.id} />
+            {order?.status === 'DELIVERED' && !delivery.rating &&
+                currentUser?.role === 'ROLE_CUSTOMER' && (
+                <DeliveryRating deliveryId={delivery.deliveryId} />
             )}
         </DeliveryLayout>
     );
