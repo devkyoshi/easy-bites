@@ -6,7 +6,8 @@ import { EmptyDriverState } from "./EmptyDriverState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/stores/auth-context.tsx";
-import {toast} from "sonner";
+import { toast } from "sonner";
+import {AxiosError} from "axios";
 
 export function NearbyDeliveries() {
     const { nearbyOrders, loading, acceptOrder, currentLocation, fetchNearbyOrders, driver } = useDelivery();
@@ -15,91 +16,85 @@ export function NearbyDeliveries() {
     const [localLoading, setLocalLoading] = useState(true);
 
     useEffect(() => {
-        // Debug logging
-        console.log("NearbyDeliveries component - Rendering with:", {
-            hasCurrentUser: !!currentUser,
-            hasDriver: !!driver,
-            hasCurrentLocation: !!currentLocation,
-            currentLocationData: currentLocation,
-            loadingState: loading,
-            nearbyOrdersCount: nearbyOrders?.length
-        });
-    }, [currentUser, driver, currentLocation, loading, nearbyOrders]);
-
-    useEffect(() => {
-        if (!currentUser || !driver) {
-            console.warn("Cannot fetch nearby orders: driver or user is not available");
-            return;
-        }
-
-        if (!currentLocation) {
-            console.warn("Cannot fetch nearby orders: current location is not set");
-            return;
-        }
+        if (!currentUser || !driver || !currentLocation) return;
 
         setLocalLoading(true);
 
         const fetchData = async () => {
             try {
                 await fetchNearbyOrders(currentUser.userId, currentLocation.lat, currentLocation.lng);
-                console.log("Successfully fetched nearby orders");
-            } catch (err) {
-                console.error("Error fetching nearby orders", err);
+            } catch (_) {
+                // Optional: toast for fetch failure
             } finally {
                 setLocalLoading(false);
             }
         };
 
         fetchData();
-    }, [currentUser?.userId, currentLocation?.lat, currentLocation?.lng, driver, fetchNearbyOrders]);
+    }, [currentUser?.userId, currentLocation?.lat, currentLocation?.lng]);
 
-    const handleAcceptOrder = async (orderId) => {
+    const handleAcceptOrder = async (orderId: number) => {
         if (!currentLocation) {
-            console.warn("Cannot accept order: current location is not set");
-            toast({
-                title: "Location unavailable",
-                description: "Please enable location services and try again",
-                variant: "destructive"
-            });
+            toast.error("Location unavailable. Please enable location services and try again.");
             return;
         }
 
         setIsAccepting(true);
+
         try {
             await acceptOrder({
                 orderId,
                 currentLat: currentLocation.lat,
                 currentLng: currentLocation.lng
             });
-            toast({
-                title: "Success",
-                description: "Order accepted successfully",
-            });
+
+            toast.success("Order accepted successfully!");
         } catch (error) {
-            console.error("Failed to accept order:", error);
-            toast({
-                title: "Failed to accept order",
-                description: "Please try again later",
-                variant: "destructive"
-            });
+            let message = "Something went wrong. Please try again.";
+
+            const axiosError = error as AxiosError;
+
+            if (axiosError?.response?.data && typeof axiosError.response.data === "object") {
+                const responseData = axiosError.response.data as { message?: string };
+                if (responseData.message) {
+                    message = responseData.message;
+
+                    switch (message) {
+                        case "DRIVER_NOT_FOUND":
+                            toast.error("Driver not found. Please re-login.");
+                            break;
+                        case "DRIVER_NOT_AVAILABLE":
+                            toast.error("You are currently unavailable to accept deliveries.");
+                            break;
+                        case "ORDER_NOT_FOUND":
+                            toast.error("This order no longer exists.");
+                            break;
+                        case "ORDER_ITEM_NOT_FOUND":
+                            toast.error("Order items not found. Cannot proceed.");
+                            break;
+                        case "RESTAURANT_NOT_FOUND":
+                            toast.error("Restaurant not found for this order.");
+                            break;
+                        case "DRIVER_ACCEPTED_ORDER":
+                            toast.error("This order has already been accepted by another driver.");
+                            break;
+                        case "GEOCODING_UNAVAILABLE":
+                            toast.error("Unable to locate the address. Please try again later.");
+                            break;
+                        default:
+                            toast.error(message);
+                    }
+                } else {
+                    toast.error(message);
+                }
+            } else {
+                toast.error(message);
+            }
         } finally {
             setIsAccepting(false);
         }
     };
 
-    // Debug display for location data
-    const renderLocationDebug = () => (
-        <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
-            <p className="text-xs text-gray-700">
-                <strong>Location Debug:</strong> {currentLocation ? 'Available' : 'Not Available'}
-                {currentLocation && (
-                    <span> - Lat: {currentLocation.lat.toFixed(5)}, Lng: {currentLocation.lng.toFixed(5)}</span>
-                )}
-            </p>
-        </div>
-    );
-
-    // Combined loading state
     const isLoading = loading || localLoading || !currentLocation;
 
     if (isLoading) {
@@ -111,7 +106,6 @@ export function NearbyDeliveries() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {renderLocationDebug()}
                     <div className="space-y-4">
                         {[1, 2, 3].map((i) => (
                             <div key={i} className="flex items-center space-x-4">
@@ -144,8 +138,6 @@ export function NearbyDeliveries() {
                 <CardTitle>Nearby Deliveries</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-                {renderLocationDebug()}
-
                 {nearbyOrders.map((order) => (
                     <div key={order.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start">

@@ -56,7 +56,8 @@ public enum ExceptionCode {
     CANNOT_CANCEL_NON_PENDING_ORDER("CANNOT_CANCEL_NON_PENDING_ORDER"),
     INVALID_ORDER_STATUS("INVALID_ORDER_STATUS"),
     ORDER_ITEM_NOT_FOUND("No item found"),
-    NO_AVAILABLE_DRIVERS("No drivers are currently available."),;
+    NO_AVAILABLE_DRIVERS("No drivers are currently available."),
+    NO_COORDINATES_FOUND("No coordinates found for the address"),;
 
     private final String exceptionCode;
 }

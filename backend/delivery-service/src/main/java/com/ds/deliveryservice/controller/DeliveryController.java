@@ -108,11 +108,10 @@ public class DeliveryController {
         return response;
     }
 
-    @PostMapping("/orders/accept")
+    @PostMapping("/orders/accept/{driverId}")
     public ApiResponse<DeliveryResponse> acceptOrder(
-            @RequestParam("driverId") Long driverId,
-            @RequestBody DeliveryAcceptanceRequest dto
-    ) throws CustomException {
+            @RequestBody DeliveryAcceptanceRequest dto,
+            @PathVariable("driverId") Long driverId) throws CustomException {
         log.info("Driver ID {} attempting to accept order", driverId);
         ApiResponse<DeliveryResponse> response = masterService.acceptOrder(driverId, dto);
 

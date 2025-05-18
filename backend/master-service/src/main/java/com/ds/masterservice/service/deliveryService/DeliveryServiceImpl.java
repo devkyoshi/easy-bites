@@ -308,10 +308,6 @@ public class DeliveryServiceImpl implements DeliveryService {
                 throw new CustomException(ExceptionCode.DRIVER_ACCEPTED_ORDER);
             }
 
-            // Update order status
-            order.setStatus(OrderStatus.DRIVER_ASSIGNED);
-            orderRepository.save(order);
-
             // Get coordinates for order and restaurant
             BigDecimal[] orderCoordinates = geocodingUtil
                     .orElseThrow(() -> new CustomException(ExceptionCode.GEOCODING_UNAVAILABLE))
@@ -334,6 +330,10 @@ public class DeliveryServiceImpl implements DeliveryService {
             // Mark driver as unavailable
             driver.setIsAvailable(false);
             deliveryDriverRepository.save(driver);
+
+            // Update order status
+            order.setStatus(OrderStatus.DRIVER_ASSIGNED);
+            orderRepository.save(order);
 
             // Notify customer
             Customer customer = userRepository.findCustomerById(Math.toIntExact(order.getUserId()))

@@ -16,8 +16,8 @@ import axios from "axios";
 
 interface IDeliveryContext {
     deliveries: IDeliveryResponse[];
+    currentLocation : ILocation | null;
     driver: IDriverResponse | null;
-    currentLocation: ILocation | null;
     nearbyOrders: IOrder[];
     activeDelivery: IDeliveryResponse | null;
     analytics: {
@@ -71,41 +71,72 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         deliveries: []
     });
 
+    const [currentLocation, setCurrentLocation] = useState<ILocation | null>(null);
+
     const [socket, setSocket] = useState<Socket | null>(null);
-    // const POLLING_INTERVAL = 10000;
-    // let pollingInterval: NodeJS.Timeout | null = null;
 
+// delivery-context.tsx (or wherever your useEffect lives)
     useEffect(() => {
-        if (navigator.geolocation) {
-            const watchId = navigator.geolocation.watchPosition(
-                (position) => {
-                    setState(prev => ({
-                        ...prev,
-                        currentLocation: {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude,
-                            accuracy: position.coords.accuracy,
-                            timestamp: position.timestamp
-                        }
-                    }));
-                },
-                (error) => console.error('Geolocation error:', error),
-                { enableHighAccuracy: true, maximumAge: 10000 }
-            );
-            return () => navigator.geolocation.clearWatch(watchId);
+        let watchId: number | null = null
+
+        if (!navigator.geolocation) {
+            setState(prev => ({ ...prev, error: 'Geolocation not supported' }))
+            return
         }
-    }, []);
+
+        navigator.permissions
+            .query({ name: 'geolocation' })
+            .then(permissionStatus => {
+                console.log('Geolocation permission state:', permissionStatus.state)
+
+                // start watching only once permission is known
+                watchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        const coords = position.coords
+                        setState(prev => ({
+                            ...prev, // ← flip your flag
+                            currentLocationData: {               // ← fill in exactly what NearbyDeliveries expects
+                                lat: coords.latitude,
+                                lng: coords.longitude,
+                                accuracy: coords.accuracy,
+                                timestamp: position.timestamp
+                            }
+                        }))
+
+                        setCurrentLocation({
+                            lat: coords.latitude,
+                            lng: coords.longitude,
+                            accuracy: coords.accuracy,
+                            timestamp: position.timestamp
+                        })
+                    },
+                    (error) => {
+                        console.error('Geolocation error:', error)
+                        if (error.code === error.PERMISSION_DENIED) {
+                            setState(prev => ({ ...prev, error: 'Location permission denied' }))
+                        }
+                    },
+                    { enableHighAccuracy: true, maximumAge: 10_000 }
+                )
+
+                console.log('watchId', watchId)
+            })
+
+        return () => {
+            if (watchId !== null) navigator.geolocation.clearWatch(watchId)
+        }
+    }, [])
 
     useEffect(() => {
-        if (!state.activeDelivery?.driverId || !state.currentLocation?.lat || !state.currentLocation?.lng) {
+        if (!state.activeDelivery?.driverId || !currentLocation?.lat || !currentLocation?.lng) {
             return;
         }
 
         const interval = setInterval(async () => {
             try {
                 await api.put(`/drivers/${state.activeDelivery!.driverId}/location`, {
-                    lat: state.currentLocation!.lat,
-                    lng: state.currentLocation!.lng
+                    lat: currentLocation!.lat,
+                    lng: currentLocation!.lng
                 });
             } catch (error) {
                 console.error('Failed to update location:', error);
@@ -113,7 +144,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         }, 15000);
 
         return () => clearInterval(interval);
-    }, [state.activeDelivery?.driverId, state.currentLocation?.lat, state.currentLocation?.lng]);
+    }, [state.activeDelivery?.driverId, currentLocation?.lat, currentLocation?.lng]);
 
     const refreshDriverLocation = async (driverId: number): Promise<ILocation> => {
         try {
@@ -388,151 +419,6 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         }
     };
 
-//     const initializeDriver = async (
-//         driverId: number,
-//         initialLocation?: ILocation,
-//         options?: { signal?: AbortSignal }
-//     ): Promise<void> => {
-//         if (state.loading && state.driver) return;
-//
-//         setState(prev => ({ ...prev, loading: true, error: null }));
-//
-//         try {
-//             // 1. Fetch initial driver data
-//             const [driver, activeDelivery] = await Promise.all([
-//                 fetchDriver(driverId, options).catch(error => {
-//                     console.error("Failed to fetch driver:", error);
-//                     throw new Error("Failed to load driver information");
-//                 }),
-//                 fetchActiveDelivery(driverId, options).catch(error => {
-//                     console.error("Failed to fetch active delivery:", error);
-//                     return null;
-//                 }),
-//             ]);
-//
-//             // 2. Set initial state
-//             setState(prev => ({
-//                 ...prev,
-//                 driver,
-//                 activeDelivery,
-//                 loading: false,
-//                 error: null
-//             }));
-//
-//             // 3. Start polling for updates
-//             startPolling(driverId, initialLocation);
-//
-//             // 4. Fetch nearby orders
-//             const nearbyOrders = initialLocation
-//                 ? await fetchNearbyOrders(driverId, initialLocation.lat, initialLocation.lng).catch(error => {
-//                     console.error("Failed to fetch nearby orders:", error);
-//                     return [];
-//                 })
-//                 : [];
-//
-//             setState(prev => ({
-//                 ...prev,
-//                 currentLocation: initialLocation || prev.currentLocation,
-//                 nearbyOrders,
-//             }));
-//
-//         } catch (error) {
-//             if (!options?.signal?.aborted) {
-//                 const errorMessage = error instanceof Error ? error.message : "Failed to initialize driver data";
-//                 setState(prev => ({
-//                     ...prev,
-//                     loading: false,
-//                     error: errorMessage
-//                 }));
-//             } else {
-//                 console.log("Initialization canceled:", error);
-//             }
-//         }
-//     };
-//
-//     const startPolling = (driverId: number, initialLocation?: ILocation) => {
-//         // Clear any existing polling
-//         stopPolling();
-//
-//         // Immediate first poll
-//         pollForUpdates(driverId, initialLocation);
-//
-//         // Set up regular polling
-//         pollingInterval = setInterval(() => {
-//             pollForUpdates(driverId, initialLocation);
-//         }, POLLING_INTERVAL);
-//     };
-//
-//     const stopPolling = () => {
-//         if (pollingInterval) {
-//             clearInterval(pollingInterval);
-//             pollingInterval = null;
-//         }
-//     };
-//
-//     const pollForUpdates = async (driverId: number, initialLocation?: ILocation) => {
-//         try {
-//             // Fetch all updates in parallel
-//             const [activeDelivery, nearbyOrders] = await Promise.all([
-//                 fetchActiveDelivery(driverId).catch(() => null),
-//                 initialLocation
-//                     ? fetchNearbyOrders(driverId, initialLocation.lat, initialLocation.lng).catch(() => [])
-//                     : Promise.resolve([])
-//             ]);
-//
-//             setState(prev => {
-//                 // Detect orders accepted by others (removed from nearby orders)
-//                 const removedOrderIds = prev.nearbyOrders
-//                     .filter(prevOrder => !nearbyOrders.some(newOrder => newOrder.id === prevOrder.id))
-//                     .map(order => order.id);
-//
-//                 // Detect new orders available
-//                 const newOrders = nearbyOrders.filter(newOrder =>
-//                     !prev.nearbyOrders.some(prevOrder => prevOrder.id === newOrder.id)
-//                 );
-//
-//                 // Show notifications for new orders
-//                 if (newOrders.length > 0) {
-//                     newOrders.forEach(order => {
-//                         const restaurantName = order.items[0]?.restaurantName || 'a restaurant';
-//                         toast.info(`New order available from ${restaurantName}`);
-//                     });
-//                 }
-//
-//                 // Show notifications for orders taken by others
-//                 if (removedOrderIds.length > 0 && prev.nearbyOrders.length > 0) {
-//                     toast.warning(`${removedOrderIds.length} order(s) taken by other drivers`);
-//                 }
-//
-//                 // Update active delivery if changed
-//                 const updatedActiveDelivery = activeDelivery !== null
-//                     ? activeDelivery
-//                     : prev.activeDelivery;
-//
-//                 // Update driver availability based on active delivery
-//                 const updatedDriver = prev.driver ? {
-//                     ...prev.driver,
-//                     isAvailable: updatedActiveDelivery === null
-//                 } : null;
-//
-//                 return {
-//                     ...prev,
-//                     activeDelivery: updatedActiveDelivery,
-//                     nearbyOrders: nearbyOrders,
-//                     driver: updatedDriver,
-//                 };
-//             });
-//
-//         } catch (error) {
-//             console.error("Polling error:", error);
-//         }
-//     };
-//
-// // Add this to your context cleanup
-//     const cleanup = () => {
-//         stopPolling();
-//     };
-
     const fetchDeliveryHistory = async (driverId: number, options?: { signal?: AbortSignal }) => {
         setState(prev => ({ ...prev, loading: true }));
         try {
@@ -574,10 +460,10 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
 
     const acceptOrder = async (request: IDeliveryAcceptanceRequest) => {
         console.log('acceptOrder called with request:', request);
-        if (!state.driver || !state.currentLocation) {
+        if (!state.driver || !currentLocation) {
             console.warn('Cannot accept order: driver or location not available', {
                 driver: state.driver,
-                location: state.currentLocation
+                location: currentLocation
             });
             return null;
         }
@@ -586,11 +472,11 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         try {
             console.log('Making API call to accept order');
             const response = await api.post<IApiResponse<IDeliveryResponse>>(
-                `/api/delivery/orders/accept/?driverId=${state.driver.driverID}`,
+                `/api/delivery/orders/accept/${state.driver.driverID}`,
                 {
                     ...request,
-                    currentLat: state.currentLocation.lat,
-                    currentLng: state.currentLocation.lng
+                    currentLat: currentLocation.lat,
+                    currentLng: currentLocation.lng
                 },
             );
 
@@ -675,10 +561,10 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
     };
 
     const refreshData = async () => {
-        if (!state.driver || !state.currentLocation) return; // Check for null first
+        if (!state.driver || !currentLocation) return; // Check for null first
 
         const driverId = state.driver.driverID;
-        console.log('refreshData', state.currentLocation);
+        console.log('refreshData', currentLocation);
         console.log('driverId', state.driver);
 
         setState(prev => ({ ...prev, loading: true }));
@@ -688,8 +574,8 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
                 fetchAnalytics(driverId),
                 fetchNearbyOrders(
                     driverId,
-                    state.currentLocation.lat, // Safe to access now
-                    state.currentLocation.lng  // Safe to access now
+                    currentLocation.lat, // Safe to access now
+                    currentLocation.lng  // Safe to access now
                 )
             ]);
 
@@ -720,7 +606,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         <DeliveryContext.Provider value={{
             ...state,
             deliveries: state.deliveries,
-            currentLocation: state.currentLocation,
+            currentLocation,
             fetchNearbyOrders,
             initializeDriver,
             updateLocation,

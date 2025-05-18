@@ -12,6 +12,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -28,31 +30,62 @@ public class GeocodingUtil {
     private String responseFormat;
 
     public BigDecimal[] getCoordinates(String address) throws CustomException {
-        try {
-            String uri = UriComponentsBuilder
-                    .fromUriString(geocodingApiUrl)
-                    .queryParam("q", address)
-                    .queryParam("format", responseFormat)
-                    .queryParam("limit", 1)
-                    .build()
-                    .toUriString();
+        List<String> addressVariants = generateAddressVariants(address);
 
-            ResponseEntity<NominatimResponse[]> response =
-                    restTemplate.getForEntity(uri, NominatimResponse[].class);
+        for (String variant : addressVariants) {
+            try {
+                String uri = UriComponentsBuilder
+                        .fromUriString(geocodingApiUrl)
+                        .queryParam("q", variant)
+                        .queryParam("format", responseFormat)
+                        .queryParam("limit", 1)
+                        .queryParam("addressdetails", 1)
+                        .queryParam("dedupe", 1)
+                        .build()
+                        .toUriString();
 
-            if (response.getBody() != null && response.getBody().length > 0) {
-                BigDecimal lat = new BigDecimal(response.getBody()[0].getLat());
-                BigDecimal lon = new BigDecimal(response.getBody()[0].getLon());
-                return new BigDecimal[]{lat, lon};
+                log.info("Attempting geocoding with address variant: {}", variant);
+                log.info("Geocoding URI: {}", uri);
+
+                ResponseEntity<NominatimResponse[]> response =
+                        restTemplate.getForEntity(uri, NominatimResponse[].class);
+
+                if (response.getBody() != null && response.getBody().length > 0) {
+                    NominatimResponse res = response.getBody()[0];
+                    if (res.getLat() != null && res.getLon() != null) {
+                        BigDecimal lat = new BigDecimal(res.getLat());
+                        BigDecimal lon = new BigDecimal(res.getLon());
+
+                        log.info("Coordinates found: {}, {}", lat, lon);
+                        return new BigDecimal[]{lat, lon};
+                    }
+                }
+
+                log.warn("No result for address variant: {}", variant);
+
+            } catch (Exception e) {
+                log.warn("Failed geocoding attempt for variant: {}", variant, e);
+                // Continue to next variant
             }
-            else {
-                log.error("No coordinates returned for address: {}", address);
-                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
-            }
-
-        } catch (Exception e) {
-            log.error("Failed to fetch coordinates for address: {}", address, e);
-            throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
         }
+
+        // All attempts failed
+        log.error("All geocoding attempts failed for address: {}", address);
+        throw new CustomException(ExceptionCode.NO_COORDINATES_FOUND);
+    }
+
+    private List<String> generateAddressVariants(String address) {
+        List<String> variants = new ArrayList<>();
+        variants.add(address); // Original
+
+        // Remove things that confuse geocoders
+        variants.add(address.replaceAll("(?i)No\\s*\\d+", "").trim());
+        variants.add(address.replaceAll("\\d{5}", "").trim()); // Remove ZIP/postal
+        variants.add(address.replaceAll(",\\s*Western Province.*", "").trim());
+        variants.add(address.replaceAll(",\\s*Sri Lanka", "").trim());
+
+        // Simplified last-chance fallback (e.g., just city and country)
+        variants.add("Colombo, Sri Lanka");
+        return variants;
     }
 }
