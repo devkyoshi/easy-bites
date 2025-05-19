@@ -22,7 +22,7 @@ interface AuthUser {
 interface AuthContextType {
   currentUser: AuthUser | null
   accessToken: string
-  signIn: (creds: LoginRequest) => Promise<void>
+  signIn: (creds: LoginRequest) => Promise<AuthUser>
   logout: () => void
 }
 
@@ -97,6 +97,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // persist
     localStorage.setItem('auth_user', JSON.stringify(user))
     localStorage.setItem('access_token', accessToken)
+
+    return data
   }
 
   const logout = () => {
