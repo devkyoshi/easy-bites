@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button.tsx";
 
 interface DeliveryCardProps {
     delivery: {
-        id: number;
+        deliveryId: number;
         status: string;
         createdAt: string;
         order: {

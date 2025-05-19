@@ -38,8 +38,8 @@ export const AnalyticsDashboard = ({ driverId }: AnalyticsDashboardProps) => {
         navigate({ to: '/deliveries' });
     };
 
-    const completedDeliveries = analytics?.ratingDistribution.reduce((sum, item) => sum + item.count, 0) || 0;
-    const totalEarnings = analytics?.weeklyStats.reduce((sum, item) => sum + item.totalEarnings, 0) || 0;
+    const completedDeliveries = analytics?.ratingDistribution?.reduce((sum, item) => sum + item.count, 0) || 0;
+    const totalEarnings = analytics?.weeklyStats?.reduce((sum, item) => sum + item.totalEarnings, 0) || 0;
 
     return (
         <DeliveryLayout
@@ -52,7 +52,7 @@ export const AnalyticsDashboard = ({ driverId }: AnalyticsDashboardProps) => {
                 <DeliverySkeleton context="analytics" />
             ) : error ? (
                 <div className="text-red-500">Failed to load analytics</div>
-            ) : !analytics || (analytics.weeklyStats.length === 0 && analytics.ratingDistribution.length === 0) ? (
+            ) : !analytics || (analytics.weeklyStats?.length === 0 && analytics?.ratingDistribution.length === 0) ? (
                 <EmptyDeliveryState context="analytics" />
             ) : (
                 <>

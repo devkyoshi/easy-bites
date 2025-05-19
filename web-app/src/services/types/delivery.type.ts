@@ -18,7 +18,7 @@ export interface IDeliveryRatingRequest {
 export interface IDeliveryResponse {
     deliveryAddress: string;
     restaurantName: string;
-    id: number;
+    deliveryId: number;
     orderId: number;
     driverId: number;
     status: string;
@@ -44,7 +44,7 @@ export interface IDriverProfile {
 
 export interface IDriverResponse {
     licenseNumber: string;
-    driverId: number;
+    driverID: number;
     firstName: string;
     lastName: string;
     email: string;

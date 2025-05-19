@@ -21,6 +21,7 @@ public class SecurityConfig {
                 // TODO: Add cors later
 //                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/socket.io/**").permitAll()
                         .anyRequest().permitAll()
                 );
 

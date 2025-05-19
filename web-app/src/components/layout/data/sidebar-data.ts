@@ -1,6 +1,7 @@
 import {
   IconBrowserCheck,
   IconBuildingStore,
+  IconTruckDelivery,
   IconHelp,
   IconNotification,
   IconPackages,
@@ -8,7 +9,7 @@ import {
   IconSettings,
   IconTool,
   IconUserCog,
-  IconUsers,
+  IconUsers, IconLayoutDashboard,
 } from '@tabler/icons-react'
 import { USER_TYPES } from '@/config/user-types.ts'
 import { NavItem, type SidebarData } from '../types.ts'
@@ -47,6 +48,11 @@ export const getSidebarData = (userRole?: string): SidebarData => ({
         //Restaurant Admin specific items
         ...(userRole === USER_TYPES.ROLE_RESTAURANT_MANAGER
           ? [
+            {
+              title: 'Dashboard',
+              url: '/',
+              icon: IconLayoutDashboard,
+            },
               {
                 title: 'Restaurant Management',
                 url: '/restaurants/restaurant-management',
@@ -59,6 +65,16 @@ export const getSidebarData = (userRole?: string): SidebarData => ({
               } as NavItem,
             ]
           : []),
+        ...(userRole === USER_TYPES.ROLE_DELIVERY_PERSON ? [{
+          title: 'Dashboard',
+          url: '/',
+          icon: IconLayoutDashboard,
+        },
+          {
+            title: 'Delivery Dashboard',
+            url: '/deliveries',
+            icon: IconTruckDelivery,
+          } as NavItem] : []),
 
         // System Admin specific items
         ...(userRole === USER_TYPES.ROLE_SYSTEM_ADMIN

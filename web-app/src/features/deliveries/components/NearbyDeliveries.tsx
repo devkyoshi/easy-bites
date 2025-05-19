@@ -4,34 +4,42 @@ import { MapPin, Clock, Package, ArrowRight } from "lucide-react";
 import { useDelivery } from "../context/delivery-context";
 import { EmptyDriverState } from "./EmptyDriverState";
 import { Skeleton } from "@/components/ui/skeleton";
-import {useEffect} from "react";
-import {useAuth} from "@/stores/auth-context.tsx";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/stores/auth-context.tsx";
+import { toast } from "sonner";
+import {AxiosError} from "axios";
 
 export function NearbyDeliveries() {
-    const { nearbyOrders, loading, acceptOrder, currentLocation, fetchNearbyOrders } = useDelivery();
+    const { nearbyOrders, loading, acceptOrder, currentLocation, fetchNearbyOrders, driver } = useDelivery();
+    const { currentUser } = useAuth();
+    const [isAccepting, setIsAccepting] = useState(false);
+    const [localLoading, setLocalLoading] = useState(true);
 
-    const {currentUser} = useAuth();
     useEffect(() => {
-        if (!currentUser) {
-            console.warn("Cannot fetch nearby orders: driver is not available");
-            return;
-        }
+        if (!currentUser || !driver || !currentLocation) return;
 
-        if (!currentLocation) {
-            console.warn("Cannot fetch nearby orders: current location is not set");
-            return;
-        }
+        setLocalLoading(true);
 
-        fetchNearbyOrders(currentUser.userId, currentLocation.lat, currentLocation.lng)
-            .then(orders => {
-                console.log("Nearby orders:", orders);
-                // Optionally handle orders here
-            })
-            .catch(err => console.error("Error fetching nearby orders", err));
-    }, [currentUser?.userId, currentLocation]);
+        const fetchData = async () => {
+            try {
+                await fetchNearbyOrders(currentUser.userId, currentLocation.lat, currentLocation.lng);
+            } catch (_) {
+                // Optional: toast for fetch failure
+            } finally {
+                setLocalLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [currentUser?.userId, currentLocation?.lat, currentLocation?.lng]);
 
     const handleAcceptOrder = async (orderId: number) => {
-        if (!currentLocation) return;
+        if (!currentLocation) {
+            toast.error("Location unavailable. Please enable location services and try again.");
+            return;
+        }
+
+        setIsAccepting(true);
 
         try {
             await acceptOrder({
@@ -39,27 +47,76 @@ export function NearbyDeliveries() {
                 currentLat: currentLocation.lat,
                 currentLng: currentLocation.lng
             });
+
+            toast.success("Order accepted successfully!");
         } catch (error) {
-            console.error("Failed to accept order:", error);
+            let message = "Something went wrong. Please try again.";
+
+            const axiosError = error as AxiosError;
+
+            if (axiosError?.response?.data && typeof axiosError.response.data === "object") {
+                const responseData = axiosError.response.data as { message?: string };
+                if (responseData.message) {
+                    message = responseData.message;
+
+                    switch (message) {
+                        case "DRIVER_NOT_FOUND":
+                            toast.error("Driver not found. Please re-login.");
+                            break;
+                        case "DRIVER_NOT_AVAILABLE":
+                            toast.error("You are currently unavailable to accept deliveries.");
+                            break;
+                        case "ORDER_NOT_FOUND":
+                            toast.error("This order no longer exists.");
+                            break;
+                        case "ORDER_ITEM_NOT_FOUND":
+                            toast.error("Order items not found. Cannot proceed.");
+                            break;
+                        case "RESTAURANT_NOT_FOUND":
+                            toast.error("Restaurant not found for this order.");
+                            break;
+                        case "DRIVER_ACCEPTED_ORDER":
+                            toast.error("This order has already been accepted by another driver.");
+                            break;
+                        case "GEOCODING_UNAVAILABLE":
+                            toast.error("Unable to locate the address. Please try again later.");
+                            break;
+                        default:
+                            toast.error(message);
+                    }
+                } else {
+                    toast.error(message);
+                }
+            } else {
+                toast.error(message);
+            }
+        } finally {
+            setIsAccepting(false);
         }
     };
 
-    if (loading) {
+    const isLoading = loading || localLoading || !currentLocation;
+
+    if (isLoading) {
         return (
             <Card className="h-full">
                 <CardHeader>
-                    <CardTitle>Nearby Deliveries</CardTitle>
+                    <CardTitle>
+                        {!currentLocation ? "Getting your location..." : "Nearby Deliveries"}
+                    </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex items-center space-x-4">
-                            <Skeleton className="h-12 w-12 rounded-full" />
-                            <div className="space-y-2">
-                                <Skeleton className="h-4 w-[200px]" />
-                                <Skeleton className="h-4 w-[150px]" />
+                <CardContent>
+                    <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="flex items-center space-x-4">
+                                <Skeleton className="h-12 w-12 rounded-full" />
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-[200px]" />
+                                    <Skeleton className="h-4 w-[150px]" />
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </CardContent>
             </Card>
         );
@@ -91,7 +148,7 @@ export function NearbyDeliveries() {
                                 <div>
                                     <h3 className="font-medium">Order #{order.id}</h3>
                                     <p className="text-sm text-muted-foreground">
-                                        {order.items.length} item{order.items.length > 1 ? 's' : ''}
+                                        {(order.items?.length || 0)} item{order.items?.length === 1 ? '' : 's'}
                                     </p>
                                 </div>
                             </div>
@@ -121,8 +178,10 @@ export function NearbyDeliveries() {
                                 size="sm"
                                 onClick={() => handleAcceptOrder(order.id)}
                                 className="flex items-center"
+                                disabled={isAccepting}
                             >
-                                Accept Delivery <ArrowRight className="ml-2 h-4 w-4" />
+                                {isAccepting ? "Accepting..." : "Accept Delivery"}
+                                {!isAccepting && <ArrowRight className="ml-2 h-4 w-4" />}
                             </Button>
                         </div>
                     </div>

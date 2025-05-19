@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class LocationUpdateResponse {
-    private Long driverId;
+    private Long driverID;
     private BigDecimal latitude;
     private BigDecimal longitude;
     private String message;
