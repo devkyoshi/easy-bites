@@ -1,8 +1,8 @@
 import {
   IconCash,
+  IconTruck,
   IconShield,
   IconUsersGroup,
-  IconUserShield,
 } from '@tabler/icons-react'
 import { UserStatus } from './schema.ts'
 
@@ -19,22 +19,22 @@ export const callTypes = new Map<UserStatus, string>([
 export const userTypes = [
   {
     label: 'Superadmin',
-    value: 'superadmin',
+    value: 'ROLE_SYSTEM_ADMIN',
     icon: IconShield,
   },
   {
-    label: 'Admin',
-    value: 'admin',
-    icon: IconUserShield,
-  },
-  {
-    label: 'Manager',
-    value: 'manager',
+    label: 'Restaurant Manager',
+    value: 'ROLE_RESTAURANT_MANAGER',
     icon: IconUsersGroup,
   },
   {
-    label: 'Cashier',
-    value: 'cashier',
+    label: 'Delivery Person',
+    value: 'ROLE_DELIVERY_PERSON',
+    icon: IconTruck,
+  },
+  {
+    label: 'Customer',
+    value: 'ROLE_CUSTOMER',
     icon: IconCash,
   },
 ] as const

@@ -1,4 +1,4 @@
-package com.ds.masterservice.dao;
+package com.ds.masterservice.dao.restaurantService;
 
 import jakarta.persistence.*;
 import lombok.Getter;

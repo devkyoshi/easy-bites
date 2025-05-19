@@ -1,10 +1,9 @@
 package com.ds.masterservice;
 
-import com.ds.commons.dto.request.RegisterUserRequest;
 import com.ds.commons.dto.response.RegisterResponse;
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.template.ApiResponse;
-import com.ds.masterservice.dao.RestaurantManager;
+import com.ds.masterservice.dao.restaurantService.RestaurantManager;
 import com.ds.masterservice.dto.request.deliveryService.DeliveryAcceptanceRequest;
 import com.ds.masterservice.dto.request.deliveryService.DeliveryCompletionRequest;
 import com.ds.masterservice.dto.request.deliveryService.DeliveryRatingRequest;
@@ -21,6 +20,7 @@ import com.ds.masterservice.dto.response.deliveryService.LocationUpdateResponse;
 import com.ds.masterservice.dto.response.food.FoodItemResponse;
 import com.ds.masterservice.dto.response.menu.MenuCategoryResponse;
 import com.ds.masterservice.dto.response.orderService.OrderResponse;
+import com.ds.masterservice.dto.response.restaurant.OrderReqResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantAdminResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantInitResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantResponse;
@@ -105,5 +105,7 @@ public interface MasterService {
     ApiResponse<RegisterResponse> registerRestaurantManager(RestaurantManagerRequestDTO restaurantManager) throws CustomException;
 
     ApiResponse<RegisterResponse> registerDriver(DriverRegistrationRequest driverRegistrationRequest) throws CustomException;
+
+    ApiResponse<List<OrderReqResponse>> getOrdersByRestaurantId(Long restaurantId) throws CustomException;
 
 }

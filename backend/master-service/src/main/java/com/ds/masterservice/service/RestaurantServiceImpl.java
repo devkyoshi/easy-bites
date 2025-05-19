@@ -4,23 +4,31 @@ import com.ds.commons.enums.DayOfWeek;
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.exception.ExceptionCode;
 import com.ds.commons.template.ApiResponse;
-import com.ds.masterservice.dao.FoodItem;
-import com.ds.masterservice.dao.MenuCategory;
-import com.ds.masterservice.dao.Restaurant;
-import com.ds.masterservice.dao.RestaurantManager;
+import com.ds.masterservice.dao.authService.User;
+import com.ds.masterservice.dao.orderService.Order;
+import com.ds.masterservice.dao.orderService.OrderItem;
+import com.ds.masterservice.dao.restaurantService.FoodItem;
+import com.ds.masterservice.dao.restaurantService.MenuCategory;
+import com.ds.masterservice.dao.restaurantService.Restaurant;
+import com.ds.masterservice.dao.restaurantService.RestaurantManager;
 import com.ds.masterservice.dto.request.food.FoodItemRequest;
 import com.ds.masterservice.dto.request.menu.MenuCategoryCreateRequest;
 import com.ds.masterservice.dto.request.restaurant.RestaurantCreateUpdateRequest;
+import com.ds.masterservice.dto.response.OrderItemResponse;
 import com.ds.masterservice.dto.response.food.FoodItemInitResponse;
 import com.ds.masterservice.dto.response.food.FoodItemResponse;
 import com.ds.masterservice.dto.response.menu.MenuCategoryInitResponse;
 import com.ds.masterservice.dto.response.menu.MenuCategoryResponse;
+import com.ds.masterservice.dto.response.restaurant.OrderReqResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantAdminResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantInitResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantResponse;
 import com.ds.masterservice.repository.FoodItemRepository;
 import com.ds.masterservice.repository.MenuCategoryRepository;
 import com.ds.masterservice.repository.RestaurantRepository;
+import com.ds.masterservice.repository.UserRepository;
+import com.ds.masterservice.repository.orderService.OrderItemRepository;
+import com.ds.masterservice.repository.orderService.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,13 +45,19 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final MenuCategoryRepository menuCategoryRepository;
     private final FoodItemRepository foodItemRepository;
+    private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
+    private final OrderItemRepository orderItemRepository;
 
     @Autowired
-    public RestaurantServiceImpl(UserService userService, RestaurantRepository restaurantRepository, MenuCategoryRepository menuCategoryRepository, FoodItemRepository foodItemRepository) {
+    public RestaurantServiceImpl(UserService userService, RestaurantRepository restaurantRepository, MenuCategoryRepository menuCategoryRepository, FoodItemRepository foodItemRepository, OrderRepository orderRepository, UserRepository userRepository, OrderItemRepository orderItemRepository) {
         this.userService = userService;
         this.restaurantRepository = restaurantRepository;
         this.menuCategoryRepository = menuCategoryRepository;
         this.foodItemRepository = foodItemRepository;
+        this.orderRepository = orderRepository;
+        this.userRepository = userRepository;
+        this.orderItemRepository = orderItemRepository;
     }
 
 
@@ -529,10 +543,73 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
+    @Override
+    public ApiResponse<List<OrderReqResponse>> getOrdersByRestaurantId(Long restaurantId) throws CustomException {
+
+        try {
+            if(!isRestaurantExistById(restaurantId)){
+                log.error("Restaurant with ID:  {} not found", restaurantId);
+                throw new CustomException(ExceptionCode.RESTAURANT_NOT_FOUND);
+            }
+
+            List<OrderItem> orders = orderItemRepository.findByRestaurantId(restaurantId);
+
+            if (orders.isEmpty()) {
+                log.info("No orders found for restaurant with ID {}", restaurantId);
+                return ApiResponse.successResponse("No orders found for the restaurant", List.of());
+            }
+
+
+            List<OrderReqResponse> orderResponses = orders.stream()
+                    .map(orderItem -> {
+                        Order order = null;
+                        try {
+                            order = orderRepository.findById(orderItem.getOrderId())
+                                    .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_NOT_FOUND));
+                        } catch (CustomException e) {
+                            throw new RuntimeException(e);
+                        }
+                        User customer;
+                        try {
+                            customer = userRepository.findById(Math.toIntExact(order.getUserId()))
+                                    .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+                        } catch (CustomException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        return OrderReqResponse.builder()
+                                .orderId(order.getId())
+                                .orderItems(order.getItems().stream()
+                                        .map(item -> new OrderItemResponse(item.getItemId(), item.getQuantity(), item.getUnitPrice(), item.getTotalPrice(), item.getItemName(), item.getItemImage()))
+                                        .toList())
+                                .orderStatus(order.getStatus().name())
+                                .paymentStatus(order.getPaymentStatus().name())
+                                .orderDate(order.getCreatedAt().toString())
+                                .deliveryAddress(order.getDeliveryAddress())
+                                .totalAmount(order.getTotalAmount())
+                                .customerName(customer.getFirstName() + " " + customer.getLastName())
+                                .customerPhone(customer.getPhone())
+                                .build();
+                    })
+                    .toList();
+
+            return ApiResponse.successResponse("Orders fetched successfully", orderResponses);
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("An error occurred while fetching the orders: {}", e.getMessage());
+                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+    }
+
     public boolean isRestaurantExists(String name) {
         return restaurantRepository.existsByName(name);
     }
 
+    //ignore the warning
     public boolean isRestaurantExistById(Long id) {
         return restaurantRepository.existsById(id);
     }

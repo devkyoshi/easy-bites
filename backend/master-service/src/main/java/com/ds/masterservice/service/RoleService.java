@@ -1,6 +1,6 @@
 package com.ds.masterservice.service;
 
-import com.ds.masterservice.dao.Role;
+import com.ds.masterservice.dao.authService.Role;
 
 import java.util.List;
 

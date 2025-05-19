@@ -2,6 +2,7 @@ import { useUsers } from '../context/users-context.tsx'
 import { UsersActionDialog } from './users-action-dialog.tsx'
 import { UsersDeleteDialog } from './users-delete-dialog.tsx'
 import { UsersInviteDialog } from './users-invite-dialog.tsx'
+import { StaffRegistrationsDialog } from './staff-registrations-dialog.tsx'
 
 export function UsersDialogs() {
   const { open, setOpen, currentRow, setCurrentRow } = useUsers()
@@ -17,6 +18,12 @@ export function UsersDialogs() {
         key='user-invite'
         open={open === 'invite'}
         onOpenChange={() => setOpen('invite')}
+      />
+
+      <StaffRegistrationsDialog
+        key='staff-registrations'
+        open={open === 'staff-registrations'}
+        onOpenChange={() => setOpen('staff-registrations')}
       />
 
       {currentRow && (

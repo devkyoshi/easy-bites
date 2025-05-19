@@ -1,6 +1,6 @@
 package com.ds.masterservice.service;
 
-import com.ds.masterservice.dao.Role;
+import com.ds.masterservice.dao.authService.Role;
 import com.ds.masterservice.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

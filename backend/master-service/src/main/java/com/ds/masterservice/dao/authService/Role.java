@@ -1,4 +1,4 @@
-package com.ds.masterservice.dao;
+package com.ds.masterservice.dao.authService;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -20,6 +20,6 @@ public class Role {
 
     private String name;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> authorities;
 }

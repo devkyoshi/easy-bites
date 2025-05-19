@@ -1,7 +1,10 @@
 package com.ds.authservice;
 
-import com.ds.masterservice.dao.Role;
+import com.ds.masterservice.dao.authService.Role;
+import com.ds.masterservice.dao.authService.SystemAdmin;
+import com.ds.masterservice.dao.authService.User;
 import com.ds.masterservice.repository.RoleRepository;
+import com.ds.masterservice.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -10,6 +13,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 
@@ -41,6 +45,35 @@ public class AuthServiceApplication {
             repo.save(new Role(0, roleName, authorities));
             log.info("Role {} created with authorities {}", roleName, authorities);
         }
+    }
+
+    @Bean
+    CommandLineRunner initSystemAdmin(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+        log.info("Checking if system admin exists...");
+        return args -> {
+            if (userRepository.findUserByUsername("admin").isEmpty()) {
+                log.info("Creating system admin user...");
+
+                // Get the SYSTEM_ADMIN role
+                Role adminRole = roleRepository.findByName("ROLE_SYSTEM_ADMIN")
+                        .orElseThrow(() -> new RuntimeException("ROLE_SYSTEM_ADMIN not found"));
+
+                // Create the system admin user
+                SystemAdmin admin = new SystemAdmin();
+                admin.setUsername("admin");
+                admin.setPassword(passwordEncoder.encode("admin1234"));
+                admin.setFirstName("easybite");
+                admin.setLastName("admin");
+                admin.setEmail("admin@easybite.com");
+                admin.setRoles(List.of(adminRole));
+
+                // Save the admin user
+                userRepository.save(admin);
+                log.info("System admin user created successfully");
+            } else {
+                log.info("System admin user already exists");
+            }
+        };
     }
 
 }

@@ -4,6 +4,7 @@ import com.ds.apigateway.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.core.userdetails.User;
@@ -14,6 +15,7 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -36,9 +38,16 @@ public class JwtAuthenticationFilter implements WebFilter {
             return chain.filter(exchange);
         }
 
-        // You can customize roles/authorities if needed
+        // Extract role from token and set up authorities
+        String role = jwtService.extractRole(token);
+        List<SimpleGrantedAuthority> authorities = Collections.emptyList();
+
+        if (role != null && !role.isEmpty()) {
+            authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+        }
+
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                new User(username, "", Collections.emptyList()), null, Collections.emptyList());
+                new User(username, "", authorities), null, authorities);
 
         return chain.filter(exchange)
                 .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(new SecurityContextImpl(auth))));

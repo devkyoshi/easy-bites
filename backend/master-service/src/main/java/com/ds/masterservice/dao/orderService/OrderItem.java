@@ -10,7 +10,7 @@ public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    private Long orderId;
     private Long itemId;
     private String itemName;
     private String itemImage;

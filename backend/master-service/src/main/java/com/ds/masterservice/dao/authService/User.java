@@ -1,4 +1,4 @@
-package com.ds.masterservice.dao;
+package com.ds.masterservice.dao.authService;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -46,6 +46,8 @@ public class User implements UserDetails {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private String phone;
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();

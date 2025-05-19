@@ -1,9 +1,7 @@
 import {
-  IconBrowserCheck, IconBuildingStore,
-  IconChecklist,
+  IconBrowserCheck,
+  IconBuildingStore,
   IconHelp,
-  IconLayoutDashboard,
-  IconMessages,
   IconNotification,
   IconPackages,
   IconPalette,
@@ -12,9 +10,8 @@ import {
   IconUserCog,
   IconUsers,
 } from '@tabler/icons-react'
-import { AudioWaveform, Command, GalleryVerticalEnd } from 'lucide-react'
-import {NavItem, type SidebarData} from '../types.ts'
-import {USER_TYPES} from "@/config/user-types.ts";
+import { USER_TYPES } from '@/config/user-types.ts'
+import { NavItem, type SidebarData } from '../types.ts'
 
 export const getSidebarData = (userRole?: string): SidebarData => ({
   user: {
@@ -22,84 +19,57 @@ export const getSidebarData = (userRole?: string): SidebarData => ({
     email: 'satnaingdev@gmail.com',
     avatar: '/avatars/shadcn.jpg',
   },
-  teams: [
-    {
-      name: 'Shadcn Admin',
-      logo: Command,
-      plan: 'Vite + ShadcnUI',
-    },
-    {
-      name: 'Acme Inc',
-      logo: GalleryVerticalEnd,
-      plan: 'Enterprise',
-    },
-    {
-      name: 'Acme Corp.',
-      logo: AudioWaveform,
-      plan: 'Startup',
-    },
-  ],
   navGroups: [
     {
       title: 'General',
       items: [
         // Common items for all roles
-        ...(userRole === USER_TYPES.ROLE_CUSTOMER ? [{
-          title: 'Dashboard',
-          url: '/',
-          icon: IconLayoutDashboard,
-        },
-          {
-            title: 'Restaurants',
-            url: '/restaurants',
-            icon: IconBuildingStore,
-          } ,{
-            title: 'Deliveries',
-            url: '/deliveries',
-            icon: IconBuildingStore,
-          }
-          ,{
-            title: 'My Orders',
-            url: '/orders',
-            icon: IconPackages,
-          } as NavItem] : []),
+        ...(userRole === USER_TYPES.ROLE_CUSTOMER
+          ? [
+              {
+                title: 'Restaurants',
+                url: '/restaurants',
+                icon: IconBuildingStore,
+              },
+              {
+                title: 'Deliveries',
+                url: '/deliveries',
+                icon: IconBuildingStore,
+              },
+              {
+                title: 'My Orders',
+                url: '/orders',
+                icon: IconPackages,
+              } as NavItem,
+            ]
+          : []),
 
         //Restaurant Admin specific items
-        ...(userRole === USER_TYPES.ROLE_RESTAURANT_MANAGER ? [{
-          title: 'Dashboard',
-          url: '/',
-          icon: IconLayoutDashboard,
-        },
-          {
-            title: 'Restaurant Management',
-            url: '/restaurants/restaurant-management',
-            icon: IconBuildingStore,
-          } as NavItem] : []),
+        ...(userRole === USER_TYPES.ROLE_RESTAURANT_MANAGER
+          ? [
+              {
+                title: 'Restaurant Management',
+                url: '/restaurants/restaurant-management',
+                icon: IconBuildingStore,
+              } as NavItem,
+              {
+                title: 'Order Requests',
+                url: '/restaurants/restaurant-orders',
+                icon: IconBuildingStore,
+              } as NavItem,
+            ]
+          : []),
 
         // System Admin specific items
-        ...(userRole === USER_TYPES.ROLE_SYSTEM_ADMIN ? [
-          {
-            title: 'Tasks',
-            url: '/tasks',
-            icon: IconChecklist,
-          },
-          {
-            title: 'Apps',
-            url: '/apps',
-            icon: IconPackages,
-          },
-          {
-            title: 'Chats',
-            url: '/chats',
-            badge: '3',
-            icon: IconMessages,
-          },
-          {
-            title: 'Users',
-            url: '/users',
-            icon: IconUsers,
-          }
-        ] : []),
+        ...(userRole === USER_TYPES.ROLE_SYSTEM_ADMIN
+          ? [
+              {
+                title: 'Users',
+                url: '/users',
+                icon: IconUsers,
+              },
+            ]
+          : []),
       ].filter(Boolean) as NavItem[],
     },
 
@@ -147,9 +117,6 @@ export const getSidebarData = (userRole?: string): SidebarData => ({
           url: '/tasks',
           icon: IconHelp,
         },
-
-
-
       ],
     },
   ],

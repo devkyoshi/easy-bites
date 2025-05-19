@@ -1,15 +1,16 @@
 package com.ds.masterservice.dto.response;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Data
-@Getter
-@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class OrderItemResponse {
     private Long itemId;
     private int quantity;
     private double unitPrice;
     private double totalPrice;
+    private String itemName;
+    private String itemImage;
 }

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { USER_TYPES } from '@/config/user-types.ts'
 import { LoginRequest } from '@/services/auth-service.ts'
 import { toast } from 'sonner'
 import { useAuth } from '@/stores/auth-context.tsx'
@@ -53,13 +54,32 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         username: data.username,
         password: data.password,
       }
-      await signIn(creds)
+      const loggedUser = await signIn(creds)
 
       toast.success('Logged in successfully!', {
         duration: 2000,
         position: 'top-center',
       })
-      navigate({ to: '/' }).then()
+
+      if (loggedUser?.role === USER_TYPES.ROLE_CUSTOMER) {
+        navigate({ to: '/restaurants' }).then()
+        return
+      }
+
+      if (loggedUser?.role === USER_TYPES.ROLE_RESTAURANT_MANAGER) {
+        navigate({ to: '/restaurants/restaurant-management' }).then()
+        return
+      }
+
+      if (loggedUser?.role === USER_TYPES.ROLE_SYSTEM_ADMIN) {
+        navigate({ to: '/users' }).then()
+        return
+      }
+
+      if (loggedUser?.role === USER_TYPES.ROLE_DELIVERY_PERSON) {
+        navigate({ to: '/deliveries' }).then()
+        return
+      }
     } catch (err: any) {
       toast.error(
         formatBackendMessage(err.message as string) || 'Login failed',

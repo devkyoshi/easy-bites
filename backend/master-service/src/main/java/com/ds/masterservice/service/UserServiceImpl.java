@@ -11,8 +11,9 @@ import com.ds.commons.exception.CustomException;
 import com.ds.commons.exception.ExceptionCode;
 import com.ds.commons.template.ApiResponse;
 
-import com.ds.masterservice.dao.*;
+import com.ds.masterservice.dao.authService.*;
 import com.ds.masterservice.dao.deliveryService.DeliveryPerson;
+import com.ds.masterservice.dao.restaurantService.RestaurantManager;
 import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
 import com.ds.masterservice.dto.request.user.RestaurantManagerRequestDTO;
 import com.ds.masterservice.dto.response.deliveryService.DriverResponse;
@@ -365,4 +366,47 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public List<StaffRegistration> getAllStaffRegistrations() {
+        return staffRegistrationRepository.findAll();
+    }
+
+    @Override
+    public boolean approveStaffRegistration(Long id) {
+        try {
+            StaffRegistration staffRegistration = staffRegistrationRepository.findById(id)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
+            staffRegistration.setIsApproved(true);
+            staffRegistrationRepository.save(staffRegistration);
+
+            return true;
+        } catch (Exception e) {
+            log.error("Error approving staff registration: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean rejectStaffRegistration(Long id) {
+        try {
+            StaffRegistration staffRegistration = staffRegistrationRepository.findById(id)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
+            // Delete the staff registration and associated user
+            User user = staffRegistration.getUser();
+            staffRegistrationRepository.delete(staffRegistration);
+            userRepository.delete(user);
+
+            return true;
+        } catch (Exception e) {
+            log.error("Error rejecting staff registration: {}", e.getMessage());
+            return false;
+        }
+    }
 }

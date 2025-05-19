@@ -68,4 +68,8 @@ The API Gateway is the entry point for all requests and routes them to the appro
 - The Authentication Service is built using Springboot, and it's responsible for user registration, user authentication and all user related endpoints. 
 - Factory design pattern is used to create users and roles. The service uses JWT for authentication and authorization.
 
-
+System Admin Logins:
+- Email:
+- Password: admin1234
+- Role: SYSTEM_ADMIN
+- UserName: admin

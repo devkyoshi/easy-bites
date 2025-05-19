@@ -125,7 +125,9 @@ export const columns: ColumnDef<User>[] = [
           {userType.icon && (
             <userType.icon size={16} className='text-muted-foreground' />
           )}
-          <span className='text-sm capitalize'>{row.getValue('role')}</span>
+          <span className='text-sm capitalize'>
+            {formatRole(row.getValue('role'))}
+          </span>
         </div>
       )
     },
@@ -140,3 +142,11 @@ export const columns: ColumnDef<User>[] = [
     cell: DataTableRowActions,
   },
 ]
+
+const formatRole = (value: string) => {
+  return value
+    .replace(/^ROLE_/, '')
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+}

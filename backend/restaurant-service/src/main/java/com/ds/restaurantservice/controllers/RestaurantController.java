@@ -8,6 +8,7 @@ import com.ds.masterservice.dto.request.menu.MenuCategoryCreateRequest;
 import com.ds.masterservice.dto.request.restaurant.RestaurantCreateUpdateRequest;
 import com.ds.masterservice.dto.response.food.FoodItemResponse;
 import com.ds.masterservice.dto.response.menu.MenuCategoryResponse;
+import com.ds.masterservice.dto.response.restaurant.OrderReqResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantAdminResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantInitResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantResponse;
@@ -105,5 +106,11 @@ public class RestaurantController {
     public ApiResponse<RestaurantAdminResponse> getAllRestaurantsForAdmin(@PathVariable("adminId") Integer adminId) throws CustomException {
         log.info("Attempting to get restaurant for admin");
         return masterService.getAdminRestaurantData(adminId);
+    }
+
+    @GetMapping("/{restaurantId}/orders")
+    public ApiResponse<List<OrderReqResponse>> getOrdersByRestaurantId(@PathVariable("restaurantId") Long restaurantId) throws CustomException {
+        log.info("Attempting to get orders for restaurant with ID: {}", restaurantId);
+        return masterService.getOrdersByRestaurantId(restaurantId);
     }
 }

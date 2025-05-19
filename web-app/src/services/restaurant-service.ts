@@ -3,6 +3,8 @@ import {
   AddFoodItemRequest,
   AdminRestaurantResult,
   IRestaurantDetails,
+  OrderAcceptance,
+  RestaurantOrder,
 } from '@/services/types/restaurant.type.ts'
 import { toast } from 'sonner'
 
@@ -228,6 +230,44 @@ export const createRestaurant = async (
     toast.error(
       (e as any).response.data.message ||
         'Error creating restaurant. Please try again later.',
+      {
+        duration: 5000,
+        position: 'top-center',
+      }
+    )
+  }
+}
+
+export const getRestaurantOrders = async (restaurantId: number) => {
+  try {
+    const response = await api.get(`/api/restaurants/${restaurantId}/orders`)
+
+    return response.data.result as RestaurantOrder[]
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(e)
+  }
+}
+
+export const updateOrderStatus = async (request: OrderAcceptance) => {
+  try {
+    const response = await api.put(
+      `/api/order/${request.orderId}/status`,
+      request
+    )
+
+    if (response.data.success) {
+      toast.success('Order status updated successfully', {
+        duration: 5000,
+        position: 'top-center',
+      })
+    }
+
+    return response.data
+  } catch (e) {
+    toast.error(
+      (e as any).response.data.message ||
+        'Error updating order status. Please try again later.',
       {
         duration: 5000,
         position: 'top-center',

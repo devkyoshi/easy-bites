@@ -22,7 +22,7 @@ interface AuthUser {
 interface AuthContextType {
   currentUser: AuthUser | null
   accessToken: string
-  signIn: (creds: LoginRequest) => Promise<void>
+  signIn: (creds: LoginRequest) => Promise<AuthUser>
   logout: () => void
 }
 
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval)
   }, [checkAuthState])
 
-  // signIn calls your service, then updates state & storage
+  // signIn calls your service, then updates state and storage
   const signIn = async ({ username, password }: LoginRequest) => {
     const data = await loginUser({ username, password })
 
@@ -97,6 +97,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // persist
     localStorage.setItem('auth_user', JSON.stringify(user))
     localStorage.setItem('access_token', accessToken)
+
+    return data
   }
 
   const logout = () => {
