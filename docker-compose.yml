@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mysql:
     image: mysql:8.0
@@ -17,7 +15,7 @@ services:
 
   api-gateway:
     build:
-      context: .
+      context: ./backend
       dockerfile: api-gateway/Dockerfile
     depends_on:
       mysql:
@@ -26,12 +24,21 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/easy-bites
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: password
+      AUTH_SERVICE_URI: http://auth-service:8081
+      RESTAURANT_SERVICE_URI: http://restaurant-service:8082
+      DELIVERY_SERVICE_URI: http://delivery-service:8083
+      ORDER_SERVICE_URI: http://order-service:8084
     ports:
       - "8080:8080"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   auth-service:
     build:
-      context: .
+      context: ./backend
       dockerfile: auth-service/Dockerfile
     depends_on:
       mysql:
@@ -42,10 +49,15 @@ services:
       SPRING_DATASOURCE_PASSWORD: password
     ports:
       - "8081:8081"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   restaurant-service:
     build:
-      context: .
+      context: ./backend
       dockerfile: restaurant-service/Dockerfile
     depends_on:
       mysql:
@@ -56,10 +68,15 @@ services:
       SPRING_DATASOURCE_PASSWORD: password
     ports:
       - "8082:8082"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   delivery-service:
     build:
-      context: .
+      context: ./backend
       dockerfile: delivery-service/Dockerfile
     depends_on:
       mysql:
@@ -70,10 +87,15 @@ services:
       SPRING_DATASOURCE_PASSWORD: password
     ports:
       - "8083:8083"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8083/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   order-service:
     build:
-      context: .
+      context: ./backend
       dockerfile: order-service/Dockerfile
     depends_on:
       mysql:
@@ -84,3 +106,21 @@ services:
       SPRING_DATASOURCE_PASSWORD: password
     ports:
       - "8084:8084"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8084/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./web-app
+      dockerfile: Dockerfile
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    environment:
+      VITE_API_URL: http://localhost:8080
+      VITE_PUBLIC_SOCKET_URL: http://localhost:8085
+      VITE_PUBLIC_MAP_TILE_URL: https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+      VITE_ORS_API_KEY: 5b3ce3597851110001cf6248e6af1d6ae1d14b68a15dfda46a0fd97a

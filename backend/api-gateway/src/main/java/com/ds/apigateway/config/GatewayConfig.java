@@ -1,5 +1,6 @@
 package com.ds.apigateway.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
@@ -8,17 +9,29 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class GatewayConfig {
+    @Value("${AUTH_SERVICE_URI:http://localhost:8081}")
+    private String authServiceUri;
+
+    @Value("${RESTAURANT_SERVICE_URI:http://localhost:8082}")
+    private String restaurantServiceUri;
+
+    @Value("${DELIVERY_SERVICE_URI:http://localhost:8083}")
+    private String deliveryServiceUri;
+
+    @Value("${ORDER_SERVICE_URI:http://localhost:8084}")
+    private String orderServiceUri;
+
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route("auth-service", r -> r.path("/auth/**", "/admin/**")
-                        .uri("http://localhost:8081/"))
+                        .uri(authServiceUri))
                 .route("restaurant-service", r -> r.path("/api/restaurants/**")
-                        .uri("http://localhost:8082/"))
+                        .uri(restaurantServiceUri))
                 .route("delivery-service", r -> r.path("/api/delivery/**")
-                        .uri("http://localhost:8084/"))
+                        .uri(deliveryServiceUri))
                 .route("order-service", r -> r.path("/api/order/**")
-                        .uri("http://localhost:8083/"))
+                        .uri(orderServiceUri))
                 .build();
     }
 

@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -29,6 +30,7 @@ public class AuthServiceApplication {
     }
 
     @Bean
+    @Order(1)
     CommandLineRunner initRoles(RoleRepository roleRepo) {
 
         log.info("Initializing roles...");
@@ -48,6 +50,7 @@ public class AuthServiceApplication {
     }
 
     @Bean
+    @Order(2)
     CommandLineRunner initSystemAdmin(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         log.info("Checking if system admin exists...");
         return args -> {

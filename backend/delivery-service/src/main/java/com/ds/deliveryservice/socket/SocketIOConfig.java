@@ -21,7 +21,7 @@ public class SocketIOConfig {
         com.corundumstudio.socketio.Configuration config = new com.corundumstudio.socketio.Configuration();
         config.setHostname(host);
         config.setPort(port);
-        config.setOrigin("http://localhost:5173"); // Temporarily allow all origins for testing
+        config.setOrigin("*"); // Temporarily allow all origins for testing
         config.setPingInterval(25000);
         config.setPingTimeout(60000);
 
