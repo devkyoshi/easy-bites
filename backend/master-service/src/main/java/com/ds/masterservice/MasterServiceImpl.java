@@ -185,7 +185,7 @@ public class MasterServiceImpl implements MasterService {
     }
 
     @Override
-    public ApiResponse<List<DeliveryHistoryResponse>> getDeliveryHistory(Long driverId) throws CustomException {
+    public ApiResponse<List<DeliveryResponse>> getDeliveryHistory(Long driverId) throws CustomException {
         return deliveryService.getDeliveryHistory(driverId);
     }
 

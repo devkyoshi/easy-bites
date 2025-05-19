@@ -67,7 +67,7 @@ public interface DeliveryService {
      * @return ApiResponse containing a list of DeliveryHistoryResponse objects
      * @throws CustomException if retrieval fails
      */
-    ApiResponse<List<DeliveryHistoryResponse>> getDeliveryHistory(Long driverId) throws CustomException;
+    ApiResponse<List<DeliveryResponse>> getDeliveryHistory(Long driverId) throws CustomException;
 
     /**
      * Retrieve all deliveries in the system.

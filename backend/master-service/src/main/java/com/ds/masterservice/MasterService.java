@@ -72,7 +72,7 @@ public interface MasterService {
 
     ApiResponse<DeliveryResponse> completeDelivery(Long deliveryId, DeliveryCompletionRequest dto) throws CustomException;
 
-    ApiResponse<List<DeliveryHistoryResponse>> getDeliveryHistory(Long driverId) throws CustomException;
+    ApiResponse<List<DeliveryResponse>> getDeliveryHistory(Long driverId) throws CustomException;
 
     ApiResponse<List<DeliveryResponse>> getAllDeliveries() throws CustomException;
 

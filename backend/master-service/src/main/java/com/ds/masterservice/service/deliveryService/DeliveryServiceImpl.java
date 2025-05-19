@@ -428,7 +428,7 @@ public class DeliveryServiceImpl implements DeliveryService {
      */
     @Override
     @Transactional
-    public ApiResponse<List<DeliveryHistoryResponse>> getDeliveryHistory(Long driverId) throws CustomException {
+    public ApiResponse<List<DeliveryResponse>> getDeliveryHistory(Long driverId) throws CustomException {
         // Verify driver exists
         DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
                 .orElseThrow(() -> {
@@ -444,8 +444,8 @@ public class DeliveryServiceImpl implements DeliveryService {
         }
 
         // Convert to response DTOs
-        List<DeliveryHistoryResponse> response = deliveries.stream()
-                .map(this::mapToDeliveryHistoryResponse)
+        List<DeliveryResponse> response = deliveries.stream()
+                .map(this::convertToResponse)
                 .collect(Collectors.toList());
 
         return ApiResponse.successResponse("Delivery history fetched", response);
@@ -682,43 +682,5 @@ public class DeliveryServiceImpl implements DeliveryService {
         return response;
     }
 
-    /**
-     * Converts a Deliveries entity to a DeliveryHistoryResponse DTO.
-     *
-     * @param delivery the delivery entity to convert
-     * @return converted DeliveryHistoryResponse
-     */
-    private DeliveryHistoryResponse mapToDeliveryHistoryResponse(Deliveries delivery) {
-        DeliveryHistoryResponse response = new DeliveryHistoryResponse();
-
-        // Map basic delivery fields
-        response.setId(delivery.getId());
-        response.setPickupLat(delivery.getPickupLat());
-        response.setPickupLng(delivery.getPickupLng());
-        response.setDeliveryLat(delivery.getDeliveryLat());
-        response.setDeliveryLng(delivery.getDeliveryLng());
-        response.setStatus(delivery.getStatus().name());
-        response.setNotes(delivery.getNotes());
-        response.setProofImage(delivery.getProofImage());
-        response.setRating(delivery.getRating());
-        response.setRatingComment(delivery.getRatingComment());
-        response.setCreatedAt(delivery.getCreatedAt());
-        response.setUpdatedAt(delivery.getUpdatedAt());
-
-        // Map order details
-        if (delivery.getOrder() != null) {
-            response.setOrderId(delivery.getOrder().getId());
-            response.setDeliveryAddress(delivery.getOrder().getDeliveryAddress());
-            response.setRestaurantName(delivery.getOrder().getRestaurantName());
-        }
-
-        // Map driver details
-        if (delivery.getDriver() != null) {
-            response.setDriverId((long) delivery.getDriver().getId());
-            response.setDriverName(delivery.getDriver().getFirstName() + " " + delivery.getDriver().getLastName());
-        }
-
-        return response;
-    }
 }
 

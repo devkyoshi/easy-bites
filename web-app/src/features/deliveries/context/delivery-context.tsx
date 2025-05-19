@@ -134,14 +134,14 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
 
         const interval = setInterval(async () => {
             try {
-                await api.put(`/drivers/${state.activeDelivery!.driverId}/location?lat=${currentLocation!.lat}&lng=${currentLocation!.lng}`);
+                await api.put(`/api/delivery/drivers/${state.activeDelivery!.driverId}/location?lat=${currentLocation!.lat}&lng=${currentLocation!.lng}`);
             } catch (error) {
                 console.error('Failed to update location:', error);
             }
         }, 15000);
 
         return () => clearInterval(interval);
-    }, [state.activeDelivery?.driverId, currentLocation?.lat, currentLocation?.lng]);
+    }, [currentLocation?.lat, currentLocation?.lng]);
 
     const refreshDriverLocation = async (driverId: number): Promise<ILocation> => {
         try {

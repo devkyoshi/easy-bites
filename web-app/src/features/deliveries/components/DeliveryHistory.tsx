@@ -134,11 +134,13 @@ type EnrichedDelivery = {
 
 export const DeliveryHistory = ({ driverId }: { driverId: number }) => {
     const { deliveryHistory, loading, error } = useDelivery();
+    console.log("hdhd",deliveryHistory);
     const navigate = useNavigate();
     const [enrichedDeliveries, setEnrichedDeliveries] = useState<EnrichedDelivery[]>([]);
     const [enriching, setEnriching] = useState(true);
 
     const handleNavigateToDeliveryDetail = (delivery: EnrichedDelivery) => {
+        console.log("enriched:",delivery);
         navigate({
             to: '/deliveries/delivery-details',
             state: { deliveryId: delivery.deliveryId }
@@ -161,6 +163,7 @@ export const DeliveryHistory = ({ driverId }: { driverId: number }) => {
                         const restaurantNames = Array.from(
                             new Set(order.items.map(item => item.restaurantName))
                         );
+                        console.log("deliveryid", delivery.deliveryId);
 
                         return {
                             deliveryId: delivery.deliveryId, // Ensure `id` is correctly mapped
