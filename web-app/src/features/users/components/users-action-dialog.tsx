@@ -26,6 +26,9 @@ import { PasswordInput } from '@/components/password-input.tsx'
 import { SelectDropdown } from '@/components/select-dropdown.tsx'
 import { userTypes } from '../data/data.ts'
 import { User } from '../data/schema.ts'
+import { registerUser } from '@/services/auth-service.ts'
+import { registerDeliveryPerson, registerRestaurantManager } from '@/services/staff-service.ts'
+import { toast } from 'sonner'
 
 const formSchema = z
   .object({
@@ -117,10 +120,59 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
         },
   })
 
-  const onSubmit = (values: UserForm) => {
-    form.reset()
-    showSubmittedData(values)
-    onOpenChange(false)
+  const onSubmit = async (values: UserForm) => {
+    try {
+      if (values.role === 'RESTAURANT_MANAGER') {
+        await registerRestaurantManager({
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          password: values.password,
+          username: values.username,
+          userType: 'RESTAURANT_MANAGER',
+          roles: ['ROLE_RESTAURANT_MANAGER'],
+          licenseNumber: values.phoneNumber // Using phoneNumber as licenseNumber for simplicity
+        })
+      } else if (values.role === 'DELIVERY_PERSON') {
+        await registerDeliveryPerson({
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          password: values.password,
+          username: values.username,
+          userType: 'DELIVERY_PERSON',
+          roles: ['ROLE_DELIVERY_PERSON'],
+          vehicleType: 'BIKE', // Default value
+          vehicleNumber: values.phoneNumber, // Using phoneNumber as vehicleNumber for simplicity
+          licenseNumber: values.phoneNumber // Using phoneNumber as licenseNumber for simplicity
+        })
+      } else if (values.role === 'CUSTOMER') {
+        await registerUser({
+          firstName: values.firstName,
+          lastName: values.lastName,
+          username: values.username,
+          password: values.password,
+          email: values.email,
+          address: '',
+          phoneNumber: values.phoneNumber
+        })
+      } else {
+        // For other roles, just show the data for now
+        showSubmittedData(values)
+      }
+
+      form.reset()
+      onOpenChange(false)
+
+      // Show success message
+      toast.success(`User ${values.username} created successfully!`)
+
+      // Refresh the user list
+      window.location.reload()
+    } catch (error) {
+      // Error is already handled in the service functions
+      console.error('Error creating user:', error)
+    }
   }
 
   const isPasswordTouched = !!form.formState.dirtyFields.password

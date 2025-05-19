@@ -82,6 +82,7 @@ public class AuthController {
     }
 
 
+
 /*    @PostMapping("/update-customer")
     public ApiResponse<RegisterResponse> updateCustomer(@RequestBody CustomerUserRequest registerRequest) throws CustomException {
         log.info("Attempting to update user with username: {}", registerRequest.getUsername());

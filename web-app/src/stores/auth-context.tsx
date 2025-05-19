@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval)
   }, [checkAuthState])
 
-  // signIn calls your service, then updates state & storage
+  // signIn calls your service, then updates state and storage
   const signIn = async ({ username, password }: LoginRequest) => {
     const data = await loginUser({ username, password })
 

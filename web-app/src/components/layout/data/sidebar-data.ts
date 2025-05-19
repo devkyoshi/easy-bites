@@ -1,9 +1,7 @@
 import {
   IconBrowserCheck,
   IconBuildingStore,
-  IconChecklist,
   IconHelp,
-  IconMessages,
   IconNotification,
   IconPackages,
   IconPalette,
@@ -65,22 +63,6 @@ export const getSidebarData = (userRole?: string): SidebarData => ({
         // System Admin specific items
         ...(userRole === USER_TYPES.ROLE_SYSTEM_ADMIN
           ? [
-              {
-                title: 'Tasks',
-                url: '/tasks',
-                icon: IconChecklist,
-              },
-              {
-                title: 'Apps',
-                url: '/apps',
-                icon: IconPackages,
-              },
-              {
-                title: 'Chats',
-                url: '/chats',
-                badge: '3',
-                icon: IconMessages,
-              },
               {
                 title: 'Users',
                 url: '/users',
