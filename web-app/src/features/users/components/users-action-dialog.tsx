@@ -1,8 +1,12 @@
-'use client'
-
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { registerUser } from '@/services/auth-service.ts'
+import {
+  registerDeliveryPerson,
+  registerRestaurantManager,
+} from '@/services/staff-service.ts'
+import { toast } from 'sonner'
 import { showSubmittedData } from '@/utils/show-submitted-data.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import {
@@ -26,9 +30,6 @@ import { PasswordInput } from '@/components/password-input.tsx'
 import { SelectDropdown } from '@/components/select-dropdown.tsx'
 import { userTypes } from '../data/data.ts'
 import { User } from '../data/schema.ts'
-import { registerUser } from '@/services/auth-service.ts'
-import { registerDeliveryPerson, registerRestaurantManager } from '@/services/staff-service.ts'
-import { toast } from 'sonner'
 
 const formSchema = z
   .object({
@@ -122,7 +123,7 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
 
   const onSubmit = async (values: UserForm) => {
     try {
-      if (values.role === 'RESTAURANT_MANAGER') {
+      if (values.role === 'ROLE_RESTAURANT_MANAGER') {
         await registerRestaurantManager({
           firstName: values.firstName,
           lastName: values.lastName,
@@ -131,9 +132,9 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
           username: values.username,
           userType: 'RESTAURANT_MANAGER',
           roles: ['ROLE_RESTAURANT_MANAGER'],
-          licenseNumber: values.phoneNumber // Using phoneNumber as licenseNumber for simplicity
+          licenseNumber: values.phoneNumber, // Using phoneNumber as licenseNumber for simplicity
         })
-      } else if (values.role === 'DELIVERY_PERSON') {
+      } else if (values.role === 'ROLE_DELIVERY_PERSON') {
         await registerDeliveryPerson({
           firstName: values.firstName,
           lastName: values.lastName,
@@ -144,9 +145,9 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
           roles: ['ROLE_DELIVERY_PERSON'],
           vehicleType: 'BIKE', // Default value
           vehicleNumber: values.phoneNumber, // Using phoneNumber as vehicleNumber for simplicity
-          licenseNumber: values.phoneNumber // Using phoneNumber as licenseNumber for simplicity
+          licenseNumber: values.phoneNumber, // Using phoneNumber as licenseNumber for simplicity
         })
-      } else if (values.role === 'CUSTOMER') {
+      } else if (values.role === 'ROLE_CUSTOMER') {
         await registerUser({
           firstName: values.firstName,
           lastName: values.lastName,
@@ -154,7 +155,7 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
           password: values.password,
           email: values.email,
           address: '',
-          phoneNumber: values.phoneNumber
+          phoneNumber: values.phoneNumber,
         })
       } else {
         // For other roles, just show the data for now
@@ -164,7 +165,7 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
       form.reset()
       onOpenChange(false)
 
-      // Show success message
+      // Show a success message
       toast.success(`User ${values.username} created successfully!`)
 
       // Refresh the user list
