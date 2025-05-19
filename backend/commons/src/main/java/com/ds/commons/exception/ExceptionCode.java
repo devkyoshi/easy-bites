@@ -57,7 +57,8 @@ public enum ExceptionCode {
     INVALID_ORDER_STATUS("INVALID_ORDER_STATUS"),
     ORDER_ITEM_NOT_FOUND("No item found"),
     NO_AVAILABLE_DRIVERS("No drivers are currently available."),
-    NO_COORDINATES_FOUND("No coordinates found for the address"),;
+    NO_COORDINATES_FOUND("No coordinates found for the address"),
+    SOCKET_ERROR("Encountered an socket issue");
 
     private final String exceptionCode;
 }

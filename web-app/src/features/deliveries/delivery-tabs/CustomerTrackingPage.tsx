@@ -66,7 +66,7 @@ export function CustomerTrackingPage() {
 
     return (
         <div className="container mx-auto p-4 max-w-6xl">
-            <h1 className="text-2xl font-bold mb-6">Track Your Delivery #{delivery.id}</h1>
+            <h1 className="text-2xl font-bold mb-6">Track Your Delivery #{delivery.deliveryId}</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
@@ -132,7 +132,7 @@ export function CustomerTrackingPage() {
                     {delivery.status === 'DELIVERED' && !delivery.rating && (
                         <Card className="p-6">
                             <h2 className="text-xl font-semibold mb-4">Rate Your Delivery</h2>
-                            <DeliveryRating deliveryId={delivery.id} />
+                            <DeliveryRating deliveryId={delivery.deliveryId} />
                         </Card>
                     )}
                 </div>

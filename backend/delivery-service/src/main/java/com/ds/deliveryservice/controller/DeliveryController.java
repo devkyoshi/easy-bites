@@ -1,5 +1,6 @@
 package com.ds.deliveryservice.controller;
 
+import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.ds.commons.exception.CustomException;
 import com.ds.commons.exception.ExceptionCode;
@@ -38,13 +39,15 @@ public class DeliveryController {
 
     private final MasterService masterService;
     private final SocketIOServer socketServer;
+    private final DeliverySocketHandler deliverySocketHandler;
     private final OrderServiceImpl orderServiceImpl;
     @Autowired(required = false)
     private Optional<GeocodingUtil> geocodingUtil;
 
-    public DeliveryController(MasterService masterService, SocketIOServer socketServer, OrderServiceImpl orderServiceImpl) {
+    public DeliveryController(MasterService masterService, SocketIOServer socketServer, DeliverySocketHandler deliverySocketHandler, OrderServiceImpl orderServiceImpl) {
         this.masterService = masterService;
         this.socketServer = socketServer;
+        this.deliverySocketHandler = deliverySocketHandler;
         this.orderServiceImpl = orderServiceImpl;
     }
 
@@ -218,15 +221,21 @@ public class DeliveryController {
     @PutMapping("/drivers/{driverId}/location")
     public ApiResponse<LocationUpdateResponse> updateLocation(
             @PathVariable("driverId") Long driverId,
-            @RequestParam BigDecimal lat,
-            @RequestParam BigDecimal lng
+            @RequestParam(name = "lat") BigDecimal lat,
+            @RequestParam(name = "lng") BigDecimal lng
     ) throws CustomException {
         log.info("Updating location for driver ID: {}", driverId);
         ApiResponse<LocationUpdateResponse> response = masterService.updateLocation(driverId, lat, lng);
 
-        // Broadcast location update to relevant parties
-        socketServer.getClient(UUID.fromString(driverId.toString())).sendEvent("locationUpdated",
-                new DeliverySocketHandler.LocationUpdate(lat, lng));
+        // Use the injected handler
+        UUID socketId = deliverySocketHandler.getSocketIdForDriver(driverId);
+        if (socketId != null) {
+            SocketIOClient client = socketServer.getClient(socketId);
+            if (client != null) {
+                client.sendEvent("locationUpdated",
+                        new DeliverySocketHandler.LocationUpdate(lat, lng));
+            }
+        }
 
         return response;
     }

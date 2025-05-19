@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -21,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DeliverySocketHandler {
 
     private final SocketIOServer server;
+    private final Map<Long, UUID> driverSocketMap = new ConcurrentHashMap<>();
     private final Map<String, SocketIOClient> driverClients = new ConcurrentHashMap<>();
 
     public DeliverySocketHandler(SocketIOServer server) {
@@ -32,21 +34,41 @@ public class DeliverySocketHandler {
         log.debug("Received event {} with data {}", eventName, Arrays.toString(data));
     }
 
+//    @OnConnect
+//    public void onConnect(SocketIOClient client) {
+//        String driverId = client.getHandshakeData().getSingleUrlParam("driverId");
+//        driverClients.put(driverId, client);
+//        log.info("Driver {} connected", driverId);
+//
+//        // Join area room based on driver's location
+//        client.joinRoom("driver:" + driverId);
+//    }
+//
+//    @OnDisconnect
+//    public void onDisconnect(SocketIOClient client) {
+//        String driverId = client.getHandshakeData().getSingleUrlParam("driverId");
+//        driverClients.remove(driverId);
+//        log.info("Driver {} disconnected", driverId);
+//    }
+
     @OnConnect
     public void onConnect(SocketIOClient client) {
-        String driverId = client.getHandshakeData().getSingleUrlParam("driverId");
-        driverClients.put(driverId, client);
-        log.info("Driver {} connected", driverId);
-
-        // Join area room based on driver's location
-        client.joinRoom("driver:" + driverId);
+        String driverIdParam = client.getHandshakeData().getSingleUrlParam("driverId");
+        if (driverIdParam != null) {
+            try {
+                Long driverId = Long.parseLong(driverIdParam);
+                driverSocketMap.put(driverId, client.getSessionId());
+                client.joinRoom("driver:" + driverId);
+                log.info("Driver {} connected with session {}", driverId, client.getSessionId());
+            } catch (NumberFormatException e) {
+                log.error("Invalid driverId format: {}", driverIdParam);
+            }
+        }
     }
 
     @OnDisconnect
     public void onDisconnect(SocketIOClient client) {
-        String driverId = client.getHandshakeData().getSingleUrlParam("driverId");
-        driverClients.remove(driverId);
-        log.info("Driver {} disconnected", driverId);
+        driverSocketMap.values().remove(client.getSessionId());
     }
 
     @OnEvent("joinDriverRoom")
@@ -79,6 +101,10 @@ public class DeliverySocketHandler {
         String driverId = client.getHandshakeData().getSingleUrlParam("driverId");
         log.info("New order available for driver {}", driverId);
         client.sendEvent("newOrderAvailable", order);
+    }
+
+    public UUID getSocketIdForDriver(Long driverId) {
+        return driverSocketMap.get(driverId);
     }
 
     // Event classes

@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 export const PhotoVerification = ({
@@ -17,7 +17,9 @@ export const PhotoVerification = ({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
-                <DialogHeader>Verify Your Photo</DialogHeader>
+                <DialogHeader>
+                    <DialogTitle>Verify Your Photo</DialogTitle>
+                </DialogHeader>
                 <div className="space-y-4">
                     <div className="border rounded-lg overflow-hidden">
                         <img

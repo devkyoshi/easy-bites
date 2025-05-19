@@ -67,7 +67,7 @@ export const DeliveryCompletion = ({ deliveryId }: { deliveryId: number }) => {
 
         setIsSubmitting(true);
         try {
-            const response = await api.post(
+            await api.post(
                 `/api/delivery/delivery/complete`,
                 {
                     completed: isCompleted,

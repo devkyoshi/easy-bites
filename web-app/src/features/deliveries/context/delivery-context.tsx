@@ -134,10 +134,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
 
         const interval = setInterval(async () => {
             try {
-                await api.put(`/drivers/${state.activeDelivery!.driverId}/location`, {
-                    lat: currentLocation!.lat,
-                    lng: currentLocation!.lng
-                });
+                await api.put(`/drivers/${state.activeDelivery!.driverId}/location?lat=${currentLocation!.lat}&lng=${currentLocation!.lng}`);
             } catch (error) {
                 console.error('Failed to update location:', error);
             }
@@ -245,10 +242,8 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
         const location = { lat, lng, timestamp: Date.now() };
 
         try {
-            await api.put(`/api/delivery/drivers/${state.driver.driverID}/location`, {
-                lat,
-                lng
-            });
+            await api.put(`/api/delivery/drivers/${state.driver.driverID}/location?lat=${lat}&lng=${lng}`);
+
 
             setState(prev => ({
                 ...prev,

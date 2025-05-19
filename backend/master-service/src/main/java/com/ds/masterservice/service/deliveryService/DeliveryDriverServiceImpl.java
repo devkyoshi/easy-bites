@@ -145,7 +145,7 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         deliveryDriverRepository.save(driver);
 
         LocationUpdateResponse response = new LocationUpdateResponse();
-        response.setDriverId(driverId);
+        response.setDriverID(driverId);
         response.setLatitude(lat);
         response.setLongitude(lng);
         response.setMessage("Driver location updated successfully");

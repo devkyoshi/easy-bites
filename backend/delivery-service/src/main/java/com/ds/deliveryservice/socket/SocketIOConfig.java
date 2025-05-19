@@ -37,4 +37,9 @@ public class SocketIOConfig {
     public SpringAnnotationScanner springAnnotationScanner(SocketIOServer socketServer) {
         return new SpringAnnotationScanner(socketServer);
     }
+
+    @Bean
+    public DeliverySocketHandler deliverySocketHandler(SocketIOServer socketServer) {
+        return new DeliverySocketHandler(socketServer);
+    }
 }

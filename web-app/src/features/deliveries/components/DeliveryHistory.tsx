@@ -115,7 +115,7 @@ import { Card } from "@/components/ui/card";
 import { useDelivery } from "@/features/deliveries/context/delivery-context";
 import { DeliveryCard } from "../components/DeliveryCard";
 import { useNavigate } from "@tanstack/react-router";
-import { IDeliveryResponse, IOrder } from "@/services/types/delivery.type";
+import { IOrder } from "@/services/types/delivery.type";
 import { DeliverySkeleton } from "@/features/deliveries/components/DeliverySkeleton";
 import { EmptyDeliveryState } from "@/features/deliveries/components/EmptyDeliveryState";
 import { fetchOrderDetails } from "@/services/delivery-service";
@@ -163,7 +163,7 @@ export const DeliveryHistory = ({ driverId }: { driverId: number }) => {
                         );
 
                         return {
-                            deliveryId: delivery.id, // Ensure `id` is correctly mapped
+                            deliveryId: delivery.deliveryId, // Ensure `id` is correctly mapped
                             orderId: delivery.orderId,
                             status: delivery.status,
                             createdAt: delivery.createdAt,
