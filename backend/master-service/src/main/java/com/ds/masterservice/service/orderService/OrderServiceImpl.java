@@ -70,7 +70,8 @@ public class OrderServiceImpl implements OrderService {
                     orderItem.setQuantity(cartItem.getQuantity());
                     orderItem.setUnitPrice(cartItem.getUnitPrice());
                     orderItem.setTotalPrice(cartItem.getTotalPrice());
-
+                    Order savedOrder = orderRepository.save(order);
+                    orderItem.setOrderId( savedOrder.getId());
 
                     logger.debug("Adding order item: itemId={}, quantity={}, unitPrice={}, totalPrice={}",
                             cartItem.getItemId(), cartItem.getQuantity(), cartItem.getUnitPrice(), cartItem.getTotalPrice());
