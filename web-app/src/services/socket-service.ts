@@ -24,7 +24,7 @@ export const initializeSocket = (driverId: number): SocketIOClient.Socket => {
         reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
-        timeout: 20000,
+        timeout: 200000,
         autoConnect: true,
         forceNew: true,
         secure: false, // Set to true if using HTTPS
@@ -84,13 +84,13 @@ export const initializeSocket = (driverId: number): SocketIOClient.Socket => {
 };
 
 // Helper function to calculate area hash based on restaurant location
-const getAreaHash = (lat: number, lng: number, precision: number = 2): string => {
-    // Simple implementation - rounds coordinates to 'precision' decimal places
-    // In production, use a proper geohashing algorithm
-    const roundedLat = lat.toFixed(precision);
-    const roundedLng = lng.toFixed(precision);
-    return `${roundedLat},${roundedLng}`;
-};
+// const getAreaHash = (lat: number, lng: number, precision: number = 2): string => {
+//     // Simple implementation - rounds coordinates to 'precision' decimal places
+//     // In production, use a proper geohashing algorithm
+//     const roundedLat = lat.toFixed(precision);
+//     const roundedLng = lng.toFixed(precision);
+//     return `${roundedLat},${roundedLng}`;
+// };
 
 // Updated event interfaces
 export interface SocketEvents {
