@@ -135,7 +135,7 @@ public class DeliveryController {
     }
 
     @GetMapping("/delivery/history")
-    public ApiResponse<List<DeliveryHistoryResponse>> getDeliveryHistory(@RequestParam("driverId") Long driverId) throws CustomException {
+    public ApiResponse<List<DeliveryResponse>> getDeliveryHistory(@RequestParam("driverId") Long driverId) throws CustomException {
         log.info("Fetching delivery history for driver ID: {}", driverId);
         return masterService.getDeliveryHistory(driverId);
     }
