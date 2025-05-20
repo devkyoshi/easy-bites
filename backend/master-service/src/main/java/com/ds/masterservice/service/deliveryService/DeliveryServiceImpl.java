@@ -6,7 +6,6 @@ import com.ds.commons.exception.NoContentException;
 import com.ds.commons.exception.NotFoundException;
 import com.ds.commons.exception.ExceptionCode;
 import com.ds.commons.template.ApiResponse;
-import com.ds.commons.utils.EmailUtil;
 import com.ds.commons.utils.GeoUtils;
 import com.ds.commons.utils.GeocodingUtil;
 import com.ds.masterservice.dao.authService.Customer;
@@ -51,8 +50,6 @@ public class DeliveryServiceImpl implements DeliveryService {
     // Optional utilities (may not be available)
     @Autowired(required = false)
     private Optional<GeocodingUtil> geocodingUtil;
-    @Autowired(required = false)
-    private Optional<EmailUtil> emailUtil;
 
     // Track which orders have been notified to prevent duplicate notifications
     private final Set<Long> notifiedOrderIds = new HashSet<>();
@@ -206,7 +203,7 @@ public class DeliveryServiceImpl implements DeliveryService {
      * @return ApiResponse indicating success or failure
      * @throws CustomException if order not found or geocoding fails
      */
-    public ApiResponse<String> notifyNearbyDriversForNewOrder(Long orderId) throws CustomException {
+    public ApiResponse<List<String>> notifyNearbyDriversForNewOrder(Long orderId) throws CustomException {
         try {
             var order = orderRepository.findById(orderId)
                     .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_NOT_FOUND));
@@ -214,7 +211,7 @@ public class DeliveryServiceImpl implements DeliveryService {
             // Check if already notified
             if (notifiedOrderIds.contains(orderId)) {
                 log.debug("Order ID {} already notified", orderId);
-                return ApiResponse.successResponse("Drivers already notified for this order");
+                return ApiResponse.successResponse(List.of());
             }
 
             // Get coordinates for order delivery address
@@ -224,6 +221,10 @@ public class DeliveryServiceImpl implements DeliveryService {
 
             // Find all available drivers
             List<DeliveryPerson> drivers = deliveryDriverRepository.findByIsAvailable(true);
+            List<String> driverEmails = new ArrayList<>();
+            drivers.forEach(driver -> {
+                driverEmails.add(driver.getEmail());
+            });
 
             int notifiedCount = 0;
 
@@ -249,9 +250,9 @@ public class DeliveryServiceImpl implements DeliveryService {
 
             if (notifiedCount > 0) {
                 notifiedOrderIds.add(orderId); // Mark as notified
-                return ApiResponse.successResponse("Drivers notified successfully");
+                return ApiResponse.successResponse("Drivers notified successfully", driverEmails);
             } else {
-                return ApiResponse.successResponse("No available drivers nearby to notify");
+                return ApiResponse.successResponse("No available drivers nearby to notify", driverEmails);
             }
         } catch (Exception e) {
             if (e instanceof CustomException) {
@@ -440,9 +441,9 @@ public class DeliveryServiceImpl implements DeliveryService {
         // Get completed deliveries
         List<Deliveries> deliveries = deliveryRepository.findByDriverAndStatus(driver, DeliveryStatus.DELIVERED);
 
-        if (deliveries.isEmpty()) {
-            throw new CustomException(ExceptionCode.NO_DELIVERY_HISTORY);
-        }
+//        if (deliveries.isEmpty()) {
+//            throw new CustomException(ExceptionCode.NO_DELIVERY_HISTORY);
+//        }
 
         // Convert to response DTOs
         List<DeliveryResponse> response = deliveries.stream()
@@ -643,20 +644,20 @@ public class DeliveryServiceImpl implements DeliveryService {
      * @param message email content
      * @throws CustomException if email service unavailable or sending fails
      */
-    private void sendEmailWithFallback(String to, String subject, String message) throws CustomException {
-        try {
-            if (emailUtil.isEmpty()) {
-                log.warn("Email service unavailable - cannot send notification to {}", to);
-                throw new CustomException(ExceptionCode.EMAIL_UNAVAILABLE);
-            }
-            emailUtil.get().sendEmail(to, subject, message);
-        } catch (CustomException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("Unexpected error sending email to {}: {}", to, e.getMessage());
-            throw new CustomException(ExceptionCode.EMAIL_SEND_FAILURE);
-        }
-    }
+//    private void sendEmailWithFallback(String to, String subject, String message) throws CustomException {
+//        try {
+//            if (emailUtil.isEmpty()) {
+//                log.warn("Email service unavailable - cannot send notification to {}", to);
+//                throw new CustomException(ExceptionCode.EMAIL_UNAVAILABLE);
+//            }
+//            emailUtil.get().sendEmail(to, subject, message);
+//        } catch (CustomException e) {
+//            throw e;
+//        } catch (Exception e) {
+//            log.error("Unexpected error sending email to {}: {}", to, e.getMessage());
+//            throw new CustomException(ExceptionCode.EMAIL_SEND_FAILURE);
+//        }
+//    }
 
     /**
      * Converts a Deliveries entity to a DeliveryResponse DTO.

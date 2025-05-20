@@ -39,7 +39,7 @@ export default function OrdersList() {
     const handleNavigateToDelivery =(orderId: number) => {
         navigate({
             to: `/deliveries/customer-delivery-tracking`,
-            state: { number: orderId } as unknown as undefined,
+            state: { orderId: orderId } as unknown as undefined,
         }).then();
     }
 
@@ -285,7 +285,7 @@ export default function OrdersList() {
                                         order.paymentStatus === 'FAIL' ? 'bg-red-50 border-red-700' :
                                             order.paymentStatus === 'NOT_PAID' ? 'bg-red-50 border-red-400' : ''
                                 }`}
-                                onClick={() => handleViewDetails(order.id)}
+                                //onClick={() => handleViewDetails(order.id)}
                             >
                                 <div className="flex justify-between items-center">
                                     <div>
@@ -383,7 +383,7 @@ export default function OrdersList() {
                                             Cancel Order
                                         </Button>
                                     )}
-                                    {order.status === "DRIVER_ASSIGNED" && (
+                                    {order.status === "DRIVER_ASSIGNED" || order.status === "DELIVERED" && (
                                         <Button
                                             variant="default"
                                             size="sm"

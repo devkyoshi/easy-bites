@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { submitDeliveryRating } from "@/services/delivery-service.ts";
+import {toast} from "sonner";
 
 interface DeliveryRatingProps {
     deliveryId: number;
@@ -20,6 +21,7 @@ export const DeliveryRating = ({ deliveryId, onRatingSubmitted }: DeliveryRating
         try {
             await submitDeliveryRating(deliveryId, { rating, comment });
             onRatingSubmitted?.();
+            toast.success("Delivery rating has been successfully");
         } catch (error) {
             console.error("Failed to submit rating", error);
         } finally {

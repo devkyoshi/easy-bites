@@ -6,6 +6,7 @@ import com.ds.commons.exception.CustomException;
 import com.ds.commons.exception.ExceptionCode;
 import com.ds.commons.template.ApiResponse;
 import com.ds.commons.utils.GeocodingUtil;
+import com.ds.communicationservice.CommunicationService;
 import com.ds.deliveryservice.socket.DeliverySocketHandler;
 import com.ds.deliveryservice.util.GeoHashUtil;
 import com.ds.masterservice.MasterService;
@@ -43,6 +44,8 @@ public class DeliveryController {
     private final OrderServiceImpl orderServiceImpl;
     @Autowired(required = false)
     private Optional<GeocodingUtil> geocodingUtil;
+    @Autowired(required = false)
+    private CommunicationService communicationService;
 
     public DeliveryController(MasterService masterService, SocketIOServer socketServer, DeliverySocketHandler deliverySocketHandler, OrderServiceImpl orderServiceImpl) {
         this.masterService = masterService;
@@ -67,11 +70,11 @@ public class DeliveryController {
     }
 
     @PostMapping("/drivers/notify")
-    public ApiResponse<String> notifyDrivers(@RequestParam("orderId") Long orderId) throws CustomException {
+    public ApiResponse<List<String>> notifyDrivers(@RequestParam("orderId") Long orderId) throws CustomException {
         log.info("Notifying nearby drivers for order ID: {}", orderId);
 
         // Step 1: Trigger business logic
-        ApiResponse<String> response = masterService.notifyNearbyDriversForNewOrder(orderId);
+        ApiResponse<List<String>> response = masterService.notifyNearbyDriversForNewOrder(orderId);
 
         // Step 2: Get order details
         OrderResponse order = orderServiceImpl.getOrder(orderId);
@@ -108,6 +111,7 @@ public class DeliveryController {
         socketServer.getRoomOperations("area:" + locationHash)
                 .sendEvent("newOrderAvailable", order);
 
+        communicationService.sendBulkEmail(response.getResult().toArray(String[]::new), "New Order Nearby!", "New order available please check location: " + locationHash + " order: " + order, false);
         return response;
     }
 
@@ -152,8 +156,8 @@ public class DeliveryController {
         return masterService.getDelivery(deliveryId);
     }
 
-    @GetMapping("/delivery/by-order")
-    public ApiResponse<DeliveryResponse> getDeliveryByOrderId(@RequestParam("orderId") Long orderId) throws CustomException {
+    @GetMapping("/delivery/by-order/{orderId}")
+    public ApiResponse<DeliveryResponse> getDeliveryByOrderId(@PathVariable("orderId") Long orderId) throws CustomException {
         log.info("Fetching delivery by order ID: {}", orderId);
         return masterService.getByOrderId(orderId);
     }

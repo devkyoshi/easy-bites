@@ -86,7 +86,7 @@ export const RestaurantManagementTab = () => {
     },
     {
       title: 'Avg. Price',
-      value: `$${(
+      value: `Rs. ${(
         (restaurantDetails?.foodItems.reduce(
           (acc, item) => acc + item.price,
           0
@@ -274,7 +274,7 @@ const FoodItemTable = ({
                   <TableCell className='max-w-[200px] truncate'>
                     {item.description}
                   </TableCell>
-                  <TableCell>${item.price.toFixed(2)}</TableCell>
+                  <TableCell>Rs.{item.price.toFixed(2)}</TableCell>
                   <TableCell>
                     <Badge
                       variant={item.isAvailable ? 'default' : 'destructive'}

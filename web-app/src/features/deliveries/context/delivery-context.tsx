@@ -145,7 +145,7 @@ export const DeliveryProvider: React.FC<{children: React.ReactNode}> = ({ childr
 
     const refreshDriverLocation = async (driverId: number): Promise<ILocation> => {
         try {
-            const response = await api.get<IApiResponse<IDriverResponse>>(`/drivers/${driverId}`);
+            const response = await api.get<IApiResponse<IDriverResponse>>(`/api/delivery/drivers/${driverId}`);
             if (!response.data.result.currentLat || !response.data.result.currentLng) {
                 throw new Error('Driver location not available');
             }

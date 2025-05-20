@@ -15,10 +15,10 @@ public class GatewayConfig {
     @Value("${RESTAURANT_SERVICE_URI:http://localhost:8082}")
     private String restaurantServiceUri;
 
-    @Value("${DELIVERY_SERVICE_URI:http://localhost:8083}")
+    @Value("${DELIVERY_SERVICE_URI:http://localhost:8084}")
     private String deliveryServiceUri;
 
-    @Value("${ORDER_SERVICE_URI:http://localhost:8084}")
+    @Value("${ORDER_SERVICE_URI:http://localhost:8083}")
     private String orderServiceUri;
 
     @Bean

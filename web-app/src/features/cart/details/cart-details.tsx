@@ -36,7 +36,7 @@ export default function CartDetails() {
     const [tole, setTole] = useState("");
 
     useEffect(() => {
-        const combined = `${tole}, Ward ${ward}, ${municipality}, ${district}, ${province}`;
+        const combined = `${tole}, ${ward}, ${municipality}, ${district}, ${province}`;
         setDeliveryAddress(combined.trim());
     }, [province, district, municipality, ward, tole]);
 
@@ -201,11 +201,35 @@ export default function CartDetails() {
                 Please note that if u provide false information, your order will be rejected.
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input placeholder="Province" value={province} onChange={(e) => setProvince(e.target.value)} />
-                <Input placeholder="District" value={district} onChange={(e) => setDistrict(e.target.value)} />
-                <Input placeholder="Municipality" value={municipality} onChange={(e) => setMunicipality(e.target.value)} />
-                <Input placeholder="Ward" value={ward} onChange={(e) => setWard(e.target.value)} />
-                <Input placeholder="Tole / Street" value={tole} onChange={(e) => setTole(e.target.value)} />
+                <Input
+                    placeholder="Province/State"
+                    value={province}
+                    onChange={(e) => setProvince(e.target.value)}
+                    required
+                />
+                <Input
+                    placeholder="City"
+                    value={district}
+                    onChange={(e) => setDistrict(e.target.value)}
+                    required
+                />
+                <Input
+                    placeholder="Neighborhood/Area"
+                    value={municipality}
+                    onChange={(e) => setMunicipality(e.target.value)}
+                />
+                <Input
+                    placeholder="Street Address"
+                    value={tole}
+                    onChange={(e) => setTole(e.target.value)}
+                    required
+                />
+                <Input
+                    placeholder="Apartment, Suite, etc. (Optional)"
+                    value={ward}
+                    onChange={(e) => setWard(e.target.value)}
+                    className="md:col-span-2"
+                />
             </div>
 
             <Button

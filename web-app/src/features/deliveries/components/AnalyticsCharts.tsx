@@ -19,11 +19,11 @@ export const AnalyticsCharts = ({ analytics }: { analytics: IDeliveryAnalytics }
 
     // Format data for BarChart (Rating Distribution)
     const barChartData = {
-        labels: analytics.ratingDistribution.map(item => `${item.rating} Star`),
+        labels: analytics.ratingDistribution?.map(item => `${item.rating} Star`),
         datasets: [
             {
                 label: 'Count',
-                data: analytics.ratingDistribution.map(item => item.count),
+                data: analytics.ratingDistribution?.map(item => item.count),
                 backgroundColor: 'rgba(16, 185, 129, 0.5)',
                 borderColor: 'rgb(16, 185, 129)',
                 borderWidth: 1,

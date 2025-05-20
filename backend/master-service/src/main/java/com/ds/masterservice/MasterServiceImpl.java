@@ -173,7 +173,7 @@ public class MasterServiceImpl implements MasterService {
     }
 
     @Override
-    public ApiResponse<String> notifyNearbyDriversForNewOrder(Long orderId) throws CustomException {
+    public ApiResponse<List<String>> notifyNearbyDriversForNewOrder(Long orderId) throws CustomException {
         return deliveryService.notifyNearbyDriversForNewOrder(orderId);
     }
 

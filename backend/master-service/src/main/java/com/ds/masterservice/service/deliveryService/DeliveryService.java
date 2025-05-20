@@ -38,7 +38,7 @@ public interface DeliveryService {
      * @return ApiResponse containing success message
      * @throws CustomException if notification fails
      */
-    ApiResponse<String> notifyNearbyDriversForNewOrder(Long orderId) throws CustomException;
+    ApiResponse<List<String>> notifyNearbyDriversForNewOrder(Long orderId) throws CustomException;
 
     /**
      * Accept a new delivery order by a driver.

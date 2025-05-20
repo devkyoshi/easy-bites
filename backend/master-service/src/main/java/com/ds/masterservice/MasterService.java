@@ -68,7 +68,7 @@ public interface MasterService {
 
     ApiResponse<List<OrderResponse>> getNearbyOrders(Long driverId, BigDecimal lat, BigDecimal lng) throws CustomException;
 
-    ApiResponse<String> notifyNearbyDriversForNewOrder(Long orderId) throws CustomException;
+    ApiResponse<List<String>> notifyNearbyDriversForNewOrder(Long orderId) throws CustomException;
 
     ApiResponse<DeliveryResponse> acceptOrder(Long driverId, DeliveryAcceptanceRequest dto) throws CustomException;
 
