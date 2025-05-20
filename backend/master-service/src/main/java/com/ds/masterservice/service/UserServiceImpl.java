@@ -16,6 +16,7 @@ import com.ds.masterservice.dao.deliveryService.DeliveryPerson;
 import com.ds.masterservice.dao.restaurantService.RestaurantManager;
 import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
 import com.ds.masterservice.dto.request.user.RestaurantManagerRequestDTO;
+import com.ds.masterservice.dto.response.admin.StaffRegistrationResponse;
 import com.ds.masterservice.dto.response.deliveryService.DriverResponse;
 import com.ds.masterservice.repository.deliveryService.DeliveryDriverRepository;
 import com.ds.masterservice.repository.RoleRepository;
@@ -372,8 +373,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<StaffRegistration> getAllStaffRegistrations() {
-        return staffRegistrationRepository.findAll();
+    public List<StaffRegistrationResponse> getAllStaffRegistrations() {
+        List<StaffRegistration> staffRegistrations =  staffRegistrationRepository.findStaffRegistrationByIsApprovedFalse();
+
+        return staffRegistrations.stream()
+                .map(StaffRegistrationResponse::new)
+                .toList();
     }
 
     @Override

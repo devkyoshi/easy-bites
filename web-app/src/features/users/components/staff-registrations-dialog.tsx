@@ -51,7 +51,7 @@ export function StaffRegistrationsDialog({ open, onOpenChange }: Props) {
         (reg) => !reg.isApproved
       )
       setStaffRegistrations(pendingRegistrations)
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to fetch staff registrations')
     } finally {
       setLoading(false)
@@ -64,9 +64,6 @@ export function StaffRegistrationsDialog({ open, onOpenChange }: Props) {
       await approveStaffRegistration(id)
       // Remove the approved registration from the list
       setStaffRegistrations((prev) => prev.filter((reg) => reg.id !== id))
-      toast.success('Staff registration approved successfully')
-    } catch (error) {
-      toast.error('Failed to approve staff registration')
     } finally {
       setProcessingId(null)
     }
@@ -79,7 +76,7 @@ export function StaffRegistrationsDialog({ open, onOpenChange }: Props) {
       // Remove the rejected registration from the list
       setStaffRegistrations((prev) => prev.filter((reg) => reg.id !== id))
       toast.success('Staff registration rejected successfully')
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to reject staff registration')
     } finally {
       setProcessingId(null)

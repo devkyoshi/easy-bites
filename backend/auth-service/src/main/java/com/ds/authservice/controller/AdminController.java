@@ -6,6 +6,7 @@ import com.ds.masterservice.MasterService;
 import com.ds.masterservice.dao.authService.Role;
 import com.ds.masterservice.dao.authService.StaffRegistration;
 import com.ds.masterservice.dao.authService.User;
+import com.ds.masterservice.dto.response.admin.StaffRegistrationResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -50,8 +51,8 @@ public class AdminController {
     }
 
     @GetMapping("/staff-registrations")
-    public ApiResponse<List<StaffRegistration>> getAllStaffRegistrations() {
-        List<StaffRegistration> staffRegistrations = masterService.getUserService().getAllStaffRegistrations();
+    public ApiResponse<List<StaffRegistrationResponse>> getAllStaffRegistrations() {
+        List<StaffRegistrationResponse> staffRegistrations = masterService.getUserService().getAllStaffRegistrations();
         return ApiResponse.successResponse("Staff registrations fetched successfully", staffRegistrations);
     }
 

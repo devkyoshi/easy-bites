@@ -13,6 +13,7 @@ import com.ds.masterservice.dao.authService.User;
 import com.ds.masterservice.dao.restaurantService.RestaurantManager;
 import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
 import com.ds.masterservice.dto.request.user.RestaurantManagerRequestDTO;
+import com.ds.masterservice.dto.response.admin.StaffRegistrationResponse;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -29,7 +30,7 @@ public interface UserService extends UserDetailsService {
 
     // Admin operations
     List<User> getAllUsers();
-    List<StaffRegistration> getAllStaffRegistrations();
+    List<StaffRegistrationResponse> getAllStaffRegistrations();
     boolean approveStaffRegistration(Long id);
     boolean rejectStaffRegistration(Long id);
 }

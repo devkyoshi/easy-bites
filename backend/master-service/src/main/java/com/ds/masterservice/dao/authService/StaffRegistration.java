@@ -1,5 +1,6 @@
 package com.ds.masterservice.dao.authService;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ public class StaffRegistration {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @JoinColumn(name = "id", nullable = false)
     @OneToOne(cascade = CascadeType.ALL)
     private User user;

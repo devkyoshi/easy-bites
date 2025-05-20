@@ -13,7 +13,6 @@ import com.ds.masterservice.dto.request.menu.MenuCategoryCreateRequest;
 import com.ds.masterservice.dto.request.restaurant.RestaurantCreateUpdateRequest;
 import com.ds.masterservice.dto.request.user.RestaurantManagerRequestDTO;
 import com.ds.masterservice.dto.response.*;
-import com.ds.masterservice.dto.response.deliveryService.DeliveryHistoryResponse;
 import com.ds.masterservice.dto.response.deliveryService.DeliveryResponse;
 import com.ds.masterservice.dto.response.deliveryService.DriverResponse;
 import com.ds.masterservice.dto.response.deliveryService.LocationUpdateResponse;
