@@ -672,7 +672,6 @@ public class DeliveryServiceImpl implements DeliveryService {
         response.setDriverId(delivery.getDriver().getId());
         response.setStatus(delivery.getStatus().name());
         response.setNotes(delivery.getNotes());
-        response.setProofImage(delivery.getProofImage());
         response.setRating(delivery.getRating());
         response.setRatingComment(delivery.getRatingComment());
         response.setCreatedAt(delivery.getCreatedAt());
@@ -681,6 +680,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         response.setPickupLat(delivery.getPickupLat());
         response.setDeliveryLat(delivery.getDeliveryLat());
         response.setDeliveryLng(delivery.getDeliveryLng());
+        response.setProofImage(delivery.getProofImage());
         return response;
     }
 

@@ -12,7 +12,6 @@ public class DeliveryResponse {
     private int driverId;
     private String status;
     private String notes;
-    private String proofImage;
     private Integer rating;
     private String ratingComment;
     private LocalDateTime createdAt;
@@ -21,4 +20,5 @@ public class DeliveryResponse {
     private BigDecimal PickupLng;
     private BigDecimal DeliveryLat;
     private BigDecimal DeliveryLng;
+    private String proofImage;
 }

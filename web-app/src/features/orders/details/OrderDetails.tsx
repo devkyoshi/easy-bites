@@ -383,7 +383,7 @@ export default function OrdersList() {
                                             Cancel Order
                                         </Button>
                                     )}
-                                    {order.status === "DRIVER_ASSIGNED" || order.status === "DELIVERED" && (
+                                    {(order.status === "DRIVER_ASSIGNED" || order.status === "DELIVERED") && (
                                         <Button
                                             variant="default"
                                             size="sm"

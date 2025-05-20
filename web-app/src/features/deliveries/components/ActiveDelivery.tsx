@@ -53,9 +53,10 @@ export const ActiveDeliveries = (_: ActiveDeliveriesProps) => {
     const handleNavigateToDeliveryDetail = (delivery: IDeliveryResponse) => {
         if (!activeDelivery) return;
         console.log("activeDelivery", delivery);
+      
         navigate({
             to: '/deliveries/delivery-details',
-            state: { deliveryId: delivery.deliveryId },
+            state: { deliveryId: delivery.deliveryId as number },
         }).then();
     };
 
