@@ -1,3 +1,4 @@
 .idea
 web-app/package-lock.json
 web-app/.env
+.DS_Store
