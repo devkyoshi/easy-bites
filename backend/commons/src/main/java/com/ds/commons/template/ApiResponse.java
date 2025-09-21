@@ -1,5 +1,7 @@
 package com.ds.commons.template;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
@@ -8,10 +10,14 @@ import org.springframework.http.ResponseEntity;
 
 @Getter
 @Setter
+@Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T>  {
     private String message;
     private boolean success;
     private T result;
+    private String errorId;
+    private Integer status;
 
     public ApiResponse(String message, boolean success, T result, HttpStatus status) {
         this.result = result;

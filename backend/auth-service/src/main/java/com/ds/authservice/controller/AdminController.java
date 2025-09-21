@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping("/admin")
-public class AdminController {
+public class  AdminController {
 
     @Autowired
     private MasterService masterService;
