@@ -141,7 +141,7 @@ public class DeliveryServiceImpl implements DeliveryService {
                 throw (CustomException) e;
             } else {
                 log.error("Unexpected error in getNearbyOrders: {}", e.getMessage(), e);
-                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+                throw new CustomException(ExceptionCode.SOMETHING_WENT_WRONG);
             }
         }
     }
@@ -259,7 +259,7 @@ public class DeliveryServiceImpl implements DeliveryService {
                 throw (CustomException) e;
             } else {
                 log.error("Error notifying drivers for order {}: {}", orderId, e.getMessage(), e);
-                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+                throw new CustomException(ExceptionCode.SOMETHING_WENT_WRONG);
             }
         }
     }
@@ -280,7 +280,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
             // Verify driver exists and is available
             DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
-                    .orElseThrow(() -> new CustomException(ExceptionCode.DRIVER_NOT_FOUND));
+                    .orElseThrow(() -> new CustomException(ExceptionCode.SOMETHING_WENT_WRONG));
 
             if (!driver.getIsAvailable()) {
                 log.error("Driver {} is not available", driverId);

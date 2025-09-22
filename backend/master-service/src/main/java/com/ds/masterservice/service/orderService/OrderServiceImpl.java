@@ -124,7 +124,7 @@ public class OrderServiceImpl implements OrderService {
             order.setUpdatedAt(LocalDateTime.now());
             return mapToOrderResponse(orderRepository.save(order));
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid order status: " + request.getStatus());
+            throw new IllegalArgumentException("Something Went Wrong");
         }
     }
 

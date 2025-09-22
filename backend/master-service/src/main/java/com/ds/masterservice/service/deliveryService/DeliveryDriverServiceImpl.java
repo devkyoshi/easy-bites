@@ -137,7 +137,7 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
                 .orElseThrow(() -> {
                     log.warn("Driver with ID {} not found for location update", driverId);
-                    return new NotFoundException(ExceptionCode.DRIVER_NOT_FOUND);
+                    return new NotFoundException(ExceptionCode.SOMETHING_WENT_WRONG);
                 });
 
         driver.setCurrentLat(lat);
@@ -169,7 +169,7 @@ public class DeliveryDriverServiceImpl implements DeliveryDriverService {
         DeliveryPerson driver = deliveryDriverRepository.findById(driverId)
                 .orElseThrow(() -> {
                     log.warn("Driver with ID {} not found for availability update", driverId);
-                    return new NotFoundException(ExceptionCode.DRIVER_NOT_FOUND);
+                    return new NotFoundException(ExceptionCode.SOMETHING_WENT_WRONG);
                 });
 
         driver.setIsAvailable(isAvailable);
