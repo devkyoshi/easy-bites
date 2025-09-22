@@ -23,14 +23,17 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RateLimitingFilter extends OncePerRequestFilter {
 
     private static final ConcurrentHashMap<String, Bucket> cache = new ConcurrentHashMap<>();
-    private static final Bandwidth limit = Bandwidth.classic(5, Refill.intervally(5, Duration.ofMinutes(1))); // 5 requests per minute
+    private static final Bandwidth limit = Bandwidth.classic(20, Refill.intervally(5, Duration.ofMinutes(1))); // 5 requests per minute
+    private static final Bandwidth registerLimit = Bandwidth.classic(3, Refill.intervally(3, Duration.ofMinutes(5))); // 3 regs / 5 min
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
         String ipAddress = request.getRemoteAddr();
-        Bucket bucket = cache.computeIfAbsent(ipAddress, key -> Bucket4j.builder().addLimit(limit).build());
+        String path = request.getRequestURI();
+        Bandwidth limitToApply = path.contains("register") ? registerLimit : limit;
+        Bucket bucket = cache.computeIfAbsent(ipAddress + path, key -> Bucket4j.builder().addLimit(limitToApply).build());
 
         // Check if the rate limit is exceeded
         if (bucket.tryConsume(1)) {

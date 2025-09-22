@@ -29,7 +29,7 @@ public class SecurityConfig {
     public FilterRegistrationBean<RateLimitingFilter> rateLimitingFilterRegistration() {
         FilterRegistrationBean<RateLimitingFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(rateLimitingFilter);
-        registrationBean.addUrlPatterns("/auth/login", "/auth/register");  // Apply filter to login and register endpoints
+        registrationBean.addUrlPatterns("/auth/login", "/auth/register", "/auth/register-restaurant-manager", "/auth/register-driver");
         return registrationBean;
     }
 

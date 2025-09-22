@@ -58,7 +58,8 @@ public enum ExceptionCode {
     ORDER_ITEM_NOT_FOUND("No item found"),
     NO_AVAILABLE_DRIVERS("No drivers are currently available."),
     NO_COORDINATES_FOUND("No coordinates found for the address"),
-    SOCKET_ERROR("Encountered an socket issue");
+    SOCKET_ERROR("Encountered an socket issue"),
+    ACCOUNT_LOCKED("Account is temporarily locked due to too many failed login attempts. Please try again later."),;
 
     private final String exceptionCode;
 }

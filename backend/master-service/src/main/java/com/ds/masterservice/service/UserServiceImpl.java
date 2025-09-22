@@ -22,6 +22,7 @@ import com.ds.masterservice.repository.deliveryService.DeliveryDriverRepository;
 import com.ds.masterservice.repository.RoleRepository;
 import com.ds.masterservice.repository.StaffRegistrationRepository;
 import com.ds.masterservice.repository.UserRepository;
+import com.ds.masterservice.service.security.BruteForceProtectionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import com.ds.commons.enums.UserType;
@@ -58,6 +59,9 @@ public class UserServiceImpl implements UserService {
         this.deliveryDriverRepository = deliveryDriverRepository;
         this.objectMapper = objectMapper;
     }
+
+    @Autowired
+    private BruteForceProtectionService bruteForceProtectionService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -163,12 +167,24 @@ public class UserServiceImpl implements UserService {
                throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
            }
 
+           String username = loginRequest.getUsername();
+
+           // 🚨 Check if account is locked
+           if (bruteForceProtectionService.isBlocked(username)) {
+               log.warn("Account temporarily locked for user: {}", username);
+               throw new CustomException(ExceptionCode.ACCOUNT_LOCKED);
+           }
+
            User user = getUserByUsername(loginRequest.getUsername());
 
            if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-                log.error("Invalid credentials for user: {}", loginRequest.getUsername());
+                log.error("Invalid credentials for user: {}", username);
+               bruteForceProtectionService.loginFailed(username);
                throw new CustomException(ExceptionCode.INVALID_CREDENTIALS);
            }
+
+           // ✅ Login successful → reset attempts + lock
+           bruteForceProtectionService.loginSucceeded(username);
 
            LoginResponse loginResponse = LoginResponse.builder()
                    .userId(user.getId())
