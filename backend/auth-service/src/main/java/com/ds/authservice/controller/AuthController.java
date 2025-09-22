@@ -17,6 +17,7 @@ import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationReques
 import com.ds.masterservice.dto.request.user.RestaurantManagerRequestDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuthException;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -58,7 +59,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<LoginResponse> login(@RequestBody LoginRequest authRequest) throws CustomException {
+    public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest authRequest) throws CustomException {
 
         log.info("Attempting to login user with username: {}", authRequest.getUsername());
         ApiResponse<LoginResponse> response = masterService.getUserService().loginUser(authRequest);
@@ -75,7 +76,7 @@ public class AuthController {
 
     //Restaurant User Registration
     @PostMapping("/register-restaurant-manager")
-    public ApiResponse<RegisterResponse> registerRestaurant(@RequestBody RestaurantManagerRequestDTO registerRequest) throws CustomException {
+    public ApiResponse<RegisterResponse> registerRestaurant(@Valid @RequestBody RestaurantManagerRequestDTO registerRequest) throws CustomException {
         log.info("Attempting to register restaurant user with username: {}", registerRequest.getUsername());
         return masterService.registerRestaurantManager(registerRequest);
     }
@@ -83,14 +84,14 @@ public class AuthController {
 
     //Driver User Registration
     @PostMapping("/register-driver")
-    public ApiResponse<RegisterResponse> registerDriver(@RequestBody DriverRegistrationRequest registerRequest) throws CustomException {
+    public ApiResponse<RegisterResponse> registerDriver(@Valid @RequestBody DriverRegistrationRequest registerRequest) throws CustomException {
         log.info("Attempting to register driver user with username: {}", registerRequest.getUsername());
         return masterService.registerDriver(registerRequest);
     }
 
     // Firebase OAuth Login
     @PostMapping("/firebase-login")
-    public ApiResponse<LoginResponse> firebaseLogin(@RequestBody FirebaseLoginRequest request) {
+    public ApiResponse<LoginResponse> firebaseLogin(@Valid @RequestBody FirebaseLoginRequest request) {
         try {
             log.info("Processing Firebase login request");
             
