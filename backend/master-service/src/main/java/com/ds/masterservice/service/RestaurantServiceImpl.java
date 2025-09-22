@@ -105,7 +105,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 throw (CustomException) e;
             } else {
                 log.error("An error occurred while fetching the restaurant: {}", e.getMessage());
-                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+                throw new CustomException(ExceptionCode.SOMETHING_WENT_WRONG);
             }
         }
     }
@@ -153,7 +153,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 throw (CustomException) e;
             } else {
                 log.error("An error occurred while fetching the restaurant manager: {}", e.getMessage());
-                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+                throw new CustomException(ExceptionCode.SOMETHING_WENT_WRONG);
             }
         }
 

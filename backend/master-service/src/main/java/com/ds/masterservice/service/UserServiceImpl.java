@@ -202,13 +202,13 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public RestaurantManager getRestaurantManagerByUserId(Integer userId) throws CustomException {
-
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
             if (!(user instanceof RestaurantManager)) {
-                throw new CustomException(ExceptionCode.USER_NOT_FOUND);
+                log.error("User access violation - user ID {} is not a restaurant manager", userId);
+                throw new CustomException(ExceptionCode.ACCESS_DENIED);
             }
 
             return (RestaurantManager) user;
@@ -216,7 +216,7 @@ public class UserServiceImpl implements UserService {
             if (e instanceof CustomException) {
                 throw (CustomException) e;
             } else {
-                log.error("An error occurred while fetching the restaurant manager: {}", e.getMessage());
+                log.error("Error fetching restaurant manager for user ID: {}", userId);
                 throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
             }
         }
@@ -224,7 +224,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiResponse<RegisterResponse> registerRestaurantManager(RestaurantManagerRequestDTO restaurantManager) throws CustomException {
-
         try {
             // Check if required fields are present
             if (restaurantManager.getUsername() == null ||
@@ -233,11 +232,10 @@ public class UserServiceImpl implements UserService {
                     restaurantManager.getFirstName() == null ||
                     restaurantManager.getUserType() == null ||
                     restaurantManager.getLastName() == null) {
-                log.error("Request for restaurant registration received with missing required fields");
+                log.error("Restaurant manager registration attempt with missing required fields");
                 throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
             }
 
-            // Check if the user already exists
             if (userRepository.findUserByUsername(restaurantManager.getUsername()).isPresent()) {
                 log.error("User with username {} already exists", restaurantManager.getUsername());
                 throw new CustomException(ExceptionCode.USER_ALREADY_EXISTS);
@@ -260,20 +258,20 @@ public class UserServiceImpl implements UserService {
 
             StaffRegistration staffRegistration = new StaffRegistration();
             staffRegistration.setUser(savedUser);
-            staffRegistration.setCreatedAt( user.getCreatedAt());
+            staffRegistration.setCreatedAt(user.getCreatedAt());
             staffRegistration.setIsApproved(false);
 
             staffRegistrationRepository.save(staffRegistration);
-            log.info("Restaurant Manager {} registered successfully", restaurantManager.getUsername());
+            log.info("Restaurant manager registered successfully with username: {}", restaurantManager.getUsername());
 
             // Return the response
-            return ApiResponse.createdSuccessResponse("Restaurant Manager Registered Successfully", getRegisterResponse(user));
+            return ApiResponse.createdSuccessResponse("Restaurant manager registration submitted for approval", getRegisterResponse(user));
         } catch (Exception e) {
             if (e instanceof CustomException) {
                 throw (CustomException) e;
             } else {
-                log.error("An error occurred during registration: {}", e.getMessage());
-                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
+                log.error("Error during restaurant manager registration: {}", e.getClass().getSimpleName());
+                throw new CustomException(ExceptionCode.REGISTRATION_FAILED);
             }
         }
     }
@@ -290,7 +288,7 @@ public class UserServiceImpl implements UserService {
               throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
           }
 
-            // Check if the user already exists
+            // Check if the user already exists - generic error
             if (userRepository.findUserByUsername(request.getUsername()).isPresent()) {
                 log.error("User with username {} already exists", request.getUsername());
                 throw new CustomException(ExceptionCode.USER_ALREADY_EXISTS);
@@ -307,36 +305,38 @@ public class UserServiceImpl implements UserService {
             deliveryPerson.setVehicleNumber(request.getVehicleNumber());
 
             deliveryPerson.setRoles(List.of(roleRepository.findByName("ROLE_DELIVERY_PERSON")
-                   .orElseThrow(() -> new CustomException(ExceptionCode.ROLE_NOT_FOUND))));
+                    .orElseThrow(() -> new CustomException(ExceptionCode.ROLE_NOT_FOUND))));
 
             User savedUser = userRepository.save(deliveryPerson);
 
-           StaffRegistration staffRegistration = new StaffRegistration();
-           staffRegistration.setUser(savedUser);
-           staffRegistration.setCreatedAt( savedUser.getCreatedAt());
-           staffRegistration.setIsApproved(false);
+            StaffRegistration staffRegistration = new StaffRegistration();
+            staffRegistration.setUser(savedUser);
+            staffRegistration.setCreatedAt(savedUser.getCreatedAt());
+            staffRegistration.setIsApproved(false);
 
-           staffRegistrationRepository.save(staffRegistration);
+            staffRegistrationRepository.save(staffRegistration);
 
-              log.info("Driver {} registered successfully", request.getUsername());
+            log.info("Driver registered successfully with username: {}", request.getUsername());
 
-              // Return the response
-                return ApiResponse.createdSuccessResponse("Driver Registered Successfully", getRegisterResponse(deliveryPerson));
-       }catch (Exception e) {
-           if (e instanceof CustomException) {
-               throw (CustomException) e;
-           } else {
-               log.error("An error occurred during driver registration: {}", e.getMessage());
-               throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
-           }
-       }
+            // Return the response
+            return ApiResponse.createdSuccessResponse("Driver registration submitted for approval", getRegisterResponse(deliveryPerson));
+        } catch (Exception e) {
+            if (e instanceof CustomException) {
+                throw (CustomException) e;
+            } else {
+                log.error("Error during driver registration: {}", e.getClass().getSimpleName());
+                throw new CustomException(ExceptionCode.REGISTRATION_FAILED);
+            }
+        }
     }
 
     private User getUserByUsername(String username) throws CustomException {
         return userRepository.findUserByUsername(username).orElseThrow(
-                () -> new CustomException(ExceptionCode.USER_NOT_FOUND)
+                () -> new CustomException(ExceptionCode.INVALID_CREDENTIALS)
         );
     }
+
+
 
 
     //Helper methods
@@ -361,7 +361,7 @@ public class UserServiceImpl implements UserService {
                     .updatedAt(dp.getUpdatedAt())
                     .vehicleType(dp.getVehicleType().name())
                     .vehicleNumber(dp.getVehicleNumber())
-                    .isAvailable(dp.getIsAvailable()) // assuming you have this field
+                    .isAvailable(dp.getIsAvailable())
                     .build();
         }
 

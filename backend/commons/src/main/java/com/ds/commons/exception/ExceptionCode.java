@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ExceptionCode {
+    SOMETHING_WENT_WRONG("SOMETHING_WENT_WRONG"),
     USER_NOT_FOUND("USER_NOT_FOUND"),
     USER_ALREADY_EXISTS("USER_ALREADY_EXISTS"),
     USER_NOT_AUTHORIZED("USER_NOT_AUTHORIZED"),
@@ -48,6 +49,7 @@ public enum ExceptionCode {
     NO_DELIVERY_FOUND("There are no deliveries found"),
     INVALID_REQUEST_TYPE("Sending invalid request type. Please check your role"),
     EMAIL_ALREADY_EXISTS("The email address already exists"),
+    ACCESS_DENIED("You do not have permission to access this resource."),
     //orderService
     CART_NOT_FOUND("CART_NOT_FOUND"),
     ITEM_NOT_FOUND_IN_CART("ITEM_NOT_FOUND_IN_CART"),

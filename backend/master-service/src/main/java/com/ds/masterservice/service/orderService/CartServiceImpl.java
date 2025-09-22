@@ -272,7 +272,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public CartResponse updateItemQuantity(Long cartId, UpdateCartItemRequest request) {
         Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Cart not found for ID: " + cartId));
+                .orElseThrow(() -> new RuntimeException("Something Went Wrong"));
 
         if (cart.getStatus() != CartStatus.ACTIVE) {
             throw new IllegalStateException("Cannot update item in a non-active cart");
@@ -281,7 +281,7 @@ public class CartServiceImpl implements CartService {
         CartItem item = cart.getItems().stream()
                 .filter(i -> i.getItemId().equals(request.getItemId()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Item with ID " + request.getItemId() + " not found in cart"));
+                .orElseThrow(() -> new RuntimeException("Item not found in cart"));
 
         item.setQuantity(request.getQuantity());
         item.setTotalPrice(item.getQuantity() * item.getUnitPrice());
