@@ -62,7 +62,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findUserByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("Invalid credentials"));
     }
 
     @Override
@@ -80,14 +80,15 @@ public class UserServiceImpl implements UserService {
 
             // Check if username already exists
             if (userRepository.findUserByUsername(registerRequest.getUsername()).isPresent()) {
-                log.error("User with username {} already exists", registerRequest.getUsername());
+                log.error("Registration attempt with existing username: {}", registerRequest.getUsername());
                 throw new CustomException(ExceptionCode.USER_ALREADY_EXISTS);
             }
 
             if (userRepository.findUserByEmail(registerRequest.getEmail()).isPresent()) {
-                log.error("User with email {} already exists", registerRequest.getEmail());
+                log.error("Registration attempt with existing email: {}", maskEmail(registerRequest.getEmail()));
                 throw new CustomException(ExceptionCode.EMAIL_ALREADY_EXISTS);
             }
+
             UserType userType = registerRequest.getUserType() == null ? UserType.CUSTOMER : registerRequest.getUserType();
             Role role = roleRepository.findByName("ROLE_" + userType.name())
                     .orElseThrow(() -> new CustomException(ExceptionCode.ROLE_NOT_FOUND));
@@ -115,7 +116,8 @@ public class UserServiceImpl implements UserService {
 
             // Handle delivery person specific logic
             if (user instanceof DeliveryPerson dp) {
-                DriverRegistrationRequest driverRequest = (DriverRegistrationRequest) registerRequest;// Validate required fields
+                DriverRegistrationRequest driverRequest = (DriverRegistrationRequest) registerRequest;
+                // Validate required fields
                 if (driverRequest.getVehicleType() == null ||
                         driverRequest.getLicenseNumber() == null ||
                         driverRequest.getVehicleNumber() == null) {
@@ -126,9 +128,11 @@ public class UserServiceImpl implements UserService {
 
                 // Unique license/vehicle validation
                 if (deliveryDriverRepository.existsByLicenseNumber(driverRequest.getLicenseNumber())) {
+                    log.error("Registration attempt with existing license number");
                     throw new CustomException(ExceptionCode.LICENSE_ALREADY_EXISTS);
                 }
                 if (deliveryDriverRepository.existsByVehicleNumber(driverRequest.getVehicleNumber())) {
+                    log.error("Registration attempt with existing vehicle number");
                     throw new CustomException(ExceptionCode.VEHICLE_NUMBER_ALREADY_EXISTS);
                 }
 
@@ -142,33 +146,40 @@ public class UserServiceImpl implements UserService {
 
             // Return the response
             RegisterResponse response = getRegisterResponse(user);
-            return ApiResponse.createdSuccessResponse("User Registered Successfully", response);
+            return ApiResponse.createdSuccessResponse("User registered successfully", response);
         } catch (CustomException e) {
             throw e;
         } catch (DataIntegrityViolationException e) {
-            log.error("Database constraint violation during registration: {}", e.getMessage());
-            throw new CustomException(ExceptionCode.EMAIL_ALREADY_EXISTS);
+            log.error("Database constraint violation during registration");
+            throw new CustomException(ExceptionCode.REGISTRATION_FAILED);
         } catch (Exception e) {
-            log.error("An error occurred during registration: {}", e.getMessage());
+            log.error("An error occurred during registration: {}", e.getClass().getSimpleName());
             throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
         }
+    }
+    // Helper method to mask email for logging
+    private String maskEmail(String email) {
+        if (email == null || email.length() < 5) return "***";
+        int atIndex = email.indexOf('@');
+        if (atIndex <= 2) return "***" + email.substring(atIndex);
+        return email.substring(0, 2) + "***" + email.substring(atIndex);
     }
 
     @Override
     public ApiResponse<LoginResponse> loginUser(LoginRequest loginRequest) throws CustomException {
-       try{
-           // Check if required fields are present
-           if (loginRequest.getUsername() == null || loginRequest.getPassword() == null) {
-               log.error( "Request for login received with missing required fields");
-               throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
-           }
+        try {
+            // Check if required fields are present
+            if (loginRequest.getUsername() == null || loginRequest.getPassword() == null) {
+                log.error("Login attempt with missing required fields");
+                throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
+            }
 
-           User user = getUserByUsername(loginRequest.getUsername());
+            User user = getUserByUsername(loginRequest.getUsername());
 
-           if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-                log.error("Invalid credentials for user: {}", loginRequest.getUsername());
-               throw new CustomException(ExceptionCode.INVALID_CREDENTIALS);
-           }
+            if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                log.error("Invalid login attempt for username: {}", loginRequest.getUsername());
+                throw new CustomException(ExceptionCode.INVALID_CREDENTIALS);
+            }
 
            LoginResponse loginResponse = LoginResponse.builder()
                    .userId(user.getId())
@@ -183,13 +194,12 @@ public class UserServiceImpl implements UserService {
        } catch (Exception e) {
               if (e instanceof CustomException) {
                 throw (CustomException) e;
-              } else {
-                log.error("An error occurred during login: {}", e.getMessage());
-                throw new CustomException(ExceptionCode.INTERNAL_SERVER_ERROR);
-              }
-       }
+            } else {
+                log.error("Authentication error occurred");
+                throw new CustomException(ExceptionCode.INVALID_CREDENTIALS);
+            }
+        }
     }
-
     @Override
     public RestaurantManager getRestaurantManagerByUserId(Integer userId) throws CustomException {
 
