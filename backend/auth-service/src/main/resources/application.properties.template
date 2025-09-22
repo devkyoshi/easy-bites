@@ -18,6 +18,7 @@ jwt.expiration=3600000
 
 # Firebase Configuration (Base64 encoded service account JSON)
 firebase.credentials.encoded=YOUR_BASE64_ENCODED_SERVICE_ACCOUNT_KEY
+firebase.project.id=your-firebase-project-id
 
 # Actuator
 management.endpoints.web.exposure.include=health,info

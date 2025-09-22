@@ -1,12 +1,5 @@
-import { initializeApp } from 'firebase/app'
-import { 
-  getAuth, 
-  GoogleAuthProvider, 
-  signInWithPopup, 
-  UserCredential,
-  browserPopupRedirectResolver,
-  inMemoryPersistence
-} from 'firebase/auth'
+import { initializeApp } from 'firebase/app';
+import { browserPopupRedirectResolver, getAuth, GoogleAuthProvider, inMemoryPersistence, signInWithPopup, UserCredential } from 'firebase/auth';
 
 
 // Your Firebase configuration
@@ -24,7 +17,7 @@ const app = initializeApp(firebaseConfig);
 
 // Get auth instance and configure it
 const auth = getAuth(app);
-auth.setPersistence(inMemoryPersistence); // Use in-memory persistence to avoid issues with cookies
+auth.setPersistence(inMemoryPersistence).then(); // Use in-memory persistence to avoid issues with cookies
 
 // Create and configure Google provider
 const googleProvider = new GoogleAuthProvider();
@@ -40,26 +33,11 @@ googleProvider.setCustomParameters({
  */
 export const signInWithGoogle = async (): Promise<UserCredential> => {
   try {
-    console.log('Starting Google sign-in process...');
     
     // Use explicit resolver to help with popup issues
-    const result = await signInWithPopup(auth, googleProvider, browserPopupRedirectResolver);
-    
-    // Log success
-    console.log('Google sign-in successful');
-    
-    return result;
+    return await signInWithPopup(auth, googleProvider, browserPopupRedirectResolver);
   } catch (error: any) {
     console.error("Firebase Google sign-in error:", error);
-    console.error("Error code:", error.code);
-    console.error("Error message:", error.message);
-    
-    // If there's an error with the auth domain, log additional information
-    if (error.code === 'auth/invalid-oauth-provider' || error.code === 'auth/configuration-error') {
-      console.error("Firebase config issue. Check your auth domain and project settings.");
-      console.error("Current config:", JSON.stringify(firebaseConfig, null, 2));
-    }
-    
     throw error;
   }
 }

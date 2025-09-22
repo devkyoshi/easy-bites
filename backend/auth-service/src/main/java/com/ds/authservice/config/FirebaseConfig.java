@@ -20,6 +20,9 @@ public class FirebaseConfig {
     @Value("${firebase.credentials.encoded:FIREBASE_CREDENTIALS_PLACEHOLDER}")
     private String firebaseCredentialsEncoded;
 
+    @Value("${firebase.project.id}")
+    private String projectId;
+
     @PostConstruct
     public void initialize() {
         try {
@@ -35,7 +38,7 @@ public class FirebaseConfig {
                     // This allows basic initialization without a service account
                     FirebaseOptions options = FirebaseOptions.builder()
                             .setCredentials(GoogleCredentials.getApplicationDefault())
-                            .setProjectId("easy-bites-20730") // Replace with your Firebase project ID
+                            .setProjectId(projectId)
                             .build();
                     
                     FirebaseApp.initializeApp(options);
@@ -63,7 +66,7 @@ public class FirebaseConfig {
             try {
                 FirebaseOptions options = FirebaseOptions.builder()
                         .setCredentials(GoogleCredentials.getApplicationDefault())
-                        .setProjectId("easy-bites-20730") // Replace with your Firebase project ID
+                        .setProjectId(projectId) // Replace with your Firebase project ID
                         .build();
                 
                 FirebaseApp.initializeApp(options);
