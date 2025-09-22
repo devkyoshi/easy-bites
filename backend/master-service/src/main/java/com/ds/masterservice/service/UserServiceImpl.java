@@ -414,4 +414,52 @@ public class UserServiceImpl implements UserService {
             return false;
         }
     }
+
+    @Override
+    public User findByEmail(String email) {
+        return userRepository.findUserByEmail(email).orElse(null);
+    }
+
+    @Override
+    public User createFirebaseUser(Customer customer) {
+        try {
+            // Check if required fields are present
+            if (customer.getEmail() == null || 
+                customer.getUsername() == null || 
+                customer.getFirstName() == null) {
+                log.error("Required fields missing for Firebase user creation");
+                return null;
+            }
+
+            // Check if a user with this email already exists
+            if (userRepository.findUserByEmail(customer.getEmail()).isPresent()) {
+                log.error("User with email {} already exists", customer.getEmail());
+                return null;
+            }
+
+            // Get customer role
+            Role role = roleRepository.findByName("ROLE_CUSTOMER")
+                    .orElseThrow(() -> new CustomException(ExceptionCode.ROLE_NOT_FOUND));
+
+            // Set up the customer user
+            customer.setRoles(List.of(role));
+            
+            // For OAuth users, we don't set a password since they authenticate through OAuth
+            // If they later want to set a password, they can use a password reset flow
+            if (customer.getPassword() == null) {
+                // Generate a secure random password they won't use (since they'll login via OAuth)
+                // This is just to satisfy database constraints if password field is not nullable
+                customer.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+            }
+
+            // Save the user
+            User savedUser = userRepository.save(customer);
+            log.info("Firebase user created successfully: {}", customer.getEmail());
+            
+            return savedUser;
+        } catch (Exception e) {
+            log.error("Error creating Firebase user: {}", e.getMessage());
+            return null;
+        }
+    }
 }

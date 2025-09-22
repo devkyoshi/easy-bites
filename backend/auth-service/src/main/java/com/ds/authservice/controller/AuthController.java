@@ -1,6 +1,8 @@
 package com.ds.authservice.controller;
 
+import com.ds.authservice.service.FirebaseAuthService;
 import com.ds.authservice.service.JwtService;
+import com.ds.commons.dto.request.FirebaseLoginRequest;
 import com.ds.commons.dto.request.LoginRequest;
 import com.ds.commons.dto.request.RegisterUserRequest;
 import com.ds.commons.dto.response.LoginResponse;
@@ -14,9 +16,11 @@ import com.ds.masterservice.MasterService;
 import com.ds.masterservice.dto.request.deliveryService.DriverRegistrationRequest;
 import com.ds.masterservice.dto.request.user.RestaurantManagerRequestDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.auth.FirebaseAuthException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -29,13 +33,16 @@ public class AuthController {
     private final MasterService masterService;
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;
+    private final FirebaseAuthService firebaseAuthService;
 
 
     @Autowired
-    public AuthController(MasterService masterService, JwtService jwtService, ObjectMapper objectMapper) {
+    public AuthController(MasterService masterService, JwtService jwtService, 
+                         ObjectMapper objectMapper, FirebaseAuthService firebaseAuthService) {
         this.masterService = masterService;
         this.jwtService = jwtService;
         this.objectMapper = objectMapper;
+        this.firebaseAuthService = firebaseAuthService;
     }
 
     @GetMapping("/health")
@@ -81,6 +88,34 @@ public class AuthController {
         return masterService.registerDriver(registerRequest);
     }
 
+    // Firebase OAuth Login
+    @PostMapping("/firebase-login")
+    public ApiResponse<LoginResponse> firebaseLogin(@RequestBody FirebaseLoginRequest request) {
+        try {
+            log.info("Processing Firebase login request");
+            
+            if (request.getIdToken() == null || request.getIdToken().isEmpty()) {
+                log.error("Firebase ID token is missing or empty");
+                return ApiResponse.errorResponse("Firebase ID token is required", HttpStatus.BAD_REQUEST);
+            }
+            
+            // Verify Firebase token and get/create user
+            LoginResponse response = firebaseAuthService.verifyFirebaseTokenAndGetUser(request.getIdToken());
+            
+            log.info("Firebase login successful for user: {}", response.getUsername());
+            return ApiResponse.successResponse(response);
+            
+        } catch (FirebaseAuthException e) {
+            log.error("Firebase authentication failed: {}", e.getMessage(), e);
+            return ApiResponse.errorResponse("Firebase authentication failed: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+        } catch (IllegalStateException e) {
+            log.error("Firebase initialization error: {}", e.getMessage(), e);
+            return ApiResponse.errorResponse("Firebase initialization error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            log.error("Error processing Firebase login: {}", e.getMessage(), e);
+            return ApiResponse.errorResponse("Error processing Firebase login: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 
 /*    @PostMapping("/update-customer")

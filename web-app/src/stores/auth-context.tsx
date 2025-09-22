@@ -9,6 +9,9 @@ import {
 import { loginUser, LoginRequest } from '@/services/auth-service.ts'
 import { router } from '@/lib/router'
 import { isTokenExpired } from '@/utils/jwt-util-functions.ts'
+import { signInWithGoogle } from '@/lib/firebase.ts'
+import { authenticateWithFirebase } from '@/services/firebase-auth-service.ts'
+
 
 interface AuthUser {
   userId: number
@@ -23,6 +26,7 @@ interface AuthContextType {
   currentUser: AuthUser | null
   accessToken: string
   signIn: (creds: LoginRequest) => Promise<AuthUser>
+  signInWithGoogleOAuth: () => Promise<AuthUser>
   logout: () => void
 }
 
@@ -110,7 +114,65 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.navigate({ to: '/sign-in', replace: true })
   }
 
-  const value: AuthContextType = { currentUser, accessToken, signIn, logout }
+  // Google OAuth sign in
+  const signInWithGoogleOAuth = async () => {
+    try {
+      // First authenticate with Firebase
+      const googleAuthResult = await signInWithGoogle()
+      
+      // Log the Firebase token for debugging - REMOVE IN PRODUCTION
+      console.log('Firebase authentication successful');
+      
+      // Then authenticate with our backend using the Firebase token
+      const data = await authenticateWithFirebase(googleAuthResult)
+
+      const {
+        userId,
+        email,
+        firstName,
+        lastName,
+        accessToken,
+        username: uname,
+        role,
+      } = data
+
+      const user: AuthUser = {
+        userId,
+        username: uname,
+        email,
+        firstName,
+        lastName,
+        role,
+      }
+
+      // set in state
+      setCurrentUser(user)
+      setAccessToken(accessToken)
+
+      // persist
+      localStorage.setItem('auth_user', JSON.stringify(user))
+      localStorage.setItem('access_token', accessToken)
+
+      return data
+    } catch (error: any) {
+      console.error("Google OAuth error:", error);
+      
+      // Clear any partial auth state
+      localStorage.removeItem('auth_user')
+      localStorage.removeItem('access_token')
+      
+      // Rethrow the error so it can be handled by the component
+      throw error;
+    }
+  }
+
+  const value: AuthContextType = { 
+    currentUser, 
+    accessToken, 
+    signIn, 
+    signInWithGoogleOAuth,
+    logout 
+  }
   authRef.current = value
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

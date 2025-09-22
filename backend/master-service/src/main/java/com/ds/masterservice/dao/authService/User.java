@@ -48,6 +48,9 @@ public class User implements UserDetails {
     private LocalDateTime updatedAt;
 
     private String phone;
+    
+    // Flag to indicate if this user was created through OAuth
+    private Boolean oauthUser = false;
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
