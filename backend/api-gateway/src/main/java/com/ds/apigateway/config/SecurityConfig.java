@@ -4,11 +4,14 @@ import com.ds.apigateway.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository;
+import org.springframework.security.web.server.csrf.ServerCsrfTokenRepository;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfiguration;
@@ -40,10 +43,19 @@ public class SecurityConfig {
     }
 
     @Bean
+    public ServerCsrfTokenRepository csrfTokenRepository() {
+        CookieServerCsrfTokenRepository repo = CookieServerCsrfTokenRepository.withHttpOnlyFalse();
+        repo.setCookiePath("/");
+        return repo;
+    }
+
+    @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
                 .cors(corsSpec -> corsSpec.configurationSource(corsConfigurationSource()))
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(csrfTokenRepository())
+                )
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/auth/**", "/actuator/**").permitAll()
                         .pathMatchers("/ws/**").permitAll()
