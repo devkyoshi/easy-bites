@@ -51,7 +51,7 @@ export const updatePaymentStatus = async (orderId: number, paymentStatus: string
     return response.data
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Error updating payment status:', error)
+    console.error('Error updating payment status')
     throw error
   }
 }
