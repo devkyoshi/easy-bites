@@ -20,7 +20,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import java.util.List;
 
 
-public interface UserService extends UserDetailsService {
+public interface UserService extends UserDetailsService, FirebaseUserService {
     UserDetails loadUserByUsername(String username);
     ApiResponse<RegisterResponse> registerUser(RegisterUserRequest registerRequest) throws CustomException;
     ApiResponse<LoginResponse> loginUser(LoginRequest loginRequest) throws CustomException;

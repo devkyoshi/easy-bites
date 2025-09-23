@@ -12,6 +12,7 @@ import com.ds.masterservice.dto.response.restaurant.OrderReqResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantAdminResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantInitResponse;
 import com.ds.masterservice.dto.response.restaurant.RestaurantResponse;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -36,13 +37,13 @@ public class RestaurantController {
     }
 
     @PostMapping("/create")
-    public ApiResponse<RestaurantInitResponse> createRestaurant(@RequestBody RestaurantCreateUpdateRequest request) throws CustomException {
+    public ApiResponse<RestaurantInitResponse> createRestaurant(@Valid @RequestBody RestaurantCreateUpdateRequest request) throws CustomException {
         return masterService.createRestaurant(request);
     }
 
     //FoodItems
     @PostMapping("/{restaurantId}/food-items")
-    public ApiResponse<FoodItemResponse> addFoodItems(@RequestBody FoodItemRequest request, @PathVariable("restaurantId") Long restaurantId) throws CustomException {
+    public ApiResponse<FoodItemResponse> addFoodItems(@Valid @RequestBody FoodItemRequest request, @PathVariable("restaurantId") Long restaurantId) throws CustomException {
         log.info("Attempting to add food item for restaurant with ID: {}", restaurantId);
         return masterService.addFoodItems(restaurantId, request);
     }
@@ -54,7 +55,7 @@ public class RestaurantController {
     }
 
     @PutMapping("/{restaurantId}/food-items/{foodItemId}")
-    public ApiResponse<FoodItemResponse> updateFoodItem(@PathVariable("restaurantId") Long restaurantId, @PathVariable("foodItemId") Long foodItemId, @RequestBody FoodItemRequest request) throws CustomException {
+    public ApiResponse<FoodItemResponse> updateFoodItem(@PathVariable("restaurantId") Long restaurantId, @PathVariable("foodItemId") Long foodItemId, @Valid @RequestBody FoodItemRequest request) throws CustomException {
         log.info("Attempting to update food item with ID: {} for restaurant with ID: {}", foodItemId, restaurantId);
         return masterService.updateFoodItem(restaurantId, foodItemId, request);
     }
@@ -73,13 +74,13 @@ public class RestaurantController {
     }
 
     @PostMapping("/{restaurantId}/categories")
-    public ApiResponse<MenuCategoryResponse> addMenuCategory(@RequestBody MenuCategoryCreateRequest request, @PathVariable("restaurantId") Long restaurantId) throws CustomException {
+    public ApiResponse<MenuCategoryResponse> addMenuCategory(@Valid @RequestBody MenuCategoryCreateRequest request, @PathVariable("restaurantId") Long restaurantId) throws CustomException {
         log.info("Attempting to add menu category for restaurant with ID: {}", restaurantId);
         return masterService.addMenuCategory(restaurantId, request);
     }
 
     @PutMapping("/{restaurantId}/categories/{menuCategoryId}")
-    public ApiResponse<MenuCategoryResponse> updateMenuCategory(@PathVariable("restaurantId") Long restaurantId, @PathVariable("menuCategoryId") Long menuCategoryId, @RequestBody MenuCategoryCreateRequest request) throws CustomException {
+    public ApiResponse<MenuCategoryResponse> updateMenuCategory(@PathVariable("restaurantId") Long restaurantId, @PathVariable("menuCategoryId") Long menuCategoryId, @Valid @RequestBody MenuCategoryCreateRequest request) throws CustomException {
         log.info("Attempting to update menu category with ID: {} for restaurant with ID: {}", menuCategoryId, restaurantId);
         return masterService.updateMenuCategory(restaurantId, menuCategoryId, request);
     }

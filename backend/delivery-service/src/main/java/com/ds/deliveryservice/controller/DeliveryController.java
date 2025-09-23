@@ -117,7 +117,7 @@ public class DeliveryController {
 
     @PostMapping("/orders/accept/{driverId}")
     public ApiResponse<DeliveryResponse> acceptOrder(
-            @RequestBody DeliveryAcceptanceRequest dto,
+            @Valid @RequestBody DeliveryAcceptanceRequest dto,
             @PathVariable("driverId") Long driverId) throws CustomException {
         log.info("Driver ID {} attempting to accept order", driverId);
         ApiResponse<DeliveryResponse> response = masterService.acceptOrder(driverId, dto);
@@ -132,7 +132,7 @@ public class DeliveryController {
     @PostMapping("/delivery/complete")
     public ApiResponse<DeliveryResponse> completeDelivery(
             @RequestParam("deliveryId") Long deliveryId,
-            @RequestBody DeliveryCompletionRequest dto
+            @Valid @RequestBody DeliveryCompletionRequest dto
     ) throws CustomException {
         log.info("Completing delivery ID: {}", deliveryId);
         return masterService.completeDelivery(deliveryId, dto);
@@ -210,7 +210,7 @@ public class DeliveryController {
     @PutMapping("/drivers/{driverId}")
     public ApiResponse<DriverResponse> updateDriver(
             @PathVariable("driverId") Long driverId,
-            @RequestBody DriverRegistrationRequest registrationDTO
+            @Valid @RequestBody DriverRegistrationRequest registrationDTO
     ) throws CustomException {
         log.info("Updating driver ID: {}", driverId);
         return masterService.updateDriver(driverId, registrationDTO);

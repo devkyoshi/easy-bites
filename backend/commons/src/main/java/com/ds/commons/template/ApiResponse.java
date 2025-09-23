@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 
 @Getter
@@ -17,12 +16,14 @@ public class ApiResponse<T>  {
     private boolean success;
     private T result;
     private String errorId;
-    private Integer status;
+    private Integer status2;
+    private HttpStatus status;
 
     public ApiResponse(String message, boolean success, T result, HttpStatus status) {
         this.result = result;
         this.message = message;
         this.success = success;
+        this.status = status;
     }
 
     public static <T> ApiResponse<T> successResponse(String message, T result) {
@@ -39,5 +40,10 @@ public class ApiResponse<T>  {
 
     public static <T> ApiResponse<T> errorResponse(String message, HttpStatus status) {
         return new ApiResponse<>(message, false, null, status);
+    }
+
+    // Added overload to support error responses with a payload (e.g., validation errors map)
+    public static <T> ApiResponse<T> errorResponse(String message, T result, HttpStatus status) {
+        return new ApiResponse<>(message, false, result, status);
     }
 }
