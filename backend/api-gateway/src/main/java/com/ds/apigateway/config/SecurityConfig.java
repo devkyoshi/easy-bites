@@ -2,6 +2,7 @@ package com.ds.apigateway.config;
 
 import com.ds.apigateway.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -26,13 +27,17 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Value("${cors.allowed-origins}")
+    private String allowedOrigins;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173", "http://172.20.0.8"));
-        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        corsConfiguration.setAllowedHeaders(List.of("*"));
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+
+        corsConfiguration.setAllowedOrigins(origins);
+        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST"));
+        corsConfiguration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         corsConfiguration.setExposedHeaders(List.of("Authorization", "Content-Type"));
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setMaxAge(3600L);

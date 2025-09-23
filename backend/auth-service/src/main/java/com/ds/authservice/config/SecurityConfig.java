@@ -1,7 +1,9 @@
 package com.ds.authservice.config;
 
 import com.ds.authservice.security.JwtAuthFilter;
+import com.ds.masterservice.filter.RateLimitingFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,6 +25,16 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
+    @Autowired
+    private RateLimitingFilter rateLimitingFilter;
+
+    @Bean
+    public FilterRegistrationBean<RateLimitingFilter> rateLimitingFilterRegistration() {
+        FilterRegistrationBean<RateLimitingFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(rateLimitingFilter);
+        registrationBean.addUrlPatterns("/auth/login", "/auth/register", "/auth/register-restaurant-manager", "/auth/register-driver");
+        return registrationBean;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

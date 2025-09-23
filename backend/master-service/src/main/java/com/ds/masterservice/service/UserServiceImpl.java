@@ -23,6 +23,7 @@ import com.ds.masterservice.repository.deliveryService.DeliveryDriverRepository;
 import com.ds.masterservice.repository.RoleRepository;
 import com.ds.masterservice.repository.StaffRegistrationRepository;
 import com.ds.masterservice.repository.UserRepository;
+import com.ds.masterservice.service.security.BruteForceProtectionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import com.ds.commons.enums.UserType;
@@ -59,6 +60,9 @@ public class UserServiceImpl implements UserService {
         this.deliveryDriverRepository = deliveryDriverRepository;
         this.objectMapper = objectMapper;
     }
+
+    @Autowired
+    private BruteForceProtectionService bruteForceProtectionService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -177,12 +181,23 @@ public class UserServiceImpl implements UserService {
                 throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
             }
 
+            String username = loginRequest.getUsername();
+
+            if (bruteForceProtectionService.isBlocked(username)) {
+                log.warn("Account temporarily locked for user: {}", username);
+                throw new CustomException(ExceptionCode.ACCOUNT_LOCKED);
+            }
+
             User user = getUserByUsername(loginRequest.getUsername());
 
             if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-                log.error("Invalid login attempt for username: {}", loginRequest.getUsername());
+                log.error("Invalid credentials for user: {}", username);
+                bruteForceProtectionService.loginFailed(username);
                 throw new CustomException(ExceptionCode.INVALID_CREDENTIALS);
             }
+
+           // ✅ Login successful → reset attempts + lock
+           bruteForceProtectionService.loginSucceeded(username);
 
            LoginResponse loginResponse = LoginResponse.builder()
                    .userId(user.getId())
@@ -437,8 +452,8 @@ public class UserServiceImpl implements UserService {
     public User createFirebaseUser(Customer customer) {
         try {
             // Check if required fields are present
-            if (customer.getEmail() == null || 
-                customer.getUsername() == null || 
+            if (customer.getEmail() == null ||
+                customer.getUsername() == null ||
                 customer.getFirstName() == null) {
                 log.error("Required fields missing for Firebase user creation");
                 return null;
@@ -456,7 +471,7 @@ public class UserServiceImpl implements UserService {
 
             // Set up the customer user
             customer.setRoles(List.of(role));
-            
+
             // For OAuth users, we don't set a password since they authenticate through OAuth
             // If they later want to set a password, they can use a password reset flow
             if (customer.getPassword() == null) {
@@ -468,7 +483,7 @@ public class UserServiceImpl implements UserService {
             // Save the user
             User savedUser = userRepository.save(customer);
             log.info("Firebase user created successfully: {}", customer.getEmail());
-            
+
             return savedUser;
         } catch (Exception e) {
             log.error("Error creating Firebase user: {}", e.getMessage());
