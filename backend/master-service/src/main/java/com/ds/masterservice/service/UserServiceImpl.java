@@ -11,6 +11,7 @@ import com.ds.commons.exception.CustomException;
 import com.ds.commons.exception.ExceptionCode;
 import com.ds.commons.template.ApiResponse;
 
+import com.ds.commons.utils.ValidationUtil;
 import com.ds.masterservice.dao.authService.*;
 import com.ds.masterservice.dao.deliveryService.DeliveryPerson;
 import com.ds.masterservice.dao.restaurantService.RestaurantManager;
@@ -77,6 +78,8 @@ public class UserServiceImpl implements UserService {
                 log.error("Request for registration received with missing required fields");
                 throw new CustomException(ExceptionCode.MISSING_REQUIRED_FIELDS);
             }
+
+            ValidationUtil.validatePassword(registerRequest.getPassword());
 
             // Check if username already exists
             if (userRepository.findUserByUsername(registerRequest.getUsername()).isPresent()) {
