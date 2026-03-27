@@ -4,8 +4,3 @@
 **/mvnw
 **/mvnw.cmd
 **/.mvn
-
-# env
-**/application.properties
-**/application.yml
-!api-gateway/src/main/resources/application.properties
