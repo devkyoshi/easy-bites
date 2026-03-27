@@ -8,3 +8,4 @@
 # env
 **/application.properties
 **/application.yml
+!api-gateway/src/main/resources/application.properties
